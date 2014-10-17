@@ -18,7 +18,7 @@ public class TablePanel extends JPanel {
     
     public interface Listener {
         void startIndexPoll(Table table);
-        void setValue(Table table, int column, int row, double value);
+        void setValue(Table table, int column, int row, float value);
     }
     
 
@@ -106,8 +106,8 @@ public class TablePanel extends JPanel {
         @Override
         public void setValueAt(Object value, int row, int column) {
             try {
-                double doubleValue = Double.parseDouble(value.toString());
-                tablePanelListener.setValue(table, column, row, doubleValue);
+                float floatValue = Float.parseFloat(value.toString());
+                tablePanelListener.setValue(table, column, row, floatValue);
             }
             catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(
@@ -176,14 +176,28 @@ public class TablePanel extends JPanel {
         
         @Override
         public void insertString(FilterBypass bypass, int offset, String string, AttributeSet attributes) throws BadLocationException {
-            // remove non-digits
-            bypass.insertString(offset, string.replaceAll("\\D++", ""), attributes);
+            bypass.insertString(offset, replace(string), attributes);
         }
 
         @Override
         public void replace(FilterBypass bypass, int offset, int length, String string, AttributeSet attributes) throws BadLocationException {
-            bypass.replace(offset, length, string.replaceAll("\\D++", ""), attributes);
+            bypass.replace(offset, length, replace(string), attributes);
         }
+        
+        private String replace(String newString) {
+            try {
+                /*float value = */Float.parseFloat(newString);
+                actual = newString;
+            }
+            catch (NumberFormatException ex) {
+                if (newString.indexOf('.') == newString.length() - 1) {
+                    actual = newString;
+                }
+            }
+            return actual;
+        }
+        
+        private String actual = "";
         
     }    
     

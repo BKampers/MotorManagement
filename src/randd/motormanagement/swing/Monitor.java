@@ -309,11 +309,11 @@ public class Monitor extends bka.swing.FrameApplication {
         }
         
         @Override
-        public void setValue(Table table, int column, int row, double value) {
+        public void setValue(Table table, int column, int row, float value) {
             try {
-                String result = remoteSystem.modifyTable(table, column, row, (short) value);
+                String result = remoteSystem.modifyTable(table, column, row, value);
                 if (RemoteSystem.OK.equals(result)) {
-                    table.setField(column, row, (short) value);
+                    table.setField(column, row, value);
                 }
             }
             catch (org.json.JSONException | InterruptedException ex) {

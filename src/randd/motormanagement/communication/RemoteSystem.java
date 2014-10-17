@@ -80,10 +80,10 @@ public class RemoteSystem {
     }
     
     
-    public String modifyTable(Table table, int column, int row, short value) throws JSONException, InterruptedException {
+    public String modifyTable(Table table, int column, int row, float value) throws JSONException, InterruptedException {
         return modify(table.getName(),
-            "Column", column,
-            "Row", row,
+            COLUMN, column,
+            ROW, row,
             VALUE, value);
     }
     
@@ -178,13 +178,13 @@ public class RemoteSystem {
         Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
         JSONArray tableArray = object.getJSONArray(TABLE);
         final int rowCount = tableArray.length();
-        short[][] fields = new short[rowCount][];
+        float[][] fields = new float[rowCount][];
         for (int row = 0; row < rowCount; ++row) {
             JSONArray rowArray = tableArray.getJSONArray(row);
             final int columnCount = rowArray.length();
-            fields[row] = new short[columnCount];
+            fields[row] = new float[columnCount];
             for (int column = 0; column < columnCount; ++column) {
-                fields[row][column] = (short) rowArray.getInt(column);
+                fields[row][column] = (float) rowArray.getDouble(column);
             }
         }
         table.setFields(fields);

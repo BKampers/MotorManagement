@@ -27,7 +27,7 @@ public class Table {
     }
     
     
-    public void setFields(short[][] fields) {
+    public void setFields(float[][] fields) {
         columnCount = 0;
         rowCount = 0;
         this.fields = fields;
@@ -53,7 +53,7 @@ public class Table {
     }
     
     
-    public void setField(int column, int row, short value) {
+    public void setField(int column, int row, float value) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
             fields[row][column] = value;
             notifyModification(column, row);
@@ -64,7 +64,7 @@ public class Table {
     }
     
     
-    public short getField(int column, int row) {
+    public float getField(int column, int row) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
             return fields[row][column];
         }
@@ -170,7 +170,7 @@ public class Table {
     private int columnIndex = -1;
     private int rowIndex = -1;
 
-    private short[][] fields = null;
+    private float[][] fields = null;
     
     private final Collection<Listener> listeners = new ArrayList<>();
 }
