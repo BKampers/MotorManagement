@@ -27,6 +27,7 @@ public class TablePanel extends JPanel {
         this.tablePanelListener = listener;
         setTable(table);
         initComponents();
+        numberFormat.setMinimumFractionDigits(1);
         grid.setDefaultRenderer(Object.class, new CellRenderer());
         grid.setDefaultEditor(Object.class, new CellEditor());
         JTableHeader tableHeader = grid.getTableHeader();
@@ -100,16 +101,16 @@ public class TablePanel extends JPanel {
         
         @Override
         public Object getValueAt(int row, int column) {
-            return table.getField(column, row);
+            return numberFormat.format(table.getField(column, row));
         }
         
         @Override
         public void setValueAt(Object value, int row, int column) {
             try {
-                float floatValue = Float.parseFloat(value.toString());
+                float floatValue = numberFormat.parse(value.toString()).floatValue();
                 tablePanelListener.setValue(table, column, row, floatValue);
             }
-            catch (NumberFormatException ex) {
+            catch (java.text.ParseException ex) {
                 JOptionPane.showMessageDialog(
                     TablePanel.this, 
                     value.toString(), 
@@ -130,16 +131,14 @@ public class TablePanel extends JPanel {
         
     };
     
-    
     private class CellRenderer extends DefaultTableCellRenderer {
         
         CellRenderer() {
             setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
-            activeRenderer = new JLabel();
             activeRenderer.setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
             activeRenderer.setOpaque(true);
             activeRenderer.setBackground(Color.YELLOW);
-            activeRenderer.setBorder(new LineBorder(Color.ORANGE, 1));
+            activeRenderer.setBorder(activeCellBorder);
         }
         
         @Override
@@ -155,8 +154,19 @@ public class TablePanel extends JPanel {
             }
         }
         
-        private final JLabel activeRenderer;
-        
+        private final JLabel activeRenderer = new JLabel();
+ 
+        private final Border activeCellBorder = new LineBorder(Color.ORANGE, 1) {
+            @Override
+            public Insets getBorderInsets(Component c) {
+                return CellRenderer.this.getInsets();
+            }
+            @Override
+            public Insets getBorderInsets(Component c, Insets insets) {
+                return CellRenderer.this.getInsets(insets);
+            }
+        };
+         
     }
     
     
@@ -166,8 +176,9 @@ public class TablePanel extends JPanel {
             super(new JFormattedTextField(java.text.NumberFormat.getNumberInstance()));
             JFormattedTextField field = (JFormattedTextField) this.getComponent();
             field.setBorder(new LineBorder(Color.BLUE, 1));
-            ((AbstractDocument) field.getDocument()).setDocumentFilter(new NumberFilter());
-        }
+            //((AbstractDocument) field.getDocument()).setDocumentFilter(new NumberFilter());
+            /*bka.swing.validators.RealValidator validator = */new bka.swing.validators.RealValidator(field, 0.0, 100.0, 1);
+        } 
         
     }
     
@@ -239,8 +250,8 @@ public class TablePanel extends JPanel {
     }
 
     
-    private final Listener tablePanelListener;
     private Table table;   
+    private final java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
     
     private int activeColumn = -1;
     private int activeRow = -1;
@@ -251,6 +262,7 @@ public class TablePanel extends JPanel {
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
+    private final Listener tablePanelListener;
     private final Model model = new Model();
     private final TableListener tableListener = new TableListener();
     
