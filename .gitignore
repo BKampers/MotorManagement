@@ -62,3 +62,8 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 nbproject/private/private.xml
+build/built-jar.properties
+build/built-jar.properties
+build/built-jar.properties
+build/test/results/TEST-randd.motormanagement.communication.MessagingTest.xml
+nbproject/private/private.xml
