@@ -71,7 +71,7 @@ class Messenger {
                 while (running && serialPort != null) {
                     JSONObject receivedObject = serialPort.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        System.out.println("<< " + receivedObject);
+                        //TODO: log incomming message System.out.println("<< " + receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -128,7 +128,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        System.out.println(">> " + transaction.message.toString());
+                        // TODO: log outgoing message System.out.println(">> " + transaction.message.toString());
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);

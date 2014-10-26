@@ -168,7 +168,15 @@ public class RemoteSystem {
         if (measurement != null) {
             double value = object.optDouble(VALUE);
             if (value != Double.NaN) {
-                measurement.setValue(value);
+                measurement.setValue((float) value);
+            }
+            double minimum = object.optDouble(MINIMUM);
+            if (minimum != Double.NaN) {
+                measurement.setMinimum((float) minimum);
+            }
+            double maximum = object.optDouble(MAXIMUM);
+            if (maximum != Double.NaN) {
+                measurement.setMaximum((float) maximum);
             }
         }
     }
@@ -188,6 +196,19 @@ public class RemoteSystem {
             }
         }
         table.setFields(fields);
+        table.setDecimals(object.optInt(DECIMALS, 0));
+        table.setMinimum((float) object.optDouble(MINIMUM, 0.0));
+        table.setMaximum((float) object.optDouble(MAXIMUM, 100.0));
+        String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
+        if (measurementName != null) {
+            Measurement measurement = Measurement.getInstance(measurementName);
+            table.setColumnMeasurement(measurement);
+        }
+        measurementName = object.getString(ROW_MEASUREMENT_NAME);
+        if (measurementName != null) {
+            Measurement measurement = Measurement.getInstance(measurementName);
+            table.setRowMeasurement(measurement);
+        }
     }
     
 
@@ -321,6 +342,7 @@ public class RemoteSystem {
     private static final String PROPERTIES = "Properties";
     private static final String VALUE = "Value";
     private static final String TABLE = "Table";
+    private static final String DECIMALS = "Decimals";
     private static final String INDEX = "Index";
     private static final String SIMULATION = "Simulation";
     private static final String FLASH = "Flash";
@@ -334,5 +356,11 @@ public class RemoteSystem {
     
     private static final String COLUMN = "Column";
     private static final String ROW = "Row";
+    
+    private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurement";
+    private static final String ROW_MEASUREMENT_NAME = "RowMeasurement";
+    
+    private static final String MINIMUM = "Minimum";
+    private static final String MAXIMUM = "Maximum";
     
 }

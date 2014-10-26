@@ -5,11 +5,12 @@
 package randd.motormanagement.swing;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
-import javax.swing.text.*;
 import randd.motormanagement.system.*;
 
 
@@ -27,21 +28,20 @@ public class TablePanel extends JPanel {
         this.tablePanelListener = listener;
         setTable(table);
         initComponents();
-        numberFormat.setMinimumFractionDigits(1);
         grid.setDefaultRenderer(Object.class, new CellRenderer());
-        grid.setDefaultEditor(Object.class, new CellEditor());
-        JTableHeader tableHeader = grid.getTableHeader();
-        tableHeader.setResizingAllowed(false);
-        tableHeader.setEnabled(false);
-        RowHeaders headers = new RowHeaders();
-        headers.initialize(model, scrollPane);
-        grid.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+        JTableHeader columnHeader = grid.getTableHeader();
+        columnHeader.setDefaultRenderer(new ColumnHeaderRenderer(grid));
+        columnHeader.setResizingAllowed(false);
+        columnHeader.setEnabled(false);
+        RowHeaders rowHeaders = new RowHeaders();
+        rowHeaders.initialize(model, scrollPane, grid.getRowHeight());
+        rowHeaders.setAlignment(JLabel.RIGHT, JLabel.BOTTOM);
 
+        grid.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 followActiveCell = false;
             }
-            
         });
     }
     
@@ -79,6 +79,7 @@ public class TablePanel extends JPanel {
         grid.setModel(model);
         grid.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         grid.setGridColor(new java.awt.Color(0, 0, 0));
+        grid.setRowHeight(30);
         grid.setRowSelectionAllowed(false);
         grid.getTableHeader().setReorderingAllowed(false);
         scrollPane.setViewportView(grid);
@@ -100,17 +101,28 @@ public class TablePanel extends JPanel {
         }
         
         @Override
+        public String getColumnName(int column) {
+            Measurement columnMeasurement = table.getColumnMeasurement();
+            if (columnMeasurement != null) {
+                float stepSize = (columnMeasurement.getMaximum() - columnMeasurement.getMinimum()) / table.getColumnCount();
+                return Integer.toString((int) (columnMeasurement.getMinimum() + (column + 1) * stepSize));
+            }
+            else {
+                return Integer.toString(column + 1);
+            }
+        }
+        
+        @Override
         public Object getValueAt(int row, int column) {
-            return numberFormat.format(table.getField(column, row));
+            return table.getField(column, row);
         }
         
         @Override
         public void setValueAt(Object value, int row, int column) {
             try {
-                float floatValue = numberFormat.parse(value.toString()).floatValue();
-                tablePanelListener.setValue(table, column, row, floatValue);
+                tablePanelListener.setValue(table, column, row, ((Number) value).floatValue());
             }
-            catch (java.text.ParseException ex) {
+            catch (ClassCastException ex) {
                 JOptionPane.showMessageDialog(
                     TablePanel.this, 
                     value.toString(), 
@@ -122,11 +134,40 @@ public class TablePanel extends JPanel {
     }
     
     
+    private class ColumnHeaderRenderer implements TableCellRenderer {
+
+        ColumnHeaderRenderer(JTable table) {
+            renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
+            renderer.setHorizontalAlignment(JLabel.RIGHT);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int col) {
+            return renderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, col);
+        }
+
+        private final DefaultTableCellRenderer renderer;
+
+    }
+    
+    
     private class RowHeaders extends bka.swing.TableRowHeaders {
         
         @Override
         public String cornerName() {
             return "RPM / Load";
+        }
+        
+        @Override
+        public Object rowName(int row) {
+            Measurement rowMeasurement = table.getRowMeasurement();
+            if (rowMeasurement != null) {
+                float stepSize = (rowMeasurement.getMaximum() - rowMeasurement.getMinimum()) / table.getRowCount();
+                return Integer.toString((int) (rowMeasurement.getMinimum() + (row + 1) * stepSize));
+            }
+            else {
+                return Integer.toString(row + 1);
+            }
         }
         
     };
@@ -143,14 +184,15 @@ public class TablePanel extends JPanel {
         
         @Override
         public Component getTableCellRendererComponent(JTable grid, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            String valueString = numberFormat.format(value);
             if (column == table.getColumnIndex() && row == table.getRowIndex()) {
                 activeColumn = column;
                 activeRow = row;
-                activeRenderer.setText(value.toString());
+                activeRenderer.setText(valueString);
                 return activeRenderer;
             }
             else {
-                return super.getTableCellRendererComponent(grid, value, isSelected, hasFocus, row, column);
+                return super.getTableCellRendererComponent(grid, valueString, isSelected, hasFocus, row, column);
             }
         }
         
@@ -173,62 +215,102 @@ public class TablePanel extends JPanel {
     private class CellEditor extends DefaultCellEditor {
 
         CellEditor() {
-            super(new JFormattedTextField(java.text.NumberFormat.getNumberInstance()));
-            JFormattedTextField field = (JFormattedTextField) this.getComponent();
-            field.setBorder(new LineBorder(Color.BLUE, 1));
-            //((AbstractDocument) field.getDocument()).setDocumentFilter(new NumberFilter());
-            /*bka.swing.validators.RealValidator validator = */new bka.swing.validators.RealValidator(field, 0.0, 100.0, 1);
-        } 
+            super(new JTextField());
+            int decimals = table.getDecimals();
+            double stepSize = Math.pow(10.0, -decimals);
+            spinner = new JSpinner(new SpinnerNumberModel(0.0, table.getMinimum(), table.getMaximum(), stepSize));
+            spinner.setBorder(new LineBorder(Color.GREEN, 2));            
+            final JSpinner.NumberEditor editor = (JSpinner.NumberEditor) spinner.getEditor();
+            java.text.DecimalFormat format = editor.getFormat();  
+            format.setMinimumFractionDigits(decimals);
+            format.setGroupingUsed(false);
+            format.setDecimalFormatSymbols(new java.text.DecimalFormatSymbols(Locale.getDefault()));
+            JFormattedTextField editorTextField = editor.getTextField();
+            editorTextField.addKeyListener(new java.awt.event.KeyListener() {
+                
+                @Override
+                public void keyTyped(KeyEvent evt) {
+                }
+
+                @Override
+                public void keyPressed(KeyEvent evt) {
+                }
+
+                @Override
+                public void keyReleased(KeyEvent evt) {
+                    System.out.println(evt.getKeyChar());
+                    String currentText = ((JFormattedTextField) evt.getSource()).getText();
+                    try {
+                        float newValue = numberFormat.parse(currentText).floatValue();
+                        if (newValue < table.getMinimum() || table.getMaximum() < newValue) {
+                            spinner.setBorder(new LineBorder(Color.RED, 2));
+                            if (evt.getKeyCode() == KeyEvent.VK_BACK_SPACE || evt.getKeyCode() == KeyEvent.VK_DELETE) {
+                                Toolkit.getDefaultToolkit().beep();
+                            }
+                        }
+                        else {
+                            spinner.setBorder(new LineBorder(Color.GREEN, 2));
+                        }
+                    }
+                    catch (java.text.ParseException ex) {
+                        ((JFormattedTextField) evt.getSource()).setText(currentText);
+                        evt.consume();
+                    }
+                }
+            });
+            spinner.setEditor(editor);
+        }
+        
+        @Override
+        public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+            spinner.setValue(value);
+            return spinner;
+        }
+        
+        @Override
+        public Object getCellEditorValue() {
+            return spinner.getValue(); 
+        }
+        
+        private final JSpinner spinner;
         
     }
-    
-    
-    private class NumberFilter extends DocumentFilter {
-        
-        @Override
-        public void insertString(FilterBypass bypass, int offset, String string, AttributeSet attributes) throws BadLocationException {
-            bypass.insertString(offset, replace(string), attributes);
-        }
-
-        @Override
-        public void replace(FilterBypass bypass, int offset, int length, String string, AttributeSet attributes) throws BadLocationException {
-            bypass.replace(offset, length, replace(string), attributes);
-        }
-        
-        private String replace(String newString) {
-            try {
-                /*float value = */Float.parseFloat(newString);
-                actual = newString;
-            }
-            catch (NumberFormatException ex) {
-                if (newString.indexOf('.') == newString.length() - 1) {
-                    actual = newString;
-                }
-            }
-            return actual;
-        }
-        
-        private String actual = "";
-        
-    }    
     
     
     private class TableListener implements Table.Listener {
 
         @Override
-        public void created(Table table) {
+        public void propertyChanged(Table table, Table.Property property) {
             if (table == TablePanel.this.table) {
+                switch (property) {
+                    case INDEX:
+                        indexChanged();
+                        break;
+                    case VALUE:
+                        valueChanged(table.getRowIndex(), table.getColumnIndex());
+                        break;
+                    default:
+                        initializationPropertyChanged(property);
+                        break;
+                }
+            }
+        }
+        
+        private void initializationPropertyChanged(Table.Property property) {
+            uninitializedProperties.remove(property);
+            if (uninitializedProperties.isEmpty()) {
+                numberFormat.setMinimumFractionDigits(table.getDecimals());
+                grid.setDefaultEditor(Object.class, new CellEditor());
                 model.fireTableStructureChanged();
             }
         }
         
-        @Override
-        public void modified(Table table) {
+        private void indexChanged() {
             int rowIndex = table.getRowIndex();
             int columnIndex = table.getColumnIndex();
             if (rowIndex != activeRow || columnIndex != activeColumn) {
-                fireTableCellUpdated(activeRow, activeColumn);
-                fireTableCellUpdated(rowIndex, columnIndex);
+                valueChanged(activeRow, activeColumn);
+                valueChanged(rowIndex, columnIndex);
             }
             if (followActiveCell) {
                 Rectangle rectangle = grid.getCellRect(table.getRowIndex(), table.getColumnIndex(), true);
@@ -236,16 +318,19 @@ public class TablePanel extends JPanel {
             }
         }
         
-        @Override
-        public void modified(Table table, int column, int row) {
-            fireTableCellUpdated(row, column);
-        }
-        
-        private void fireTableCellUpdated(int row, int column) {
+        private void valueChanged(int row, int column) {
             if (0 <= row && row < model.getRowCount() && 0 <= column && column < model.getColumnCount()) {
                 model.fireTableCellUpdated(row, column);
             }
         }
+        
+        private final Set<Table.Property> uninitializedProperties = EnumSet.of(
+            Table.Property.FIELDS,
+            Table.Property.MINIMUM,
+            Table.Property.MAXIMUM,
+            Table.Property.DECIMALS,
+            Table.Property.COLUMN_MEASUREMENT,
+            Table.Property.ROW_MEASUREMENT);
         
     }
 

@@ -18,6 +18,7 @@ public class Measurement {
     
     
     public static Measurement getInstance(String name) {
+        assert name != null;
         Measurement instance = instances.get(name);
         if (instance == null) {
             instance = new Measurement(name);
@@ -30,9 +31,29 @@ public class Measurement {
     public String getName() {
         return name;
     }
+
+    
+    public float getMinimum() {
+        return minimum;
+    }
     
     
-    public Double getValue() {
+    public void setMinimum(float minimum) {
+        this.minimum = minimum;
+    }
+    
+    
+    public float getMaximum() {
+        return maximum;
+    }
+
+    
+    public void setMaximum(float maximum) {
+        this.maximum = maximum;
+    }
+    
+    
+    public Float getValue() {
         return value;
     }
 
@@ -55,7 +76,7 @@ public class Measurement {
     }
 
     
-    public void setSimulationValue(double simulationValue) {
+    public void setSimulationValue(float simulationValue) {
         this.simulationValue = simulationValue;
         for (Listener listener : listeners) {
             listener.simulationUpdated();
@@ -63,7 +84,7 @@ public class Measurement {
     }
     
     
-    public void setValue(Double value) {
+    public void setValue(Float value) {
         this.value = value;    
         for (Listener listener : listeners) {
             listener.valueUpdated();
@@ -89,10 +110,14 @@ public class Measurement {
 
     
     private final String name;
-    private Double value = null;
+    
+    private float minimum = 0.0f;
+    private float maximum = 100.0f;
+    
+    private Float value = null;
     
     private boolean simulationEnabled = false;
-    private double simulationValue = 0.0;
+    private float simulationValue = 0.0f;
 
     private final ArrayList<Listener> listeners = new ArrayList<>();
     

@@ -22,7 +22,7 @@ public class MemoryPanel extends javax.swing.JPanel {
         this.listener = listener;
         initComponents();
         RowHeaders headers = new RowHeaders();
-        headers.initialize(tableModel, tableScrollPane);
+        headers.initialize(tableModel, tableScrollPane, memoryTable.getRowHeight());
         memoryTable.setDefaultRenderer(Object.class, new CellRenderer());
         elementList.addListSelectionListener(new ElementListSelectionListener());
     }

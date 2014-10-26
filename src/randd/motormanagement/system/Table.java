@@ -8,12 +8,22 @@ import java.util.*;
 
 
 public class Table {
+    
+    
+    public enum Property {
+        FIELDS,
+        DECIMALS,
+        MINIMUM,
+        MAXIMUM,
+        COLUMN_MEASUREMENT,
+        ROW_MEASUREMENT,
+        INDEX,
+        VALUE
+    }
 
 
     public interface Listener {
-        public void created(Table table);
-        public void modified(Table table);
-        public void modified(Table table, int column, int row);
+        public void propertyChanged(Table table, Property property);
     }
     
     
@@ -30,21 +40,31 @@ public class Table {
     public void setFields(float[][] fields) {
         columnCount = 0;
         rowCount = 0;
-        this.fields = fields;
         if (fields != null) {
             rowCount = fields.length;
+            this.fields = new float[rowCount][];
+            columnCount = Integer.MAX_VALUE;
+            for (int row = 0; row < rowCount; ++row) {
+                columnCount = Math.min(columnCount, fields[row].length);
+            }
+            for (int row = 0; row < rowCount; ++row) {
+                this.fields[row] = new float[columnCount];
+                for (int column = 0; column < columnCount; ++ column) {
+                    this.fields[row][column] = fields[row][column];
+                }
+                
+            }
             if (rowCount > 0) {
                 columnCount = fields[0].length;
                 for (int row = 1; row < rowCount; ++row) {
                     columnCount = Math.min(columnCount, fields[row].length);
                 }
             }
-        }
-        synchronized (listeners) {
-            for (Listener listener : listeners) {
-                listener.created(this);
+            else {
+                this.fields = null;
             }
         }
+        notifyPropertyChanged(Property.FIELDS);
     }
     
     
@@ -56,7 +76,7 @@ public class Table {
     public void setField(int column, int row, float value) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
             fields[row][column] = value;
-            notifyModification(column, row);
+            notifyPropertyChanged(Property.VALUE);
         }
         else {
             throw new java.lang.IndexOutOfBoundsException();
@@ -82,7 +102,62 @@ public class Table {
     public void setName(String name) {
         this.name = name;
     }
+
     
+    public float getMinimum() {
+        return minimum;
+    }
+    
+    
+    public void setMinimum(float minimum) {
+        this.minimum = minimum;
+        notifyPropertyChanged(Property.MINIMUM);
+    }
+    
+    
+    public float getMaximum() {
+        return maximum;
+    }
+
+        
+    public void setMaximum(float maximum) {
+        this.maximum = maximum;
+        notifyPropertyChanged(Property.MAXIMUM);
+    }
+    
+    
+    public int getDecimals() {
+        return decimals;
+    }
+
+    
+    public void setDecimals(int decimals) {
+        this.decimals = decimals;
+        notifyPropertyChanged(Property.DECIMALS);
+    }
+    
+    
+    public Measurement getColumnMeasurement() {
+        return columnMeasurement;
+    }
+
+    
+    public void setColumnMeasurement(Measurement columnMeasurement) {
+        this.columnMeasurement = columnMeasurement;
+        notifyPropertyChanged(Property.COLUMN_MEASUREMENT);
+    }
+
+    
+    public Measurement getRowMeasurement() {
+        return rowMeasurement;
+    }
+
+
+    public void setRowMeasurement(Measurement rowMeasurement) {
+        this.rowMeasurement = rowMeasurement;
+        notifyPropertyChanged(Property.ROW_MEASUREMENT);
+    }
+
     
     public int getColumnCount() {
         return columnCount;
@@ -102,7 +177,7 @@ public class Table {
     public void setColumnIndex(int columnIndex) {
         if (this.columnIndex != columnIndex) {
             this.columnIndex = columnIndex;
-            notifyModification();
+            notifyPropertyChanged(Property.INDEX);
         }
     }
 
@@ -115,7 +190,7 @@ public class Table {
     public void setRowIndex(int rowIndex) {
         if (this.rowIndex != rowIndex) {
             this.rowIndex = rowIndex;
-            notifyModification();
+            notifyPropertyChanged(Property.INDEX);
         }
     }
     
@@ -134,22 +209,13 @@ public class Table {
             listeners.remove(listener);
         }
     }
-
     
-    private void notifyModification() {
+    
+    private void notifyPropertyChanged(Property property) {
         synchronized (listeners) {
             for (Listener listener : listeners) {
-                listener.modified(this);
-            }
-        }
-    }
-    
-    
-    private void notifyModification(int column, int row) {
-        synchronized (listeners) {
-            for (Listener listener : listeners) {
-                listener.modified(this, column, row);
-            }
+                listener.propertyChanged(this, property);
+            }        
         }
     }
     
@@ -169,7 +235,14 @@ public class Table {
     
     private int columnIndex = -1;
     private int rowIndex = -1;
+    
+    private Measurement columnMeasurement;
+    private Measurement rowMeasurement;
 
+    private float minimum = 0.0f;
+    private float maximum = 100.0f;
+    private int decimals = 0;
+    
     private float[][] fields = null;
     
     private final Collection<Listener> listeners = new ArrayList<>();
