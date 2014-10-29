@@ -88,11 +88,12 @@ public class MeasurementPanel extends javax.swing.JPanel {
     
     private void valueTextField_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextField_actionPerformed
         try {
-            double value = Double.parseDouble(valueTextField.getText());
+            java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
+            double value = numberFormat.parse(valueTextField.getText()).doubleValue();
             listener.simulationValueModified(measurement, value);
             valueTextField.setBackground(Color.WHITE);
         }
-        catch (NumberFormatException ex) {
+        catch (java.text.ParseException ex) {
             valueTextField.setBackground(Color.RED);
         }
     }//GEN-LAST:event_valueTextField_actionPerformed
@@ -101,8 +102,16 @@ public class MeasurementPanel extends javax.swing.JPanel {
     private class MeasurementListener implements Measurement.Listener {
 
         public void valueUpdated() {
-            if (! simulationToggleButton.isSelected() && measurement.getValue() != null) {
-                valueTextField.setText(Long.toString(measurement.getValue().longValue()));
+            Float value = measurement.getValue();
+            if (! simulationToggleButton.isSelected() && value != null) {
+                try {
+                    java.util.Formatter formatter = new java.util.Formatter();
+                    formatter.format(measurement.getFormat(), value);
+                    valueTextField.setText(formatter.toString());
+                }
+                catch (Exception ex) {
+                    valueTextField.setText(Long.toString(value.longValue()));
+                }
             }
         }
         

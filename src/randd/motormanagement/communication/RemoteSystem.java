@@ -166,10 +166,7 @@ public class RemoteSystem {
     private void updateMeasurement(JSONObject object) throws JSONException {
         Measurement measurement = Measurement.getInstance(object.optString(Messenger.SUBJECT));
         if (measurement != null) {
-            double value = object.optDouble(VALUE);
-            if (value != Double.NaN) {
-                measurement.setValue((float) value);
-            }
+            measurement.setFormat(object.getString(FORMAT));
             double minimum = object.optDouble(MINIMUM);
             if (minimum != Double.NaN) {
                 measurement.setMinimum((float) minimum);
@@ -177,6 +174,10 @@ public class RemoteSystem {
             double maximum = object.optDouble(MAXIMUM);
             if (maximum != Double.NaN) {
                 measurement.setMaximum((float) maximum);
+            }
+            double value = object.optDouble(VALUE);
+            if (value != Double.NaN) {
+                measurement.setValue((float) value);
             }
         }
     }
@@ -360,6 +361,7 @@ public class RemoteSystem {
     private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurement";
     private static final String ROW_MEASUREMENT_NAME = "RowMeasurement";
     
+    private static final String FORMAT = "Format";
     private static final String MINIMUM = "Minimum";
     private static final String MAXIMUM = "Maximum";
     

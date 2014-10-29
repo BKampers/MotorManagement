@@ -33,6 +33,16 @@ public class Measurement {
     }
 
     
+    public String getFormat() {
+        return format;
+    }
+
+    
+    public void setFormat(String format) {
+        this.format = format;
+    }
+
+    
     public float getMinimum() {
         return minimum;
     }
@@ -57,6 +67,14 @@ public class Measurement {
         return value;
     }
 
+    
+    public void setValue(Float value) {
+        this.value = value;    
+        for (Listener listener : listeners) {
+            listener.valueUpdated();
+        }
+    }
+    
     
     public boolean isSimulationEnabled() {
         return simulationEnabled;
@@ -84,14 +102,6 @@ public class Measurement {
     }
     
     
-    public void setValue(Float value) {
-        this.value = value;    
-        for (Listener listener : listeners) {
-            listener.valueUpdated();
-        }
-    }
-    
-    
     public void addListener(Listener listener) {
         if (! listeners.contains(listener)) {
             listeners.add(listener);
@@ -114,7 +124,9 @@ public class Measurement {
     private float minimum = 0.0f;
     private float maximum = 100.0f;
     
-    private Float value = null;
+    private Float value;
+    
+    private String format;
     
     private boolean simulationEnabled = false;
     private float simulationValue = 0.0f;
