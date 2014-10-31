@@ -5,6 +5,8 @@
 package randd.motormanagement.communication;
 
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.*;
 
 
@@ -22,7 +24,8 @@ class Messenger {
 
     
     Messenger(SerialPort serialPort) {
-        this.serialPort = serialPort;        
+        this.serialPort = serialPort;
+        LOGGER.info(Messenger.class.getName());
     }
     
     
@@ -71,7 +74,7 @@ class Messenger {
                 while (running && serialPort != null) {
                     JSONObject receivedObject = serialPort.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        //TODO: log incomming message System.out.println("<< " + receivedObject);
+                        LOGGER.log(Level.INFO, "<< {0}", receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -128,7 +131,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        // TODO: log outgoing message System.out.println(">> " + transaction.message.toString());
+                        LOGGER.log(Level.INFO, ">> {0}", transaction.message.toString());
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);
@@ -210,6 +213,8 @@ class Messenger {
     
     private final Outstanding outstanding = new Outstanding();
 
+    private static final Logger LOGGER = Logger.getLogger(Messenger.class.getName());
+    
     private static final long MAXIMUM_RESPONSE_TIME = 2500; // ms
 
 }
