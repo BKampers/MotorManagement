@@ -9,11 +9,8 @@ import java.util.logging.*;
 public class Manager {
 
     static public void setup() throws java.io.IOException {
-
-        // get the global logger to configure it
         Logger logger = Logger.getLogger("randd");
 
-        // suppress the logging output to the console
         Logger rootLogger = Logger.getLogger("");
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
@@ -22,25 +19,10 @@ public class Manager {
         }
         
         logger.setLevel(Level.INFO);
-        fileTxt = new FileHandler("Logging.txt");
-//        consoleHandler = new ConsoleHandler();
-//        consoleHandler.setFormatter(new MyFormatter());
-//        logger.addHandler(consoleHandler);
-//        fileHTML = new FileHandler("Logging.html");
-
-        // create a TXT formatter
-        formatterTxt = new SimpleFormatter();
-        fileTxt.setFormatter(formatterTxt);
-        logger.addHandler(fileTxt);
-        
-
-//        MyFormatter formatter = new MyFormatter();
-//        consoleHandler.setFormatter(formatter);
-//        logger.addHandler(consoleHandler);
-        // create an HTML formatter
-        //      formatterHTML = new MyHtmlFormatter();
-        //      fileHTML.setFormatter(formatterHTML);
-        //      logger.addHandler(fileHTML);
+        fileHandler = new FileHandler("Logging.log");
+        formatter = new SimpleFormatter();
+        fileHandler.setFormatter(formatter);
+        logger.addHandler(fileHandler);
     }
 
     
@@ -57,10 +39,7 @@ public class Manager {
     }
     
 
-    static private FileHandler fileTxt;
-    static private SimpleFormatter formatterTxt;
-
-//    static private FileHandler fileHTML;
-//    static private Formatter formatterHTML;
+    static private FileHandler fileHandler;
+    static private SimpleFormatter formatter;
 
 }
