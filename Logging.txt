@@ -1,0 +1,536 @@
+nov 01, 2014 12:12:28 AM randd.motormanagement.communication.Messenger <init>
+INFO: randd.motormanagement.communication.Messenger
+nov 01, 2014 12:12:28 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Table"]}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Maximum":59,"ColumnMeasurement":"Load","Minimum":0,"Response":"Request","Table":[[25,0,0,0,0,0,0,0,10,20,59,0,0,0,0,0,0,0,0,0],[23,0,0,23,0,0,0,0,0,20,15,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,12,0,0,0,0,0,0,0,0,0,0,0,12,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,10,0,0,0,0,0,0,0,0,0],[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]],"Decimals":0,"RowMeasurement":"RPM"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.10989,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.572647,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.799755,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":53.479855,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":20.989012,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.946278,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.32967,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.768009,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.572647,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":20.996338,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.750916,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:29 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.914532,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":48.522591,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.755798,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.750916,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.183151,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":53.577534,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.010988,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.873016,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.694752,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.84127,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.877899,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":56.141636,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.695972,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.768009,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.946278,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.865692,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.84127,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.572647,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.702076,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.865692,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":48.498169,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.633698,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:30 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":20.989012,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.799755,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.10989,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.816849,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.02564,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.897438,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":48.327229,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.633698,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.775337,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.15873,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.816849,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.946278,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.231991,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.84127,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.633698,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.010988,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.750916,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.15873,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.755798,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":20.989012,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.921856,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.183151,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.792431,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:31 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.572647,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":20.989012,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.750916,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.84127,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":53.455433,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.775337,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":50.256413,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":53.479855,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.572647,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":56.141636,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.84127,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.768009,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.511597,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.010988,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":56.068378,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Subject":"Ignition","Row":0,"Response":"Request","Column":10}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"RPM","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%5d","Value":0,"Subject":"RPM","Maximum":10000,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Load","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.816849,"Subject":"Load","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Water","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":49.816849,"Subject":"Water","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Air","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":199.694748,"Subject":"Air","Maximum":200,"Minimum":-50,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Battery","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%2.1f","Value":21.003664,"Subject":"Battery","Maximum":30,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Map","Message":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$ReceiveTask run
+INFO: << {"Status":"OK","Format":"%3.1f","Value":55.921856,"Subject":"Map","Maximum":100,"Minimum":0,"Response":"Request"}
+nov 01, 2014 12:12:32 AM randd.motormanagement.communication.Messenger$TransactionTask run
+INFO: >> {"Subject":"Ignition","Message":"Request","Properties":["Index"]}
