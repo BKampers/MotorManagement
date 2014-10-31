@@ -1,6 +1,8 @@
 nbproject/private
 build
 
+*.log
+*.lck
 *.class
 
 # Mobile Tools for Java (J2ME)
