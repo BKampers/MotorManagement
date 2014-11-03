@@ -25,7 +25,7 @@ class Messenger {
     
     Messenger(SerialPort serialPort) {
         this.serialPort = serialPort;
-        LOGGER.info(Messenger.class.getName());
+        logger = Logger.getLogger(Messenger.class.getName() + '.' + serialPort.getName());
     }
     
     
@@ -74,7 +74,7 @@ class Messenger {
                 while (running && serialPort != null) {
                     JSONObject receivedObject = serialPort.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        LOGGER.log(Level.INFO, "<< {0}", receivedObject);
+                        logger.log(Level.INFO, "<< {0}", receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -131,7 +131,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        LOGGER.log(Level.INFO, ">> {0}", transaction.message.toString());
+                        logger.log(Level.INFO, ">> {0}", transaction.message.toString());
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);
@@ -213,7 +213,7 @@ class Messenger {
     
     private final Outstanding outstanding = new Outstanding();
 
-    private static final Logger LOGGER = Logger.getLogger(Messenger.class.getName());
+    private final Logger logger;
     
     private static final long MAXIMUM_RESPONSE_TIME = 2500; // ms
 

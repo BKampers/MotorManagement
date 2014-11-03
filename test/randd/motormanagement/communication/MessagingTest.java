@@ -155,7 +155,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=500)
+    @Test(timeout=750)
     public void requestTable() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Request", "Ignition");
         JSONArray properties = new JSONArray();
