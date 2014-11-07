@@ -1,5 +1,8 @@
 nbproject/private
 build
+nbproject/project.properties
+dist/README.TXT
+properties
 
 *.log
 *.lck
@@ -74,3 +77,12 @@ nbproject/project.properties
 
 properties
 nbproject/private/private.xml
+
+dist/README.TXT
+<<<<<<< HEAD
+=======
+
+nbproject/project.properties
+
+properties
+>>>>>>> Logging
