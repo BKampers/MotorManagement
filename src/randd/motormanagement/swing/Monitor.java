@@ -83,14 +83,14 @@ public class Monitor extends bka.swing.FrameApplication {
     
     @Override
     protected void opened() {
-        detectComPorts();
-        String channelName = getProperty(SELECTED_CHANNEL);
+        populateChannelComboBox();
+        String channelName = getProperty(SELECTED_CHANNEL_PROPERTY);
         if (channelName != null) {
             int i = 0;
-            while (selectedChannel == null && i < comPortComboBox.getItemCount()) {
-                Object comboBoxItem = comPortComboBox.getItemAt(i);
+            while (selectedChannel == null && i < channelComboBox.getItemCount()) {
+                Object comboBoxItem = channelComboBox.getItemAt(i);
                 if (comboBoxItem.toString().equals(channelName)) {
-                    comPortComboBox.setSelectedItem(comboBoxItem);
+                    channelComboBox.setSelectedItem(comboBoxItem);
                 }
                 i++;
             }
@@ -144,7 +144,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private void initComponents() {
 
         toolsPanel = new javax.swing.JPanel();
-        comPortComboBox = new javax.swing.JComboBox();
+        channelComboBox = new javax.swing.JComboBox();
         tabsPanel = new javax.swing.JTabbedPane();
         valuesPanel = new javax.swing.JPanel();
         settingsPanel = new javax.swing.JPanel();
@@ -155,14 +155,14 @@ public class Monitor extends bka.swing.FrameApplication {
 
         toolsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        comPortComboBox.setMinimumSize(new java.awt.Dimension(75, 20));
-        comPortComboBox.setPreferredSize(new java.awt.Dimension(75, 20));
-        comPortComboBox.addActionListener(new java.awt.event.ActionListener() {
+        channelComboBox.setMinimumSize(new java.awt.Dimension(75, 20));
+        channelComboBox.setPreferredSize(new java.awt.Dimension(100, 20));
+        channelComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comPortComboBox_actionPerformed(evt);
+                channelComboBox_actionPerformed(evt);
             }
         });
-        toolsPanel.add(comPortComboBox);
+        toolsPanel.add(channelComboBox);
 
         getContentPane().add(toolsPanel, java.awt.BorderLayout.NORTH);
         getContentPane().add(tabsPanel, java.awt.BorderLayout.CENTER);
@@ -175,43 +175,49 @@ public class Monitor extends bka.swing.FrameApplication {
     }// </editor-fold>//GEN-END:initComponents
 
     
-    private void comPortComboBox_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comPortComboBox_actionPerformed
-        Object selectedItem = comPortComboBox.getSelectedItem();
+    private void channelComboBox_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_channelComboBox_actionPerformed
+        Object selectedItem = channelComboBox.getSelectedItem();
         if (selectedItem == NO_SELECTION) {
             disconnect();
         }
         else if (selectedItem != selectedChannel) {
-            connect((SerialPortChannel) selectedItem);
+            connect((Channel) selectedItem);
         }
-    }//GEN-LAST:event_comPortComboBox_actionPerformed
+    }//GEN-LAST:event_channelComboBox_actionPerformed
 
 
-    private void detectComPorts() {
-        comPortComboBox.removeAllItems();
-        comPortComboBox.addItem(NO_SELECTION);
+    private void populateChannelComboBox() {
+        channelComboBox.removeAllItems();
+        channelComboBox.addItem(NO_SELECTION);
         for (SerialPortChannel channel : SerialPortChannel.findAll()) {
-            comPortComboBox.addItem(channel);
+            channelComboBox.addItem(channel);
         }
+        channelComboBox.addItem(SocketChannel.create("127.0.0.1", 44252));
     }
     
     
     private void disconnect() {
-        if (remoteSystem != null) {
-            remoteSystem.disconnect();
-            remoteSystem = null;
-            selectedChannel = null;
-            setProperty(SELECTED_CHANNEL, null);
+        try {
+            if (remoteSystem != null) {
+                remoteSystem.disconnect();
+                remoteSystem = null;
+                selectedChannel = null;
+                setProperty(SELECTED_CHANNEL_PROPERTY, null);
+            }
+        }
+        catch (ChannelException ex) {
+            handle(ex);
         }
     }
 
     
-    private void connect(SerialPortChannel selectedItem) {
+    private void connect(Channel selectedItem) {
         selectedChannel = selectedItem;
         try {
-            SerialPort port = new SerialPort(selectedItem, title());
-            remoteSystem = new RemoteSystem(port);
+            JsonChannel channel = new JsonChannel(selectedItem, title());
+            remoteSystem = new RemoteSystem(channel);
             remoteSystem.connect();
-            setProperty(SELECTED_CHANNEL, port.getName());
+            setProperty(SELECTED_CHANNEL_PROPERTY, channel.getName());
             memoryPanel.setMemory(flash);
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
@@ -354,13 +360,13 @@ public class Monitor extends bka.swing.FrameApplication {
 
     
     private RemoteSystem remoteSystem = null;
-    private SerialPortChannel selectedChannel = null;
+    private Channel selectedChannel = null;
     
     private final Flash flash = new Flash();
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox comPortComboBox;
+    private javax.swing.JComboBox channelComboBox;
     private javax.swing.JPanel settingsPanel;
     private javax.swing.JTabbedPane tabsPanel;
     private javax.swing.JPanel toolsPanel;
@@ -371,9 +377,9 @@ public class Monitor extends bka.swing.FrameApplication {
     java.awt.Component selectedTab = null;
     
     private final MeasurementPanelListener measurementPanelLsitener = new MeasurementPanelListener();
-
+    
     private static final String NO_SELECTION = "-";
 
-    private static final String SELECTED_CHANNEL = "SelectedChannel";
+    private static final String SELECTED_CHANNEL_PROPERTY = "SelectedChannel";
 
 }

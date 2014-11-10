@@ -22,19 +22,19 @@ public class RemoteSystem {
     }
     
     
-    public RemoteSystem(SerialPort serialPort) {
-        assert(serialPort != null);
-        messenger = new Messenger(serialPort);
+    public RemoteSystem(JsonChannel channel) {
+        assert(channel != null);
+        messenger = new Messenger(channel);
         messenger.setListener(new MessengerListener());
     }
     
     
-    public void connect()throws bka.communication.ChannelException  {
+    public void connect() throws bka.communication.ChannelException  {
         messenger.open();
     }
     
     
-    public void disconnect() {
+    public void disconnect() throws bka.communication.ChannelException {
         stopPolling();
         messenger.close();
     }

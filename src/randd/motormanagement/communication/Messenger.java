@@ -23,9 +23,11 @@ class Messenger {
     static final String SUBJECT  = "Subject";
 
     
-    Messenger(SerialPort serialPort) {
-        this.serialPort = serialPort;
-        LOGGER.info(Messenger.class.getName());
+    Messenger(JsonChannel channel) {
+        this.channel = channel;
+        String channelName = channel.getName().replaceAll("\\.", "-");
+        logger = Logger.getLogger(Messenger.class.getName() + "." + channelName);
+        logger.info(Messenger.class.getName());
     }
     
     
@@ -35,7 +37,7 @@ class Messenger {
     
 
     void open() throws bka.communication.ChannelException {
-        serialPort.open();
+        channel.open();
         Thread receiveThread = new Thread(receiveTask);
         Thread transactionThread = new Thread(transactionTask);
         receiveThread.start();
@@ -43,10 +45,10 @@ class Messenger {
     }
     
     
-    void close() {
+    void close() throws bka.communication.ChannelException {
         transactionTask.stop();
         receiveTask.stop();
-        serialPort.close();
+        channel.close();
     }
     
     
@@ -71,10 +73,10 @@ class Messenger {
         
         public void run() {
             try {
-                while (running && serialPort != null) {
-                    JSONObject receivedObject = serialPort.nextReceivedObject();
+                while (running && channel != null) {
+                    JSONObject receivedObject = channel.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        LOGGER.log(Level.INFO, "<< {0}", receivedObject);
+                        logger.log(Level.INFO, "<< {0}", receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -131,7 +133,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        LOGGER.log(Level.INFO, ">> {0}", transaction.message.toString());
+                        logger.log(Level.INFO, ">> {0}", transaction.message.toString());
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);
@@ -153,7 +155,7 @@ class Messenger {
             try {
                 synchronized (outstanding) {
                     outstanding.transaction = transaction;
-                    serialPort.send(transaction.message);
+                    channel.send(transaction.message);
                     outstanding.wait(MAXIMUM_RESPONSE_TIME);
                 }
             }
@@ -203,7 +205,7 @@ class Messenger {
     }
     
     
-    private final SerialPort serialPort;
+    private final JsonChannel channel;
 
     private Listener listener = null;
     
@@ -213,7 +215,7 @@ class Messenger {
     
     private final Outstanding outstanding = new Outstanding();
 
-    private static final Logger LOGGER = Logger.getLogger(Messenger.class.getName());
+    private static Logger logger;
     
     private static final long MAXIMUM_RESPONSE_TIME = 2500; // ms
 

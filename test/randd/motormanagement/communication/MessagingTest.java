@@ -4,7 +4,7 @@
 
 package randd.motormanagement.communication;
 
-import bka.communication.SerialPortChannel;
+import bka.communication.*;
 
 import org.json.*;
 
@@ -18,24 +18,24 @@ public class MessagingTest {
     
     
     @BeforeClass
-    public static void openPort() throws javax.comm.NoSuchPortException, bka.communication.ChannelException {
+    public static void openPort() throws ChannelException {
         /** 
          * Windows allows to open a serial port only once per application,
          * so it needs to be a static member to be used for all tests.
          */
-        if (serialPort == null) {
-            SerialPortChannel channel = SerialPortChannel.create(PORT_NAME); 
-            serialPort = new SerialPort(channel, "MessagingTest");
-            serialPort.open();
+        if (jsonChannel == null) {
+            SocketChannel channel = SocketChannel.create("127.0.0.1", 44252); 
+            jsonChannel = new JsonChannel(channel, "MessagingTest");
+            jsonChannel.open();
         }
     }
     
     
     @AfterClass
-    public static void closePort() {
-        if (serialPort != null) {
-            serialPort.close();
-            serialPort = null;
+    public static void closePort() throws ChannelException {
+        if (jsonChannel != null) {
+            jsonChannel.close();
+            jsonChannel = null;
         }
     }
     
@@ -183,12 +183,12 @@ public class MessagingTest {
   
     
     private JSONObject receiveResponse(JSONObject messageObject) throws InterruptedException {
-        serialPort.send(messageObject);
-        return serialPort.nextReceivedObject();
+        jsonChannel.send(messageObject);
+        return jsonChannel.nextReceivedObject();
     }
 
 
-    private static SerialPort serialPort = null;
+    private static JsonChannel jsonChannel = null;
     
     private static final String PORT_NAME = "COM5";
      

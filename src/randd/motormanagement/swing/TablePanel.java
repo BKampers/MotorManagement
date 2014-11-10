@@ -35,7 +35,7 @@ public class TablePanel extends JPanel {
         columnHeader.setEnabled(false);
         RowHeaders rowHeaders = new RowHeaders();
         rowHeaders.initialize(model, scrollPane, grid.getRowHeight());
-        rowHeaders.setAlignment(JLabel.RIGHT, JLabel.BOTTOM);
+        rowHeaders.setAlignment(JLabel.RIGHT, JLabel.TOP);
 
         grid.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
@@ -105,7 +105,7 @@ public class TablePanel extends JPanel {
             Measurement columnMeasurement = table.getColumnMeasurement();
             if (columnMeasurement != null) {
                 float stepSize = (columnMeasurement.getMaximum() - columnMeasurement.getMinimum()) / table.getColumnCount();
-                return Integer.toString((int) (columnMeasurement.getMinimum() + (column + 1) * stepSize));
+                return Integer.toString((int) (columnMeasurement.getMinimum() + column * stepSize));
             }
             else {
                 return Integer.toString(column + 1);
@@ -138,7 +138,7 @@ public class TablePanel extends JPanel {
 
         ColumnHeaderRenderer(JTable table) {
             renderer = (DefaultTableCellRenderer) table.getTableHeader().getDefaultRenderer();
-            renderer.setHorizontalAlignment(JLabel.RIGHT);
+            renderer.setHorizontalAlignment(JLabel.LEFT);
         }
 
         @Override
@@ -163,7 +163,7 @@ public class TablePanel extends JPanel {
             Measurement rowMeasurement = table.getRowMeasurement();
             if (rowMeasurement != null) {
                 float stepSize = (rowMeasurement.getMaximum() - rowMeasurement.getMinimum()) / table.getRowCount();
-                return Integer.toString((int) (rowMeasurement.getMinimum() + (row + 1) * stepSize));
+                return Integer.toString((int) (rowMeasurement.getMinimum() + row * stepSize));
             }
             else {
                 return Integer.toString(row + 1);

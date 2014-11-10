@@ -6,15 +6,14 @@ package randd.motormanagement.communication;
 
 
 import bka.communication.*;
-import java.util.*;
 import java.util.concurrent.*;
 import org.json.*;
 
 
-public class SerialPort {
+public class JsonChannel {
 
     
-    public SerialPort(SerialPortChannel channel, String applicationName) {
+    public JsonChannel(Channel channel, String applicationName) {
         this.channel = channel;
         this.applicationName = applicationName;
     }
@@ -25,32 +24,20 @@ public class SerialPort {
     }
     
     
-//    public static Collection<SerialPortChannel> findAll() {
-//        Collection<SerialPortChannel> ports = new ArrayList<>();
-//        Collection channels = SerialPortChannel.findAll();
-//        Iterator en = channels.iterator();
-//        while (en.hasNext()) {
-//            Channel channel = (Channel) en.next();
-//            if (channel instanceof SerialPortChannel) {
-//                ports.add((SerialPortChannel) channel);
-//            }
-//        }
-//        return ports;
-//    }
-    
-    
     void open() throws ChannelException {
         channel.open(applicationName);
-        channel.setBaud(115200);
-        channelListener = new JsonChannelListener();
-        channel.addListener(channelListener);
+        if (channel instanceof SerialPortChannel) {
+            ((SerialPortChannel) channel).setBaud(115200);
+        }
+        objectReceiver = new ObjectReceiver();
+        channel.addListener(objectReceiver);
     }
     
     
-    void close() {
+    void close() throws ChannelException {
         receivedObjects.add(new JSONObject()); // deblock thread waiting in nextReceivedObject
-        channel.removeListener(channelListener);
-        channelListener = null;
+        channel.removeListener(objectReceiver);
+        objectReceiver = null;
         channel.close();
     }
     
@@ -65,7 +52,7 @@ public class SerialPort {
     }
     
     
-    private class JsonChannelListener implements ChannelListener {
+    private class ObjectReceiver implements ChannelListener {
 
         public void receive(byte[] bytes) {
             for (int i = 0; i < bytes.length; ++i) {
@@ -101,10 +88,10 @@ public class SerialPort {
     }
     
     
-    private final SerialPortChannel channel;
+    private final Channel channel;
     private final String applicationName;
 
-    private ChannelListener channelListener = null;
+    private ChannelListener objectReceiver = null;
     
     private final BlockingQueue<JSONObject> receivedObjects = new LinkedBlockingQueue<>();
    

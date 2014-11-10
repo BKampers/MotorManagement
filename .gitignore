@@ -1,8 +1,17 @@
+<<<<<<< HEAD
 #NetBeans
 nbproject/private/private.properties
 nbproject/private/private.xml
 build
 dist
+=======
+nbproject/private
+nbproject/project.properties
+
+build
+dist/README.TXT
+properties
+>>>>>>> socket-communication
 
 #Local
 properties
@@ -68,5 +77,8 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> socket-communication
