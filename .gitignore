@@ -1,9 +1,11 @@
-nbproject/private
+#NetBeans
+nbproject/private/private.properties
+nbproject/private/private.xml
 build
-nbproject/project.properties
-dist/README.TXT
-properties
+dist
 
+#Local
+properties
 *.log
 *.lck
 *.class
@@ -66,23 +68,5 @@ $RECYCLE.BIN/
 *.msi
 *.msm
 *.msp
-nbproject/private/private.xml
-build/built-jar.properties
-build/built-jar.properties
-build/built-jar.properties
-build/test/results/TEST-randd.motormanagement.communication.MessagingTest.xml
-nbproject/private/private.xml
 
-nbproject/project.properties
 
-properties
-nbproject/private/private.xml
-
-dist/README.TXT
-<<<<<<< HEAD
-=======
-
-nbproject/project.properties
-
-properties
->>>>>>> Logging
