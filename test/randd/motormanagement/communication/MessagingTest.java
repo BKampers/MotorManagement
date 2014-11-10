@@ -18,13 +18,13 @@ public class MessagingTest {
     
     
     @BeforeClass
-    public static void openPort() throws ChannelException {
+    public static void openPort() throws ChannelException, javax.comm.NoSuchPortException {
         /** 
          * Windows allows to open a serial port only once per application,
          * so it needs to be a static member to be used for all tests.
          */
         if (jsonChannel == null) {
-            SocketChannel channel = SocketChannel.create("127.0.0.1", 44252); 
+            Channel channel = createChannel(); 
             jsonChannel = new JsonChannel(channel, "MessagingTest");
             jsonChannel.open();
         }
@@ -186,10 +186,27 @@ public class MessagingTest {
         jsonChannel.send(messageObject);
         return jsonChannel.nextReceivedObject();
     }
+    
+    
+    private static Channel createChannel() throws javax.comm.NoSuchPortException {
+        String channelName;
+        try {
+            java.util.Properties properties = new java.util.Properties();
+            properties.load(new java.io.FileInputStream(new java.io.File("MessagingTest.properties")));
+            channelName = properties.getProperty("Channel");
+        }
+        catch (java.io.IOException ex) {
+            channelName = "127.0.0.1";
+        }
+        if (channelName.startsWith("COM")) {
+            return SerialPortChannel.create(channelName);
+        }
+        else {
+            return SocketChannel.create(channelName, 44252);
+        }
+    }
 
 
     private static JsonChannel jsonChannel = null;
-    
-    private static final String PORT_NAME = "COM5";
      
 }
