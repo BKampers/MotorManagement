@@ -9,6 +9,7 @@
 package randd.motormanagement.swing;
 
 import bka.communication.*;
+import java.util.*;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeEvent;
 import randd.motormanagement.communication.*;
@@ -67,7 +68,7 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         });
     }
-    
+
     
     @Override
     public String manufacturerName() {
@@ -84,7 +85,7 @@ public class Monitor extends bka.swing.FrameApplication {
     @Override
     protected void opened() {
         populateChannelComboBox();
-        String channelName = getProperty(SELECTED_CHANNEL_PROPERTY);
+        String channelName = getProperty(SELECTED_CHANNEL);
         if (channelName != null) {
             int i = 0;
             while (selectedChannel == null && i < channelComboBox.getItemCount()) {
@@ -155,6 +156,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
         toolsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
+        channelComboBox.setEditable(true);
         channelComboBox.setMinimumSize(new java.awt.Dimension(75, 20));
         channelComboBox.setPreferredSize(new java.awt.Dimension(100, 20));
         channelComboBox.addActionListener(new java.awt.event.ActionListener() {
@@ -180,8 +182,24 @@ public class Monitor extends bka.swing.FrameApplication {
         if (selectedItem == NO_SELECTION) {
             disconnect();
         }
-        else if (selectedItem != selectedChannel) {
-            connect((Channel) selectedItem);
+        else {
+            if (! (selectedItem instanceof Channel)) {
+                // Value typed
+                String host = selectedItem.toString();
+                Collection<String> hosts = (Collection<String>) getSetting(SOCKET_HOSTS);
+                if (hosts == null) {
+                    hosts = new ArrayList<>();
+                    setSetting(SOCKET_HOSTS, hosts);
+                }
+                if (! hosts.contains(host)) {
+                    hosts.add(host);
+                }            
+                selectedItem = SocketChannel.create(selectedItem.toString(), RANDD_MM_PORT);
+            }
+            if (selectedItem != selectedChannel) {
+                disconnect();
+                connect((Channel) selectedItem);
+            }
         }
     }//GEN-LAST:event_channelComboBox_actionPerformed
 
@@ -192,7 +210,9 @@ public class Monitor extends bka.swing.FrameApplication {
         for (SerialPortChannel channel : SerialPortChannel.findAll()) {
             channelComboBox.addItem(channel);
         }
-        channelComboBox.addItem(SocketChannel.create("127.0.0.1", 44252));
+        for (String host : (Collection<String>) getSetting(SOCKET_HOSTS)) {
+            channelComboBox.addItem(SocketChannel.create(host, RANDD_MM_PORT));
+        }
     }
     
     
@@ -202,7 +222,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 remoteSystem.disconnect();
                 remoteSystem = null;
                 selectedChannel = null;
-                setProperty(SELECTED_CHANNEL_PROPERTY, null);
+                setProperty(SELECTED_CHANNEL, null);
             }
         }
         catch (ChannelException ex) {
@@ -217,12 +237,11 @@ public class Monitor extends bka.swing.FrameApplication {
             JsonChannel channel = new JsonChannel(selectedItem, title());
             remoteSystem = new RemoteSystem(channel);
             remoteSystem.connect();
-            setProperty(SELECTED_CHANNEL_PROPERTY, channel.getName());
+            setProperty(SELECTED_CHANNEL, channel.getName());
             memoryPanel.setMemory(flash);
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
             remoteSystem.startPolling();
-            
         }
         catch (ChannelException ex) {
             handle(ex);
@@ -274,7 +293,7 @@ public class Monitor extends bka.swing.FrameApplication {
         }
     }
     
-    
+
     private class TabChangeListener implements javax.swing.event.ChangeListener {
 
         @Override
@@ -380,6 +399,9 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private static final String NO_SELECTION = "-";
 
-    private static final String SELECTED_CHANNEL_PROPERTY = "SelectedChannel";
+    private static final String SELECTED_CHANNEL = "SelectedChannel";
+    private static final String SOCKET_HOSTS = "SocketChannels";
 
+    private static final int RANDD_MM_PORT = 44252;
+    
 }
