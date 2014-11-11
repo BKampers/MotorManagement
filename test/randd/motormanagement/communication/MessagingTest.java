@@ -196,7 +196,7 @@ public class MessagingTest {
             channelName = properties.getProperty("Channel");
         }
         catch (java.io.IOException ex) {
-            channelName = "127.0.0.1";
+            channelName = "localhost";
         }
         if (channelName.startsWith("COM")) {
             return SerialPortChannel.create(channelName);
