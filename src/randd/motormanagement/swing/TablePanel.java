@@ -97,7 +97,7 @@ public class TablePanel extends JPanel {
 
         @Override
         public int getRowCount() {
-            return (table != null) ? table.getColumnCount() : 0;
+            return (table != null) ? table.getRowCount() : 0;
         }
         
         @Override
