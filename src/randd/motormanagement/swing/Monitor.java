@@ -210,8 +210,11 @@ public class Monitor extends bka.swing.FrameApplication {
         for (SerialPortChannel channel : SerialPortChannel.findAll()) {
             channelComboBox.addItem(channel);
         }
-        for (String host : (Collection<String>) getSetting(SOCKET_HOSTS)) {
-            channelComboBox.addItem(SocketChannel.create(host, RANDD_MM_PORT));
+        Collection<String> socketHosts = (Collection<String>) getSetting(SOCKET_HOSTS);
+        if (socketHosts != null) {
+            for (String host : socketHosts) {
+                channelComboBox.addItem(SocketChannel.create(host, RANDD_MM_PORT));
+            }
         }
     }
     
