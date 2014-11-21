@@ -155,6 +155,21 @@ public class MessagingTest {
     }
     
     
+    @Test(timeout=50)
+    public void requestMeasurementTables() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Request", "MeasurementTables");
+        JSONObject response = receiveResponse(message);
+        assertEquals("Request", response.opt("Response"));
+        assertEquals("MeasurementTables", response.opt("Subject"));
+        JSONArray names =  response.optJSONArray("Names");
+        assertNotNull(names);
+        assertTrue(names.length() > 0);
+        for (int i = 0; i < names.length(); ++i) {
+            assertNotNull(names.optString(i));
+        }
+    }
+    
+    
     @Test(timeout=750)
     public void requestTable() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Request", "Ignition");

@@ -124,8 +124,6 @@ public class Monitor extends bka.swing.FrameApplication {
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
-        addTable("Ignition");
-        addTable("Injection");
         addMemoryPanel();
         addStatusPanel();
     }
@@ -244,10 +242,23 @@ public class Monitor extends bka.swing.FrameApplication {
             memoryPanel.setMemory(flash);
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
+            populateTableTabs();
             remoteSystem.startPolling();
         }
         catch (ChannelException ex) {
             handle(ex);
+        }
+    }
+
+    private void populateTableTabs() {
+        try {
+            Collection<String> tableNames = remoteSystem.requestTableNames();
+            for (String name : tableNames) {
+                addTable(name);
+            }
+        }
+        catch (InterruptedException | org.json.JSONException ex) {
+            handle (ex);
         }
     }
     

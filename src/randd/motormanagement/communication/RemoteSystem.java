@@ -73,6 +73,22 @@ public class RemoteSystem {
     }
     
     
+    public Collection<String> requestTableNames() throws InterruptedException, JSONException {
+        ArrayList<String> names = new ArrayList<>();
+        JSONObject namesObject = request(MEASUREMENT_TABLES);
+        JSONArray namesArray = namesObject.optJSONArray(NAMES);
+        if (namesArray != null) {
+            for (int i = 0; i < namesArray.length(); ++i) {
+                String name = namesArray.optString(i);
+                if (name != null) {
+                    names.add(name);
+                }
+            }
+        }
+        return names;
+    }
+    
+    
     public void requestTable(Table table) throws InterruptedException, JSONException {
         final JSONArray TABLE_PROPERTY = new JSONArray(new String[] {TABLE});
         JSONObject tableObject = request(table.getName(), PROPERTIES, TABLE_PROPERTY);
@@ -214,7 +230,7 @@ public class RemoteSystem {
     
 
     private void updateFlash(Flash flash, JSONObject flashObject, JSONObject elementsObject) throws JSONException {
-        JSONArray  memoryArray = flashObject.getJSONArray(VALUE);
+        JSONArray memoryArray = flashObject.getJSONArray(VALUE);
         int length = memoryArray.length();
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; ++i) {
@@ -346,9 +362,12 @@ public class RemoteSystem {
     private static final String DECIMALS = "Decimals";
     private static final String INDEX = "Index";
     private static final String SIMULATION = "Simulation";
+    
+    private static final String MEASUREMENT_TABLES = "MeasurementTables";
     private static final String FLASH = "Flash";
     private static final String FLASH_ELEMENTS = "FlashElements";
     
+    private static final String NAMES = "Names";
     private static final String ELEMENTS = "Elements";
     private static final String COUNT = "Count";
     private static final String REFERENCE = "Reference";
