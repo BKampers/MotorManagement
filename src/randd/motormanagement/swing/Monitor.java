@@ -224,6 +224,9 @@ public class Monitor extends bka.swing.FrameApplication {
                 remoteSystem = null;
                 selectedChannel = null;
                 setProperty(SELECTED_CHANNEL, null);
+                while (tabsPanel.getTabCount() > 2) {
+                    tabsPanel.removeTabAt(tabsPanel.getTabCount() - 1);
+                }
             }
         }
         catch (ChannelException ex) {
@@ -258,7 +261,7 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
         catch (InterruptedException | org.json.JSONException ex) {
-            handle (ex);
+            handle(ex);
         }
     }
     
@@ -321,10 +324,12 @@ public class Monitor extends bka.swing.FrameApplication {
     private class MeasurementPanelListener implements MeasurementPanel.Listener {
 
         @Override
-        public void simulationEnabled(Measurement measurement, boolean enabled) {
+        public void simulationEnabled(MeasurementPanel panel, boolean enabled) {
+            Measurement measurement = panel.getMeasurement();
             try {
-                if (! enabled) {
-                    remoteSystem.enableMeasurementSimulation(measurement, enabled);
+                if (measurement.isSimulationEnabled() != enabled) {
+                    String result = remoteSystem.enableMeasurementSimulation(measurement, enabled);
+                    panel.notifyResult(Measurement.Property.SIMULATION_ENABLED, result);
                 }
             }
             catch (org.json.JSONException | InterruptedException ex) {
@@ -333,9 +338,10 @@ public class Monitor extends bka.swing.FrameApplication {
         }
 
         @Override
-        public void simulationValueModified(Measurement measurement, double value) {
+        public void simulationValueModified(MeasurementPanel panel, double value) {
             try {
-                remoteSystem.setMeasurementSimulationValue(measurement, value);
+                String result = remoteSystem.setMeasurementSimulationValue(panel.getMeasurement(), value);
+                panel.notifyResult(Measurement.Property.SIMULATION_VALUE, result);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);

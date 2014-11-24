@@ -14,6 +14,7 @@ public class Manager {
         Logger rootLogger = Logger.getLogger("");
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
+                handler.setFilter(logFilter);
                 handler.setFormatter(new ConsoleFormatter());
             }
         }
@@ -32,6 +33,7 @@ public class Manager {
         public String format(LogRecord record) {
             StringBuilder builder = new StringBuilder();
             builder.append(Long.toHexString(record.getMillis()));
+            builder.append(": ");
             builder.append(formatMessage(record));
             builder.append('\n');
             return builder.toString();
@@ -39,7 +41,20 @@ public class Manager {
     }
     
 
-    static private FileHandler fileHandler;
-    static private SimpleFormatter formatter;
+    private  static class LogFilter implements Filter {
+
+        @Override
+        public boolean isLoggable(LogRecord record) {
+            return record.getLoggerName().startsWith(randd.motormanagement.swing.MeasurementPanel.class.getName());
+        }
+
+        
+    }
+    
+    
+    private static final Filter logFilter = new LogFilter();
+    
+    private static FileHandler fileHandler;
+    private static SimpleFormatter formatter;
 
 }

@@ -105,7 +105,12 @@ public class RemoteSystem {
     
     
     public String enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
-        return modify(measurement.getName(), SIMULATION, enable);
+        if (enable) {
+            return modify(measurement.getName(), SIMULATION, true, VALUE, measurement.getValue());
+        }
+        else {
+            return modify(measurement.getName(), SIMULATION, false);            
+        }
     }
     
     
@@ -179,22 +184,24 @@ public class RemoteSystem {
     }
     
     
-    private void updateMeasurement(JSONObject object) throws JSONException {
-        Measurement measurement = Measurement.getInstance(object.optString(Messenger.SUBJECT));
+    private void updateMeasurement(JSONObject measurementObject) throws JSONException {
+        Measurement measurement = Measurement.getInstance(measurementObject.optString(Messenger.SUBJECT));
         if (measurement != null) {
-            measurement.setFormat(object.getString(FORMAT));
-            double minimum = object.optDouble(MINIMUM);
+            measurement.setFormat(measurementObject.getString(FORMAT));
+            double minimum = measurementObject.optDouble(MINIMUM);
             if (minimum != Double.NaN) {
                 measurement.setMinimum((float) minimum);
             }
-            double maximum = object.optDouble(MAXIMUM);
+            double maximum = measurementObject.optDouble(MAXIMUM);
             if (maximum != Double.NaN) {
                 measurement.setMaximum((float) maximum);
             }
-            double value = object.optDouble(VALUE);
+            double value = measurementObject.optDouble(VALUE);
             if (value != Double.NaN) {
                 measurement.setValue((float) value);
             }
+            boolean simulation = measurementObject.optBoolean(SIMULATION, false);
+            measurement.setSimulationEnabled(simulation);
         }
     }
     

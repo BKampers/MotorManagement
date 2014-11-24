@@ -6,22 +6,42 @@ package randd.motormanagement.swing;
 
 
 import java.awt.Color;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import randd.motormanagement.system.*;
 
 
 public class MeasurementPanel extends javax.swing.JPanel {
     
     
+    
     public interface Listener {
-        public void simulationEnabled(Measurement measurement, boolean enabled);
-        public void simulationValueModified(Measurement measurement, double value);
+        public void simulationEnabled(MeasurementPanel panel, boolean enabled);
+        public void simulationValueModified(MeasurementPanel panel, double value);
     }
     
     
     public MeasurementPanel(Measurement measurement, Listener listener) {
+        logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
         this.listener = listener;
         initComponents();
         setMeasurement(measurement);
+    }
+    
+    
+    Measurement getMeasurement() {
+        return measurement;
+    }
+    
+    
+    void notifyResult(Measurement.Property property, String result) {
+        logger.log(Level.INFO, "notifyResult {0} {1}", new Object[] { property, result });
+        switch (property) {
+            case SIMULATION_ENABLED:
+                simulationToggleButton.setEnabled(true);
+                enableSimulation(simulationToggleButton.isSelected());
+                break;
+        }
     }
     
     
@@ -80,9 +100,8 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
     
     private void simulationToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_simulationToggleButton_actionPerformed
-        boolean enabled = simulationToggleButton.isSelected();
-        valueTextField.setEnabled(enabled);
-        listener.simulationEnabled(measurement, enabled);
+        simulationToggleButton.setEnabled(false);
+        listener.simulationEnabled(this, simulationToggleButton.isSelected());
     }//GEN-LAST:event_simulationToggleButton_actionPerformed
 
     
@@ -90,7 +109,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
         try {
             java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
             double value = numberFormat.parse(valueTextField.getText()).doubleValue();
-            listener.simulationValueModified(measurement, value);
+            listener.simulationValueModified(this, value);
             valueTextField.setBackground(Color.WHITE);
         }
         catch (java.text.ParseException ex) {
@@ -99,10 +118,18 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_valueTextField_actionPerformed
 
     
+    private void enableSimulation(boolean enabled) {
+        logger.log(Level.INFO, "enableSimulation {0}", enabled);
+        simulationToggleButton.setSelected(enabled);
+        valueTextField.setEnabled(enabled);      
+    }
+    
+    
     private class MeasurementListener implements Measurement.Listener {
 
         public void valueUpdated() {
             Float value = measurement.getValue();
+            logger.log(Level.INFO, "valueUpdated {0}", Float.toString(value));
             if (! simulationToggleButton.isSelected() && value != null) {
                 try {
                     java.util.Formatter formatter = new java.util.Formatter();
@@ -116,6 +143,10 @@ public class MeasurementPanel extends javax.swing.JPanel {
         }
         
         public void simulationUpdated() {
+            logger.log(Level.INFO, "simulationUpdated {0}", measurement.isSimulationEnabled());
+            if (simulationToggleButton.isEnabled()) {
+                enableSimulation(measurement.isSimulationEnabled());
+            }
         }
     
     }    
@@ -134,6 +165,8 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
 
     private final MeasurementListener measurementListener = new MeasurementListener();
+    
+    private final Logger logger;
     
     private static final Color LIME_GREEN = new java.awt.Color(50, 205, 50);
     

@@ -11,6 +11,12 @@ import java.util.ArrayList;
 public class Measurement {
 
     
+    public enum Property {
+        SIMULATION_VALUE,
+        SIMULATION_ENABLED
+    }
+    
+    
     public interface Listener {
         void valueUpdated();
         void simulationUpdated();
@@ -69,9 +75,11 @@ public class Measurement {
 
     
     public void setValue(Float value) {
-        this.value = value;    
-        for (Listener listener : listeners) {
-            listener.valueUpdated();
+        if (! equal(value, this.value)) {
+            this.value = value;    
+            for (Listener listener : listeners) {
+                listener.valueUpdated();
+            }
         }
     }
     
@@ -82,9 +90,11 @@ public class Measurement {
 
     
     public void setSimulationEnabled(boolean simulationEnabled) {
-        this.simulationEnabled = simulationEnabled;
-        for (Listener listener : listeners) {
-            listener.simulationUpdated();
+        if (this.simulationEnabled != simulationEnabled) {
+            this.simulationEnabled = simulationEnabled;
+            for (Listener listener : listeners) {
+                listener.simulationUpdated();
+            }
         }
     }
 
@@ -118,6 +128,11 @@ public class Measurement {
         this.name = name;
     }
 
+    
+    private boolean equal(Object o1, Object o2) {
+        return (o1 == null) ? o2 == null : o1.equals(o2); 
+    }
+    
     
     private final String name;
     
