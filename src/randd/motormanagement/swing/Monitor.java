@@ -76,6 +76,7 @@ public class Monitor extends bka.swing.FrameApplication {
 //        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
 //        settingsPanel.add(ignitionTimerPanel);
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
+        channelComboBox.setEditable(developerMode);
         valuesPanel.add(new MeasurementPanel(Measurement.getInstance("RPM"), measurementPanelLsitener, developerMode));
         valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Load"), measurementPanelLsitener, developerMode));
         valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Water"), measurementPanelLsitener, developerMode));
@@ -129,7 +130,6 @@ public class Monitor extends bka.swing.FrameApplication {
 
         toolsPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        channelComboBox.setEditable(true);
         channelComboBox.setMinimumSize(new java.awt.Dimension(75, 20));
         channelComboBox.setPreferredSize(new java.awt.Dimension(100, 20));
         channelComboBox.addActionListener(new java.awt.event.ActionListener() {
