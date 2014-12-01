@@ -21,10 +21,11 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    public MeasurementPanel(Measurement measurement, Listener listener) {
+    public MeasurementPanel(Measurement measurement, Listener listener, boolean simulationEnabled) {
         logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
         this.listener = listener;
         initComponents();
+        simulationToggleButton.setVisible(simulationEnabled);
         setMeasurement(measurement);
     }
     
@@ -51,6 +52,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
         if (measurement.getName() != null) {
             nameLabel.setText(measurement.getName());
         }
+        updateValueText();
     }
     
 
@@ -123,25 +125,35 @@ public class MeasurementPanel extends javax.swing.JPanel {
         simulationToggleButton.setSelected(enabled);
         valueTextField.setEnabled(enabled);      
     }
-    
-    
+
+
+    private void updateValueText() {
+        Float value = measurement.getValue();
+        if (value != null) {
+            try {
+                java.util.Formatter formatter = new java.util.Formatter();
+                formatter.format(measurement.getFormat(), value);
+                valueTextField.setText(formatter.toString());
+            }
+            catch (Exception ex) {
+                valueTextField.setText(Long.toString(value.longValue()));
+            }
+        }
+        else {
+            valueTextField.setText("");
+        }
+    }
+
+
     private class MeasurementListener implements Measurement.Listener {
 
         public void valueUpdated() {
-            Float value = measurement.getValue();
-            logger.log(Level.INFO, "valueUpdated {0}", Float.toString(value));
-            if (! simulationToggleButton.isSelected() && value != null) {
-                try {
-                    java.util.Formatter formatter = new java.util.Formatter();
-                    formatter.format(measurement.getFormat(), value);
-                    valueTextField.setText(formatter.toString());
-                }
-                catch (Exception ex) {
-                    valueTextField.setText(Long.toString(value.longValue()));
-                }
+            logger.log(Level.INFO, "valueUpdated {0}", measurement.getValue());
+            if (! simulationToggleButton.isSelected()) {
+                updateValueText();
             }
         }
-        
+
         public void simulationUpdated() {
             logger.log(Level.INFO, "simulationUpdated {0}", measurement.isSimulationEnabled());
             if (simulationToggleButton.isEnabled()) {

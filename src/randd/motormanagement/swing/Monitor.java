@@ -11,6 +11,7 @@ package randd.motormanagement.swing;
 import bka.communication.*;
 import java.util.*;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import randd.motormanagement.communication.*;
 import randd.motormanagement.system.*;
@@ -18,46 +19,22 @@ import randd.motormanagement.system.*;
 
 public class Monitor extends bka.swing.FrameApplication {
 
-    public static void main(String args[]) {
+    public static void main(final String arguments[]) {
         try {
             randd.motormanagement.logging.Manager.setup();
         }
         catch (java.io.IOException ex) {
             ex.printStackTrace(System.err);
         }
-        
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        }
-        catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(Monitor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(Monitor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(Monitor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(Monitor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
+        setLookAndFeel("Nimbus");
+        javax.swing.UIDefaults defaults = UIManager.getDefaults();
+        defaults.put("errorBackground", new java.awt.Color(253, 115, 115));
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 Monitor monitor = new Monitor();
+                monitor.parseArguments(arguments);
                 if (monitor.loadedFromJar()) {
                     /* Make comm libray find system's com ports */
                     String classPath = System.getProperty("java.class.path");
@@ -85,20 +62,36 @@ public class Monitor extends bka.swing.FrameApplication {
     @Override
     protected void opened() {
         populateChannelComboBox();
-        String channelName = getProperty(SELECTED_CHANNEL);
-        if (channelName != null) {
-            int i = 0;
-            while (selectedChannel == null && i < channelComboBox.getItemCount()) {
-                Object comboBoxItem = channelComboBox.getItemAt(i);
-                if (comboBoxItem.toString().equals(channelName)) {
-                    channelComboBox.setSelectedItem(comboBoxItem);
-                }
-                i++;
-            }
+        selectStoredChannel();
+        initializePanels();
+    }
+
+    
+    RemoteSystem getRemoteSystem() {
+        return remoteSystem;
+    } 
+    
+    
+    private void initializePanels() {
+//        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
+//        settingsPanel.add(ignitionTimerPanel);
+        boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("RPM"), measurementPanelLsitener, developerMode));
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Load"), measurementPanelLsitener, developerMode));
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Water"), measurementPanelLsitener, developerMode));
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Air"), measurementPanelLsitener, developerMode));
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Battery"), measurementPanelLsitener, developerMode));
+        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Map"), measurementPanelLsitener, developerMode));
+//        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
+//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
+//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
+        if (developerMode) {
+            addMemoryPanel();
+            addStatusPanel();
         }
     }
     
-    
+
     private void handle(Throwable throwable) {
         throwable.printStackTrace(System.err);
         JOptionPane.showMessageDialog(this, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -113,25 +106,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private Monitor() {
         initComponents();
         tabsPanel.addChangeListener(new TabChangeListener());
-//        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
-//        settingsPanel.add(ignitionTimerPanel);
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("RPM"), measurementPanelLsitener));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Load"), measurementPanelLsitener));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Water"), measurementPanelLsitener));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Air"), measurementPanelLsitener));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Battery"), measurementPanelLsitener));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Map"), measurementPanelLsitener));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
-        addMemoryPanel();
-        addStatusPanel();
     }
-    
-
-    RemoteSystem getMessenger() {
-        return remoteSystem;
-    } 
     
     
     /**
@@ -217,6 +192,20 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
     
+    private void selectStoredChannel() {
+        String channelName = getProperty(SELECTED_CHANNEL);
+        if (channelName != null) {
+            int i = 0;
+            while (selectedChannel == null && i < channelComboBox.getItemCount()) {
+                Object comboBoxItem = channelComboBox.getItemAt(i);
+                if (comboBoxItem.toString().equals(channelName)) {
+                    channelComboBox.setSelectedItem(comboBoxItem);
+                }
+                i++;
+            }
+        }
+    }
+    
     private void disconnect() {
         try {
             if (remoteSystem != null) {
@@ -224,9 +213,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 remoteSystem = null;
                 selectedChannel = null;
                 setProperty(SELECTED_CHANNEL, null);
-                while (tabsPanel.getTabCount() > 2) {
-                    tabsPanel.removeTabAt(tabsPanel.getTabCount() - 1);
-                }
+                tabsPanel.removeAll();
             }
         }
         catch (ChannelException ex) {
@@ -252,6 +239,7 @@ public class Monitor extends bka.swing.FrameApplication {
             handle(ex);
         }
     }
+    
 
     private void populateTableTabs() {
         try {
@@ -421,6 +409,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private static final String SELECTED_CHANNEL = "SelectedChannel";
     private static final String SOCKET_HOSTS = "SocketChannels";
+    private static final String DEVELOPER_MODE = "DeveloperMode";
 
     private static final int RANDD_MM_PORT = 44252;
     
