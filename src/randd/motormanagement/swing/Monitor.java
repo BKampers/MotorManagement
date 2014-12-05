@@ -86,6 +86,7 @@ public class Monitor extends bka.swing.FrameApplication {
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
+        addCogWheelPanel();
         if (developerMode) {
             addMemoryPanel();
             addStatusPanel();
@@ -258,6 +259,12 @@ public class Monitor extends bka.swing.FrameApplication {
         Table table = Table.getInstance(name);
         tabsPanel.add(new TablePanel(new TablePanelListener(), table));
         tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, name);
+    }
+    
+    
+    private void addCogWheelPanel() {
+        tabsPanel.add(new CogWheelPanel());
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "CogWheel");
     }
     
     
