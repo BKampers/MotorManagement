@@ -78,7 +78,8 @@ public class MeasurementPanel extends javax.swing.JPanel {
         valueTextField.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
         valueTextField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
         valueTextField.setEnabled(false);
-        valueTextField.setPreferredSize(new java.awt.Dimension(50, 25));
+        valueTextField.setMinimumSize(new java.awt.Dimension(60, 25));
+        valueTextField.setPreferredSize(new java.awt.Dimension(60, 25));
         valueTextField.setDisabledTextColor(LIME_GREEN);
         valueTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
