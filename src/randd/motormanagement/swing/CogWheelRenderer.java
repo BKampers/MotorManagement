@@ -24,6 +24,7 @@ class CogWheelRenderer extends javax.swing.JPanel {
 
     @Override
     public void paint(Graphics g) {
+        super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
         Dimension size = getSize();
         int outerDiameter = Math.min(size.width, size.height) - Y_OFFSET;
