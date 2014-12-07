@@ -319,7 +319,6 @@ public class TablePanel extends JPanel {
             else {
                 java.text.ParsePosition position = new java.text.ParsePosition(0);
                 Number number = numberFormat.parse(text, position);
-                System.out.println(number + "  " + position);
                 if (position.getErrorIndex() < 0 && position.getIndex() == text.length() && number != null) {
                     float value = number.floatValue();
                     valid = table.getMinimum() <= value && value <= table.getMaximum();

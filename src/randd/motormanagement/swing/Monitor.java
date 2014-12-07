@@ -11,7 +11,6 @@ package randd.motormanagement.swing;
 import bka.communication.*;
 import java.util.*;
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import randd.motormanagement.communication.*;
 import randd.motormanagement.system.*;
@@ -20,15 +19,7 @@ import randd.motormanagement.system.*;
 public class Monitor extends bka.swing.FrameApplication {
 
     public static void main(final String arguments[]) {
-        try {
-            randd.motormanagement.logging.Manager.setup();
-        }
-        catch (java.io.IOException ex) {
-            ex.printStackTrace(System.err);
-        }
         setLookAndFeel("Nimbus");
-        javax.swing.UIDefaults defaults = UIManager.getDefaults();
-        defaults.put("errorBackground", new java.awt.Color(253, 115, 115));
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
@@ -61,6 +52,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     @Override
     protected void opened() {
+        setupLogging();
         populateChannelComboBox();
         selectStoredChannel();
         initializePanels();
@@ -71,6 +63,18 @@ public class Monitor extends bka.swing.FrameApplication {
         return remoteSystem;
     } 
     
+
+    private void setupLogging() {
+        try {
+            String logFilters = getProperty("logFilters");
+            String[] logPaths = (logFilters != null) ? logFilters.split(";") : null;
+            randd.motormanagement.logging.Manager.setup(logPaths);
+        }
+        catch (java.io.IOException ex) {
+            handle(ex);
+        }
+    }
+
     
     private void initializePanels() {
 //        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");

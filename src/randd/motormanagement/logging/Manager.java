@@ -8,9 +8,9 @@ import java.util.logging.*;
 
 public class Manager {
 
-    static public void setup() throws java.io.IOException {
-        Logger logger = Logger.getLogger("randd");
-
+    public static void setup(String[] paths) throws java.io.IOException {
+        filterPaths = paths;
+        
         Logger rootLogger = Logger.getLogger("");
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
@@ -19,6 +19,7 @@ public class Manager {
             }
         }
         
+        Logger logger = Logger.getLogger("randd");
         logger.setLevel(Level.INFO);
         fileHandler = new FileHandler("Logging.log");
         formatter = new SimpleFormatter();
@@ -45,12 +46,21 @@ public class Manager {
 
         @Override
         public boolean isLoggable(LogRecord record) {
-            return record.getLoggerName().startsWith(randd.motormanagement.swing.MeasurementPanel.class.getName());
+            if (filterPaths != null) {
+                for (String path : filterPaths) {
+                    if (record.getLoggerName().startsWith(path)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         
     }
     
+    
+    private static String[] filterPaths;
     
     private static final Filter logFilter = new LogFilter();
     
