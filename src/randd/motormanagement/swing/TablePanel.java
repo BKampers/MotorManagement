@@ -10,6 +10,7 @@ import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import javax.swing.text.*;
 
 import randd.motormanagement.system.*;
 
@@ -29,6 +30,8 @@ public class TablePanel extends JPanel {
         setTable(table);
         initComponents();
         grid.setDefaultRenderer(Object.class, new CellRenderer());
+        grid.setDefaultEditor(Object.class, new NumberCellEditor());
+        grid.getSelectionModel().addListSelectionListener(new GridSelectionListener());
         JTableHeader columnHeader = grid.getTableHeader();
         columnHeader.setDefaultRenderer(new ColumnHeaderRenderer(grid));
         columnHeader.setResizingAllowed(false);
@@ -36,13 +39,7 @@ public class TablePanel extends JPanel {
         RowHeaders rowHeaders = new RowHeaders();
         rowHeaders.initialize(model, scrollPane, grid.getRowHeight());
         rowHeaders.setAlignment(JLabel.RIGHT, JLabel.TOP);
-
-        grid.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                followActiveCell = false;
-            }
-        });
+        numberFormat.setGroupingUsed(false);
     }
     
     
@@ -88,7 +85,7 @@ public class TablePanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 
-    private class Model extends DefaultTableModel {
+    private class GridModel extends DefaultTableModel {
         
         @Override
         public int getColumnCount() {
@@ -134,6 +131,16 @@ public class TablePanel extends JPanel {
     }
     
     
+    private class GridSelectionListener implements ListSelectionListener {
+        
+        @Override
+        public void valueChanged(ListSelectionEvent e) {
+            followActiveCell = false;
+        }
+
+    }
+
+    
     private class ColumnHeaderRenderer implements TableCellRenderer {
 
         ColumnHeaderRenderer(JTable grid) {
@@ -178,7 +185,7 @@ public class TablePanel extends JPanel {
             setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
             activeRenderer.setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
             activeRenderer.setOpaque(true);
-            activeRenderer.setBackground(Color.YELLOW);
+            activeRenderer.setBackground(UIManager.getColor("highlightBackground"));
             activeRenderer.setBorder(activeCellBorder);
         }
         
@@ -199,7 +206,7 @@ public class TablePanel extends JPanel {
         
         private final JLabel activeRenderer = new JLabel();
         
-        private final Border activeCellBorder = new LineBorder(Color.ORANGE, 1) {
+        private final Border activeCellBorder = new LineBorder(UIManager.getColor("Border.highlightColor"), 1) {
             @Override
             public Insets getBorderInsets(Component component) {
                 return CellRenderer.this.getInsets();
@@ -215,25 +222,31 @@ public class TablePanel extends JPanel {
     
     private class NumberCellEditor extends DefaultCellEditor {
         
-        NumberCellEditor(){
-            super(new JFormattedTextField());
+        NumberCellEditor() {
+            super(new JTextField());
+            JTextField textField = getTextField();
+            textField.setHorizontalAlignment(JTextField.RIGHT);
+            PlainDocument document = (PlainDocument) textField.getDocument();
+            filter = new NumberFilter(textField);
+            document.setDocumentFilter(filter);
+        }
+        
+        @Override
+        public Component getTableCellEditorComponent(JTable grid, Object value, boolean isSelected, int row, int column) {
+            value = numberFormat.format(((Float) value).doubleValue());
+            return (JTextField) super.getTableCellEditorComponent(grid, value, isSelected, row, column);
         }
 
         @Override
-        public Component getTableCellEditorComponent(JTable grid, Object value, boolean isSelected, int row, int column) {
-            final JFormattedTextField editor = (JFormattedTextField) super.getTableCellEditorComponent(grid, value, isSelected, row, column);
-            String text = "";
-            if (value != null) {
-                Number number = (Number) value;  
-                text = numberFormat.format(number);
-                editor.setHorizontalAlignment(SwingConstants.RIGHT);
+        public boolean stopCellEditing() {
+            if (filter.isValid()) {
+                return super.stopCellEditing();
             }
-            bka.swing.validators.RealValidator validator = new bka.swing.validators.RealValidator(editor, (double) table.getMinimum(), (double) table.getMaximum(), table.getDecimals());
-            editor.setText(text);
-            validator.verify();
-            return editor;
+            else {
+                return false;
+            }
         }
-        
+
         @Override
         public Object getCellEditorValue() {
             try {
@@ -244,11 +257,87 @@ public class TablePanel extends JPanel {
                 return null;
             }
         }
+
+        private JTextField getTextField() {
+            return (JTextField) getComponent();
+        }
         
+        private final NumberFilter filter;
+        
+    }
+    
+    
+    private class NumberFilter extends DocumentFilter {
+        
+        NumberFilter(Component component) {
+            this.component = component;
+        }
+        
+        @Override
+        public void insertString(FilterBypass bypass, int offset, String text, AttributeSet attributes) throws BadLocationException {
+           StringBuilder builder = createBuilder(bypass);
+           builder.insert(offset, text);
+           if (allowed(builder.toString())) {
+              super.insertString(bypass, offset, text, attributes);
+           }
+        }
+
+        @Override
+        public void replace(FilterBypass bypass, int offset, int length, String text, AttributeSet attributes) throws BadLocationException {
+           StringBuilder builder = createBuilder(bypass);
+           builder.replace(offset, offset + length, text);
+           if (allowed(builder.toString())) {
+              super.replace(bypass, offset, length, text, attributes);
+           }
+        }
+
+        @Override
+        public void remove(FilterBypass bypass, int offset, int length) throws BadLocationException {
+           StringBuilder builder = createBuilder(bypass);
+           builder.delete(offset, offset + length);
+           if (allowed(builder.toString())) {
+              super.remove(bypass, offset, length);
+           }
+        }
+        
+        boolean isValid() {
+            return valid;
+        }
+        
+        private StringBuilder createBuilder(FilterBypass bypass) throws BadLocationException {
+            Document document = bypass.getDocument();
+            StringBuilder builder = new StringBuilder();
+            builder.append(document.getText(0, document.getLength()));
+            return builder;
+        }
+
+        private boolean allowed(String text) {
+            boolean allowed = true;
+            if (text.isEmpty()) {
+                valid = false;
+            }
+            else {
+                java.text.ParsePosition position = new java.text.ParsePosition(0);
+                Number number = numberFormat.parse(text, position);
+                System.out.println(number + "  " + position);
+                if (position.getErrorIndex() < 0 && position.getIndex() == text.length() && number != null) {
+                    float value = number.floatValue();
+                    valid = table.getMinimum() <= value && value <= table.getMaximum();
+                }
+                else {
+                    allowed = false;
+                }
+            }
+            component.setBackground((valid) ? DEFAULT_BACKGROUND : INVALID_BACKGROUND);                
+            return allowed;
+        }
+
+        private boolean valid = true;
+        private final Component component;
 
     }
-
-
+    
+    
     private class TableListener implements Table.Listener {
 
         @Override
@@ -273,7 +362,7 @@ public class TablePanel extends JPanel {
             if (uninitializedProperties.isEmpty()) {
                 numberFormat.setMinimumFractionDigits(table.getDecimals());
                 numberFormat.setMaximumFractionDigits(table.getDecimals());
-                grid.setDefaultEditor(Object.class, new NumberCellEditor());
+                numberFormat.setParseIntegerOnly(table.getDecimals() == 0);
                 model.fireTableStructureChanged();
             }
         }
@@ -297,6 +386,11 @@ public class TablePanel extends JPanel {
             }
         }
         
+        /** 
+         * Set of properties that must be initalized before this TablePanel can
+         * work properly. Initialized properties need to be removed, so this
+         * TablePanel is ready for use as soon as the set is empty.
+         */
         private final Set<Table.Property> uninitializedProperties = EnumSet.of(
             Table.Property.FIELDS,
             Table.Property.MINIMUM,
@@ -321,7 +415,10 @@ public class TablePanel extends JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final Listener tablePanelListener;
-    private final Model model = new Model();
+    private final GridModel model = new GridModel();
     private final TableListener tableListener = new TableListener();
+    
+    private static final Color DEFAULT_BACKGROUND = UIManager.getColor("Textfield.Background");
+    private static final Color INVALID_BACKGROUND = UIManager.getColor("errorBackground");
     
 }
