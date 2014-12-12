@@ -189,6 +189,57 @@ public class MessagingTest {
     }
     
     
+    @Test(timeout=50)
+    public void getEngineProperties() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Request", "Engine");
+        JSONObject response = receiveResponse(message);
+        int cylinderCount = response.getInt("CylinderCount");
+        assertTrue(1 <= cylinderCount && cylinderCount <= 8);
+        JSONObject cogwheel = response.getJSONObject("Cogwheel");
+        assertNotNull(cogwheel);
+        assertNotNull(cogwheel.getInt("CogTotal"));
+        assertNotNull(cogwheel.getInt("GapSize"));
+        assertNotNull(cogwheel.getInt("Offset"));
+        JSONArray deadPoints = response.getJSONArray("DeadPoints");
+        assertNotNull(deadPoints);
+        assertTrue(deadPoints.length() > 0);
+    }
+    
+    
+    @Test(timeout=50)
+    public void setCogwheel() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Modify", "Cogwheel");
+        message.put("CogTotal", 60);
+        message.put("GapSize", 2);
+        message.put("Offset", 20);
+        JSONObject response = receiveResponse(message);
+        assertEquals("OK", response.get("Status"));
+        
+        message = createMessage("Modify", "Cogwheel");
+        message.put("CogTotal", 300);
+        message.put("GapSize", 2500);
+        message.put("Offset", 2000);
+        response = receiveResponse(message);
+        assertNotNull(response.get("Status"));
+        assertFalse("OK".equals(response.get("Status")));
+    }
+    
+    
+    @Test(timeout=50)
+    public void setCylinderCount() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Modify", "CylinderCount");
+        message.put("Value", 6);
+        JSONObject response = receiveResponse(message);
+        assertEquals("OK", response.get("Status"));
+        
+        message = createMessage("Modify", "CylinderCount");
+        message.put("Value", 0);
+        response = receiveResponse(message);
+        assertNotNull(response.get("Status"));
+        assertFalse("OK".equals(response.get("Status")));
+    }
+    
+    
     private JSONObject createMessage(String message, String subject) throws JSONException {
         JSONObject messageObject = new JSONObject();
         messageObject.put("Message", message);
