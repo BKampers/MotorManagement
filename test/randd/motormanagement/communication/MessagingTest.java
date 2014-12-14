@@ -206,7 +206,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=50)
+    @Test(timeout=200)
     public void setCogwheel() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Modify", "Cogwheel");
         message.put("CogTotal", 60);
@@ -225,7 +225,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=50)
+    @Test(timeout=200)
     public void setCylinderCount() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Modify", "CylinderCount");
         message.put("Value", 6);
