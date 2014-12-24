@@ -63,7 +63,7 @@
   <SubComponents>
     <Container class="javax.swing.JScrollPane" name="scrollPane">
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="scrollPane.setViewportView(cogWheelRenderer);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="scrollPane.setViewportView(cogwheelRenderer);"/>
       </AuxValues>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.support.JScrollPaneSupportLayout"/>
@@ -88,11 +88,11 @@
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="totalCogSpinner" min="-2" pref="51" max="-2" attributes="0"/>
+                          <Component id="cogTotalSpinner" min="-2" pref="51" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="minusLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="gapLengthSpinner" min="-2" pref="52" max="-2" attributes="0"/>
+                          <Component id="gapSizeSpinner" min="-2" pref="52" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace pref="18" max="32767" attributes="0"/>
@@ -106,9 +106,9 @@
                   <Component id="typeLabel" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
-                      <Component id="totalCogSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cogTotalSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="minusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                      <Component id="gapLengthSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="gapSizeSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="12" max="32767" attributes="0"/>
               </Group>
@@ -121,7 +121,7 @@
             <Property name="text" type="java.lang.String" value="CogWheelType"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="totalCogSpinner">
+        <Component class="javax.swing.JSpinner" name="cogTotalSpinner">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[40, 28]"/>
@@ -131,7 +131,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="totalCogSpinner_stateChanged"/>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="cogTotalSpinner_stateChanged"/>
           </Events>
         </Component>
         <Component class="javax.swing.JLabel" name="minusLabel">
@@ -139,7 +139,7 @@
             <Property name="text" type="java.lang.String" value="-"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JSpinner" name="gapLengthSpinner">
+        <Component class="javax.swing.JSpinner" name="gapSizeSpinner">
           <Properties>
             <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
               <Dimension value="[40, 28]"/>
@@ -149,7 +149,7 @@
             </Property>
           </Properties>
           <Events>
-            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="gapLengthSpinner_stateChanged"/>
+            <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="gapSizeSpinner_stateChanged"/>
           </Events>
         </Component>
       </SubComponents>

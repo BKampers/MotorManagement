@@ -90,7 +90,7 @@ public class Monitor extends bka.swing.FrameApplication {
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
 //        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
-        addCogWheelPanel();
+        addEnginePanel();
         if (developerMode) {
             addMemoryPanel();
             addStatusPanel();
@@ -266,9 +266,11 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
     
-    private void addCogWheelPanel() {
-        tabsPanel.add(new CogWheelPanel());
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "CogWheel");
+    private void addEnginePanel() {
+        EnginePanel panel = new EnginePanel(engine);
+        panel.setListener(new EnginePanelListener());
+        tabsPanel.add(panel);
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "Engine");
     }
     
     
@@ -299,7 +301,10 @@ public class Monitor extends bka.swing.FrameApplication {
                     }
                     remoteSystem.startIndexPoll(table);
                 }
-                if (selectedTab instanceof MemoryPanel) {
+                else if (selectedTab instanceof EnginePanel) {
+                    remoteSystem.requestEngine(engine);
+                }
+                else if (selectedTab instanceof MemoryPanel) {
                     remoteSystem.requestFlash(flash);
                 }
             }
@@ -374,6 +379,59 @@ public class Monitor extends bka.swing.FrameApplication {
         
     }
     
+    
+    private class EnginePanelListener implements EnginePanel.Listener {
+
+        @Override
+        public void cylinderCountModified(int count) {
+            if (engine.getCylinderCount() != count) {
+                try {
+                    String status = remoteSystem.modifyCylinderCount(count);
+                    if (RemoteSystem.OK.equals(status)) {
+                        remoteSystem.requestEngine(engine);
+                    }
+                }
+                catch (org.json.JSONException | InterruptedException ex) {
+                    handle(ex);
+                }
+            }
+        }
+
+        @Override
+        public void totalCogsModified(int cogTotal) {
+            if (engine.getCogwheel().getCogTotal() != cogTotal) {
+                modifyCogwheel(cogTotal, engine.getCogwheel().getGapSize(), engine.getCogwheel().getOffset());
+            }
+        }
+
+        @Override
+        public void gapSizeModified(int gapSize) {
+            if (engine.getCogwheel().getGapSize() != gapSize) {
+                modifyCogwheel(engine.getCogwheel().getCogTotal(), gapSize, engine.getCogwheel().getOffset());
+            }
+        }
+
+        @Override
+        public void offsetModified(int offset) {
+            if (engine.getCogwheel().getOffset() != offset) {
+                modifyCogwheel(engine.getCogwheel().getCogTotal(), engine.getCogwheel().getGapSize(), offset);
+            }
+        }
+        
+        private void modifyCogwheel(int cogTotal, int gapSize, int offset) {
+            try {
+                String status = remoteSystem.modifyCogwheel(cogTotal, gapSize, offset);
+                if (RemoteSystem.OK.equals(status)) {
+                    remoteSystem.requestEngine(engine);
+                }
+            }
+            catch (org.json.JSONException | InterruptedException ex) {
+                handle(ex);
+            }
+        }
+        
+}
+    
 
     private final MemoryPanel memoryPanel = new MemoryPanel(new MemoryPanel.Listener() {
 
@@ -400,6 +458,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private RemoteSystem remoteSystem = null;
     private Channel selectedChannel = null;
     
+    private final Engine engine = new Engine();
     private final Flash flash = new Flash();
 
     

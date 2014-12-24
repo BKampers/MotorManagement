@@ -4,7 +4,7 @@ package randd.motormanagement.swing;
 import java.awt.*;
 
 
-class CogWheelRenderer extends javax.swing.JPanel {
+class CogwheelRenderer extends javax.swing.JPanel {
 
 
     void setCogCount(int numberOfCogs) {
@@ -26,6 +26,9 @@ class CogWheelRenderer extends javax.swing.JPanel {
     public void paint(Graphics g) {
         super.paint(g);
         Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        g2d.translate(LEFT_MARGIN, TOP_MARGIN);
         Dimension size = getSize();
         int outerDiameter = Math.min(size.width, size.height) - Y_OFFSET;
         int cogHeight = Math.round(outerDiameter * 0.1f);
@@ -42,8 +45,8 @@ class CogWheelRenderer extends javax.swing.JPanel {
         g2d.rotate(angleOffset, center.x, center.y);
         BasicStroke normalStroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {1.0f}, 0);
         BasicStroke referenceStroke = new BasicStroke(2.0f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND, 1.0f, new float[] {3.0f}, 0);
-        for (int cog = 0; cog < cogTotal; cog++) {
-            if (cog < cogCount) {
+        for (int cog = 1; cog <= cogTotal; ++cog) {
+            if (cog <= cogCount) {
                 g2d.setColor(Color.BLACK);
                 g2d.setStroke(normalStroke);
             }
@@ -51,17 +54,24 @@ class CogWheelRenderer extends javax.swing.JPanel {
                 g2d.setColor(Color.LIGHT_GRAY);
                 g2d.setStroke(referenceStroke);
             }
+            boolean atDeadPoint = false;
             if (deadPoints != null) {
-                for (int d : deadPoints) {
-                    if (d == cog) {
-                        g2d.setColor(Color.BLUE);
+                for (int deadPoint : deadPoints) {
+                    if (deadPoint == cog) {
+                        atDeadPoint = true;
+                        //g2d.setColor(Color.BLUE);
                     }
                 }
             }
             g2d.drawLine(center.x, 0, center.x, cogHeight);
             g2d.drawArc(0, 0, outerDiameter, outerDiameter, 90, -halfCogAngle);
             g2d.rotate(halfCogRadians, center.x, center.y);
+            Color save = g2d.getColor();
+            if (atDeadPoint) {
+                g2d.setColor(Color.YELLOW);
+            }
             g2d.drawLine(center.x, 0, center.x, cogHeight);
+            g2d.setColor(save);
             g2d.drawArc(cogHeight, cogHeight, innerDiameter, innerDiameter, 90, -halfCogAngle);
             g2d.rotate(halfCogRadians, center.x, center.y);
         }
@@ -69,10 +79,10 @@ class CogWheelRenderer extends javax.swing.JPanel {
         g2d.setColor(Color.BLUE);
         if (deadPoints != null) {
             for (int i = 0; i < deadPoints.size(); i++) {
-                int d = deadPoints.get(i);
-                double angle = 2 * Math.PI * ((double) d - deadPoints.get(0)) / cogTotal;
+                int deadPoint = deadPoints.get(i);
+                double angle = 2 * Math.PI * ((double) deadPoint - deadPoints.get(0)) / cogTotal;
                 int radius = outerDiameter / 2 - 60;
-                String string = Integer.toString(d);
+                String string = Integer.toString(deadPoint);
                 if (i == 0) {
                     string += TDP;
                 }
@@ -89,13 +99,16 @@ class CogWheelRenderer extends javax.swing.JPanel {
     }
 
 
-    private int cogCount = 58;
-    private int gapLength = 3;
-    private java.util.List<Integer> deadPoints = null;
+    private int cogCount;
+    private int gapLength;
+    private java.util.List<Integer> deadPoints;
 
     private static final int Y_OFFSET = 15;
 
     private static final String TDP = " (TDP)";
     private static final String DP  = " (DP)";
 
+    private static final int LEFT_MARGIN = 5;
+    private static final int TOP_MARGIN = 10;
+    
 }

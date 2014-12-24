@@ -104,6 +104,21 @@ public class RemoteSystem {
     }
     
     
+    public void requestEngine(Engine engine) throws InterruptedException, JSONException {
+        JSONObject engineObject = request(ENGINE);
+        updateEngine(engine, engineObject);
+    }
+    
+    
+    public String modifyCylinderCount(int count) throws InterruptedException, JSONException {
+        return modify(CYLINDER_COUNT, VALUE, count);
+    }
+    
+    
+    public String modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException, JSONException {
+        return modify(COGWHEEL, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
+    }
+    
     public String enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
         if (enable) {
             return modify(measurement.getName(), SIMULATION, true, VALUE, measurement.getValue());
@@ -233,6 +248,20 @@ public class RemoteSystem {
             Measurement measurement = Measurement.getInstance(measurementName);
             table.setRowMeasurement(measurement);
         }
+    }
+    
+    
+    private void updateEngine(Engine engine, JSONObject engineObject) throws JSONException {
+        engine.setCylinderCount(engineObject.getInt(CYLINDER_COUNT));
+        JSONObject cogwheelObject = engineObject.getJSONObject(COGWHEEL);
+        engine.setCogwheel(cogwheelObject.getInt(COG_TOTAL), cogwheelObject.getInt(GAP_SIZE), cogwheelObject.getInt(OFFSET));
+        JSONArray deadPointArray = engineObject.getJSONArray(DEAD_POINTS);
+        int deadPointCount = deadPointArray.length();
+        List<Integer> deadPoints = new ArrayList<>();
+        for (int i = 0; i < deadPointCount; ++i) {
+            deadPoints.add(deadPointArray.getInt(i));
+        }
+        engine.setDeadPoints(deadPoints);
     }
     
 
@@ -390,5 +419,13 @@ public class RemoteSystem {
     private static final String FORMAT = "Format";
     private static final String MINIMUM = "Minimum";
     private static final String MAXIMUM = "Maximum";
+
+    private static final String ENGINE = "Engine";
+    private static final String COGWHEEL = "Cogwheel";
+    private static final String COG_TOTAL = "CogTotal";
+    private static final String GAP_SIZE = "GapSize";
+    private static final String OFFSET = "Offset";
+    private static final String DEAD_POINTS = "DeadPoints";
+    private static final String CYLINDER_COUNT = "CylinderCount";
     
 }
