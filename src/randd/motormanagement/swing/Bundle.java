@@ -8,10 +8,14 @@ package randd.motormanagement.swing;
 import java.util.*;
 
 
-public class Bundle {
+class Bundle {
 
+    
     static Bundle getInstance() {
-        return INSTANCE;
+        if (instance == null) {
+            instance = new Bundle();
+        }
+        return instance;
     }
     
     
@@ -26,11 +30,8 @@ public class Bundle {
     }
     
     
+    private static Bundle instance;
 
-    
-    
     private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("randd/motormanagement/Bundle");
-    
-    private static final Bundle INSTANCE = new Bundle();
     
 }
