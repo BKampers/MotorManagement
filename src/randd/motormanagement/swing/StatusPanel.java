@@ -115,7 +115,11 @@ public class StatusPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
 
-    private static final String[] titles = {"Time", "Name", "Value"};
+    private static final String[] titles = { 
+        Bundle.getInstance().get("Time"), 
+        Bundle.getInstance().get("Name"),
+        Bundle.getInstance().get("Value")
+};
     
     private static final int TIMESTAMP_COLUMN = 0;
     private static final int NAME_COLUMN = 1;

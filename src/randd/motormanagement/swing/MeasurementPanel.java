@@ -50,7 +50,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
         this.measurement = measurement;
         measurement.addListener(measurementListener);
         if (measurement.getName() != null) {
-            nameLabel.setText(measurement.getName());
+            nameLabel.setText(Bundle.getInstance().get(measurement.getName()));
         }
         updateValueText();
     }
@@ -72,7 +72,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
         setPreferredSize(new java.awt.Dimension(250, 30));
 
-        nameLabel.setPreferredSize(new java.awt.Dimension(50, 25));
+        nameLabel.setPreferredSize(new java.awt.Dimension(60, 25));
         add(nameLabel);
 
         valueTextField.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N

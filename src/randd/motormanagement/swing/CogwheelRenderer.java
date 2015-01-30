@@ -2,10 +2,11 @@ package randd.motormanagement.swing;
 
 
 import java.awt.*;
+import java.util.ResourceBundle;
 
 
 class CogwheelRenderer extends javax.swing.JPanel {
-
+    
 
     void setCogCount(int numberOfCogs) {
         this.cogCount = numberOfCogs;
@@ -82,13 +83,7 @@ class CogwheelRenderer extends javax.swing.JPanel {
                 int deadPoint = deadPoints.get(i);
                 double angle = 2 * Math.PI * ((double) deadPoint - deadPoints.get(0)) / cogTotal;
                 int radius = outerDiameter / 2 - 60;
-                String string = Integer.toString(deadPoint);
-                if (i == 0) {
-                    string += TDP;
-                }
-                else {
-                    string += DP;
-                }
+                String string = deadPointString(deadPoint, (i == 0) ? "TDP" : "DP");
                 FontMetrics metrics = g2d.getFontMetrics();
                 Point point = new Point();
                 point.x = center.x + Math.round((float) (Math.sin(angle) * radius)) - metrics.stringWidth(string) / 2;
@@ -96,6 +91,16 @@ class CogwheelRenderer extends javax.swing.JPanel {
                 g2d.drawString(string, point.x, point.y);
             }
         }
+    }
+    
+    
+    private String deadPointString(int deadPoint, String key) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(deadPoint);
+        builder.append(" (");
+        builder.append(Bundle.getInstance().get(key));
+        builder.append(')');
+        return builder.toString();
     }
 
 
@@ -105,10 +110,8 @@ class CogwheelRenderer extends javax.swing.JPanel {
 
     private static final int Y_OFFSET = 15;
 
-    private static final String TDP = " (TDP)";
-    private static final String DP  = " (DP)";
-
     private static final int LEFT_MARGIN = 5;
     private static final int TOP_MARGIN = 10;
+
     
 }

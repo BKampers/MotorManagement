@@ -59,7 +59,7 @@ public class EnginePanel extends javax.swing.JPanel {
 
         controlPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        typeLabel.setText("CogWheelType");
+        typeLabel.setText(Bundle.getInstance().get("CogWheel"));
 
         cogTotalSpinner.setMinimumSize(new java.awt.Dimension(40, 28));
         cogTotalSpinner.setPreferredSize(new java.awt.Dimension(40, 28));
@@ -110,7 +110,7 @@ public class EnginePanel extends javax.swing.JPanel {
                 .addContainerGap(12, Short.MAX_VALUE))
         );
 
-        offsetLabel.setText("Offset");
+        offsetLabel.setText(Bundle.getInstance().get("Offset"));
 
         offsetSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -258,7 +258,8 @@ public class EnginePanel extends javax.swing.JPanel {
         
         @Override
         public String toString() {
-            return Integer.toString(count) + "cylinder";
+            Object[] params = {count};
+            return java.text.MessageFormat.format(Bundle.getInstance().get("CylinderCount"), params);
         }
         
         int count;
@@ -287,5 +288,5 @@ public class EnginePanel extends javax.swing.JPanel {
     private final SpinnerNumberModel totalCogSpinnerModel = new SpinnerNumberModel(60, 2, 200, 1);
     private final SpinnerNumberModel gapLengthSpinnerModel = new javax.swing.SpinnerNumberModel(2, 1, 9, 1);
     private final SpinnerNumberModel offsetSpinnerModel = new SpinnerNumberModel(20, 1, 100, 1);
-    
+        
 }

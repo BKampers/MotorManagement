@@ -118,7 +118,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="typeLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value="CogWheelType"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="Bundle.getInstance().get(&quot;CogWheel&quot;)" type="code"/>
+            </Property>
           </Properties>
         </Component>
         <Component class="javax.swing.JSpinner" name="cogTotalSpinner">
@@ -156,7 +158,9 @@
     </Container>
     <Component class="javax.swing.JLabel" name="offsetLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Offset"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="Bundle.getInstance().get(&quot;Offset&quot;)" type="code"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JSpinner" name="offsetSpinner">

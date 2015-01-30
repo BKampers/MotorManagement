@@ -262,7 +262,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private void addTable(String name) {
         Table table = Table.getInstance(name);
         tabsPanel.add(new TablePanel(new TablePanelListener(), table));
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, name);
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get(name));
     }
     
     
@@ -270,7 +270,7 @@ public class Monitor extends bka.swing.FrameApplication {
         EnginePanel panel = new EnginePanel(engine);
         panel.setListener(new EnginePanelListener());
         tabsPanel.add(panel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "Engine");
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get("Engine"));
     }
     
     
@@ -282,7 +282,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private void addStatusPanel() {
         tabsPanel.add(statusPanel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "Status");
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get("Status"));
     }
     
     
@@ -471,7 +471,7 @@ public class Monitor extends bka.swing.FrameApplication {
     // End of variables declaration//GEN-END:variables
 
     
-    java.awt.Component selectedTab = null;
+    private java.awt.Component selectedTab = null;
     
     private final MeasurementPanelListener measurementPanelLsitener = new MeasurementPanelListener();
     
@@ -482,5 +482,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
 
     private static final int RANDD_MM_PORT = 44252;
+    
+    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("randd/motormanagement/Bundle");
     
 }
