@@ -155,6 +155,23 @@ public class MessagingTest {
     }
     
     
+    @Test(timeout=200)
+    public void modifyTableEnabling() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Modify", "WaterCorrection");
+        message.put("Enabled", true);
+        JSONObject response = receiveResponse(message);
+        assertNotNull(response.get("Status"));
+        assertTrue("OK".equals(response.get("Status")));
+        message = createMessage("Request", "WaterCorrection");
+        JSONArray properties = new JSONArray();
+        properties.put("Enabled");
+        message.put("Properties", properties);
+        response = receiveResponse(message);
+        assertTrue("OK".equals(response.get("Status")));
+        assertTrue(response.getBoolean("Enabled"));
+    }
+    
+    
     @Test(timeout=50)
     public void requestMeasurementTables() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Request", "MeasurementTables");
@@ -180,12 +197,21 @@ public class MessagingTest {
         assertNotNull(response.opt("Table"));
         assertNull(response.opt("Row"));
         assertNull(response.opt("Column"));
+        assertNull(response.opt("Enabled"));
         properties.remove(0);
         properties.put("Index");
         response = receiveResponse(message);
         assertNull(response.opt("Table"));
         assertNotNull(response.opt("Row"));
         assertNotNull(response.opt("Column"));
+        assertNull(response.opt("Enabled"));
+        properties.remove(0);
+        properties.put("Enabled");
+        response = receiveResponse(message);
+        assertNull(response.opt("Table"));
+        assertNull(response.opt("Row"));
+        assertNull(response.opt("Column"));
+        assertTrue(response.getBoolean("Enabled"));
     }
     
     
