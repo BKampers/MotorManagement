@@ -12,8 +12,9 @@ public class Measurement {
 
     
     public enum Property {
+        TABLE_ENABLED,
         SIMULATION_VALUE,
-        SIMULATION_ENABLED
+        SIMULATION_ENABLED  
     }
     
     

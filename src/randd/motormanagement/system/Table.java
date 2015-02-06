@@ -18,7 +18,8 @@ public class Table {
         COLUMN_MEASUREMENT,
         ROW_MEASUREMENT,
         INDEX,
-        VALUE
+        VALUE,
+        ENABLED
     }
 
 
@@ -193,6 +194,19 @@ public class Table {
             notifyPropertyChanged(Property.INDEX);
         }
     }
+
+    
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    
+    public void setEnabled(boolean enabled) {
+        if (this.enabled != enabled) {
+            this.enabled = enabled;
+            notifyPropertyChanged(Property.ENABLED);
+        }
+    }
     
     
     public void addListener(Listener listener) {
@@ -242,6 +256,8 @@ public class Table {
     private float minimum = 0.0f;
     private float maximum = 100.0f;
     private int decimals = 0;
+    
+    private boolean enabled;
     
     private float[][] fields = null;
     
