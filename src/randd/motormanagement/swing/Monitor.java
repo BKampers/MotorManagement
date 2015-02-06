@@ -326,6 +326,20 @@ public class Monitor extends bka.swing.FrameApplication {
     
     
     private class MeasurementPanelListener implements MeasurementPanel.Listener {
+        
+        @Override
+        public void tableEnabled(MeasurementPanel panel, boolean enabled) {
+            Measurement measurement = panel.getMeasurement();
+            String correctionTableName = measurement.getName() + "Correction";
+            Table table = Table.getInstance(correctionTableName);
+            try {
+                String result = remoteSystem.enableTable(table, enabled);
+                panel.notifyResult(Measurement.Property.TABLE_ENABLED, result);
+            }
+            catch (org.json.JSONException | InterruptedException ex) {
+                handle(ex);
+            }
+        }
 
         @Override
         public void simulationEnabled(MeasurementPanel panel, boolean enabled) {
@@ -461,6 +475,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private final Engine engine = new Engine();
     private final Flash flash = new Flash();
 
+    private List<String> tableNames;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox channelComboBox;
@@ -482,7 +497,5 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
 
     private static final int RANDD_MM_PORT = 44252;
-    
-    private static final ResourceBundle BUNDLE = ResourceBundle.getBundle("randd/motormanagement/Bundle");
     
 }

@@ -56,6 +56,15 @@
         </Property>
       </Properties>
     </Component>
+    <Component class="javax.swing.JToggleButton" name="enableToggleButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="&#x2b24;"/>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="enableToggleButton_actionPerformed"/>
+      </Events>
+    </Component>
     <Component class="javax.swing.JToggleButton" name="simulationToggleButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Sim"/>

@@ -12,10 +12,10 @@ import randd.motormanagement.system.*;
 
 
 public class MeasurementPanel extends javax.swing.JPanel {
-    
-    
+
     
     public interface Listener {
+        public void tableEnabled(MeasurementPanel panel, boolean enabled);
         public void simulationEnabled(MeasurementPanel panel, boolean enabled);
         public void simulationValueModified(MeasurementPanel panel, double value);
     }
@@ -25,6 +25,9 @@ public class MeasurementPanel extends javax.swing.JPanel {
         logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
         this.listener = listener;
         initComponents();
+        boolean isCorrection = ! "Load".equals(measurement.getName()) && ! "RPM".equals(measurement.getName());
+        enableToggleButton.setVisible(isCorrection);
+        enableToggleButton.setEnabled(isCorrection);
         simulationToggleButton.setVisible(simulationEnabled);
         setMeasurement(measurement);
     }
@@ -38,6 +41,10 @@ public class MeasurementPanel extends javax.swing.JPanel {
     void notifyResult(Measurement.Property property, String result) {
         logger.log(Level.INFO, "notifyResult {0} {1}", new Object[] { property, result });
         switch (property) {
+            case TABLE_ENABLED:
+                enableToggleButton.setEnabled(true);
+                showEnabled(enableToggleButton.isSelected());
+                break;
             case SIMULATION_ENABLED:
                 simulationToggleButton.setEnabled(true);
                 enableSimulation(simulationToggleButton.isSelected());
@@ -68,6 +75,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
         nameLabel = new javax.swing.JLabel();
         valueTextField = new javax.swing.JTextField();
         unitLabel = new javax.swing.JLabel();
+        enableToggleButton = new javax.swing.JToggleButton();
         simulationToggleButton = new javax.swing.JToggleButton();
 
         setPreferredSize(new java.awt.Dimension(250, 30));
@@ -90,6 +98,15 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
         unitLabel.setPreferredSize(new java.awt.Dimension(50, 25));
         add(unitLabel);
+
+        enableToggleButton.setText("⬤");
+        enableToggleButton.setEnabled(false);
+        enableToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enableToggleButton_actionPerformed(evt);
+            }
+        });
+        add(enableToggleButton);
 
         simulationToggleButton.setText("Sim");
         simulationToggleButton.setPreferredSize(new java.awt.Dimension(50, 25));
@@ -120,6 +137,17 @@ public class MeasurementPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_valueTextField_actionPerformed
 
+    
+    private void enableToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableToggleButton_actionPerformed
+        enableToggleButton.setEnabled(false);
+        listener.tableEnabled(this, enableToggleButton.isSelected());
+    }//GEN-LAST:event_enableToggleButton_actionPerformed
+
+    
+    private void showEnabled(boolean selected) {
+        enableToggleButton.setForeground(selected ? Color.GREEN : Color.DARK_GRAY);
+    }
+    
     
     private void enableSimulation(boolean enabled) {
         logger.log(Level.INFO, "enableSimulation {0}", enabled);
@@ -170,6 +198,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton enableToggleButton;
     private javax.swing.JLabel nameLabel;
     private javax.swing.JToggleButton simulationToggleButton;
     private javax.swing.JLabel unitLabel;
