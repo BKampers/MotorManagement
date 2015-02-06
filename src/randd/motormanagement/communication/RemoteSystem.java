@@ -13,7 +13,7 @@ public class RemoteSystem {
 
     
     public static final String OK = "OK";
-    
+
     
     public interface Listener {
         
@@ -104,6 +104,13 @@ public class RemoteSystem {
     }
     
     
+    public void requestTableEnabled(Table table) throws InterruptedException, JSONException {
+        final JSONArray ENABLED_PROPERTY = new JSONArray(new String[] {ENABLED});
+        JSONObject tableObject = request(table.getName(), PROPERTIES, ENABLED_PROPERTY);
+        updateTableEnabled(tableObject);
+    }
+    
+    
     public void requestEngine(Engine engine) throws InterruptedException, JSONException {
         JSONObject engineObject = request(ENGINE);
         updateEngine(engine, engineObject);
@@ -118,6 +125,12 @@ public class RemoteSystem {
     public String modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException, JSONException {
         return modify(COGWHEEL, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
     }
+    
+
+    public String enableTable(Table table, boolean enabled) throws JSONException, InterruptedException {
+        return modify(table.getName(), ENABLED, enabled);
+    }
+
     
     public String enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
         if (enable) {
@@ -292,6 +305,12 @@ public class RemoteSystem {
         table.setColumnIndex(object.getInt(COLUMN));
         table.setRowIndex(object.getInt(ROW));
     }
+    
+    
+    private void updateTableEnabled(JSONObject object) throws JSONException {
+        Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
+        table.setEnabled(object.getBoolean(ENABLED));
+    }
 
     
     private class PollTask implements Runnable {
@@ -398,6 +417,7 @@ public class RemoteSystem {
     private static final String DECIMALS = "Decimals";
     private static final String INDEX = "Index";
     private static final String SIMULATION = "Simulation";
+    private static final String ENABLED = "Enabled";
     
     private static final String MEASUREMENT_TABLES = "MeasurementTables";
     private static final String FLASH = "Flash";
