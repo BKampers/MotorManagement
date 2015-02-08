@@ -81,15 +81,15 @@ public class Monitor extends bka.swing.FrameApplication {
 //        settingsPanel.add(ignitionTimerPanel);
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
         channelComboBox.setEditable(developerMode);
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("RPM"), measurementPanelLsitener, developerMode));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Load"), measurementPanelLsitener, developerMode));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Water"), measurementPanelLsitener, developerMode));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Air"), measurementPanelLsitener, developerMode));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Battery"), measurementPanelLsitener, developerMode));
-        valuesPanel.add(new MeasurementPanel(Measurement.getInstance("Map"), measurementPanelLsitener, developerMode));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Lambda")));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux1")));
-//        valuesPanel.add(new MeasurementPanel(Measurement.get("Aux2")));
+        addMeasurementPanel("RPM", developerMode);
+        addMeasurementPanel("Load", developerMode);
+        addMeasurementPanel("Water", developerMode);
+        addMeasurementPanel("Air", developerMode);
+        addMeasurementPanel("Battery", developerMode);
+        addMeasurementPanel("Map", developerMode);
+//        addMeasurementPanel("Lambda")));
+//        addMeasurementPanel("Aux1")));
+//        addMeasurementPanel("Aux2")));
         addEnginePanel();
         if (developerMode) {
             addMemoryPanel();
@@ -243,6 +243,22 @@ public class Monitor extends bka.swing.FrameApplication {
         catch (ChannelException ex) {
             handle(ex);
         }
+    }
+    
+    
+    private void addMeasurementPanel(String measurementName, boolean developerMode) {
+        Measurement measurement = Measurement.getInstance(measurementName);
+        MeasurementPanel panel = new MeasurementPanel(measurement, measurementPanelLsitener, developerMode);
+        valuesPanel.add(panel);
+        if (! "Load".equals(measurement.getName()) && ! "RPM".equals(measurement.getName())) {
+            Table table = Table.getInstance(measurementName + "Correction");
+            try {
+                remoteSystem.requestTableEnabled(table);
+            }
+            catch (InterruptedException | org.json.JSONException ex) {
+                handle(ex);
+            }
+    }
     }
     
 
@@ -475,7 +491,6 @@ public class Monitor extends bka.swing.FrameApplication {
     private final Engine engine = new Engine();
     private final Flash flash = new Flash();
 
-    private List<String> tableNames;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox channelComboBox;

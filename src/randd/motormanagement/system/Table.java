@@ -202,8 +202,9 @@ public class Table {
 
     
     public void setEnabled(boolean enabled) {
-        if (this.enabled != enabled) {
-            this.enabled = enabled;
+        Boolean newValue = enabled;
+        if (! newValue.equals(this.enabled)) {
+            this.enabled = newValue;
             notifyPropertyChanged(Property.ENABLED);
         }
     }
@@ -257,7 +258,7 @@ public class Table {
     private float maximum = 100.0f;
     private int decimals = 0;
     
-    private boolean enabled;
+    private Boolean enabled;
     
     private float[][] fields = null;
     
