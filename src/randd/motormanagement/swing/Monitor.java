@@ -248,17 +248,30 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
-        MeasurementPanel panel = new MeasurementPanel(measurement, measurementPanelLsitener, developerMode);
+        Table correctionTable = getCorrectionTable(measurement);
+        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelLsitener, developerMode);
         valuesPanel.add(panel);
-        if (! "Load".equals(measurement.getName()) && ! "RPM".equals(measurement.getName())) {
-            Table table = Table.getInstance(measurementName + "Correction");
+        Table table = getCorrectionTable(measurement);
+        if (table != null) {
             try {
                 remoteSystem.requestTableEnabled(table);
             }
             catch (InterruptedException | org.json.JSONException ex) {
                 handle(ex);
             }
+        }
     }
+    
+    
+    private Table getCorrectionTable(Measurement measurement) {
+        assert (measurement != null);
+        String measurementName = measurement.getName();
+        if (! "Load".equals(measurementName) && ! "RPM".equals(measurementName)) {
+            return Table.getInstance(measurementName + "Correction");
+        }
+        else {
+            return null;
+        }
     }
     
 
@@ -346,8 +359,7 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void tableEnabled(MeasurementPanel panel, boolean enabled) {
             Measurement measurement = panel.getMeasurement();
-            String correctionTableName = measurement.getName() + "Correction";
-            Table table = Table.getInstance(correctionTableName);
+            Table table = getCorrectionTable(measurement);
             try {
                 String result = remoteSystem.enableTable(table, enabled);
                 panel.notifyResult(Measurement.Property.TABLE_ENABLED, result);

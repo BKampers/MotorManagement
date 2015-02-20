@@ -22,15 +22,15 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    public MeasurementPanel(Measurement measurement, Listener listener, boolean simulationEnabled) {
+    public MeasurementPanel(Measurement measurement, Table correctionTable, Listener listener, boolean simulationEnabled) {
         logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
         this.listener = listener;
         initComponents();
-        boolean isCorrection = ! "Load".equals(measurement.getName()) && ! "RPM".equals(measurement.getName());
+        boolean isCorrection = correctionTable != null;
         enableCorrectionToggleButton.setVisible(isCorrection);
         enableCorrectionToggleButton.setEnabled(isCorrection);
         simulationToggleButton.setVisible(simulationEnabled);
-        setMeasurement(measurement);
+        setMeasurement(measurement, correctionTable);
     }
     
     
@@ -54,12 +54,11 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    private void setMeasurement(Measurement measurement) {
+    private void setMeasurement(Measurement measurement, Table correctionTable) {
         this.measurement = measurement;
         measurement.addListener(measurementListener);
-        if (enableCorrectionToggleButton.isVisible()) {
-            Table table = Table.getInstance(measurement.getName() + "Correction");
-            table.addListener(new TableListener());
+        if (correctionTable != null) {
+            correctionTable.addListener(tableListener);
         }
         if (measurement.getName() != null) {
             nameLabel.setText(Bundle.getInstance().get(measurement.getName()));
@@ -238,6 +237,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
 
     private final MeasurementListener measurementListener = new MeasurementListener();
+    private final TableListener tableListener = new TableListener();
     
     private final Logger logger;
     
