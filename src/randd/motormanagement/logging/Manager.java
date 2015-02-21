@@ -7,6 +7,7 @@ import java.util.logging.*;
 
 
 public class Manager {
+    
 
     public static void setup(String[] paths) throws java.io.IOException {
         filterPaths = paths;
@@ -14,26 +15,25 @@ public class Manager {
         Logger rootLogger = Logger.getLogger("");
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
-                handler.setFilter(logFilter);
-                handler.setFormatter(new ConsoleFormatter());
+                handler.setFilter(LOG_FILTER);
+                handler.setFormatter(FORMATTER);
             }
         }
         
         Logger logger = Logger.getLogger("randd");
         logger.setLevel(Level.INFO);
         fileHandler = new FileHandler("Logging.log");
-        formatter = new SimpleFormatter();
-        fileHandler.setFormatter(formatter);
+        fileHandler.setFormatter(FORMATTER);
         logger.addHandler(fileHandler);
     }
 
     
-    static class ConsoleFormatter extends Formatter {
+    static class DefaultFormatter extends Formatter {
 
         @Override
         public String format(LogRecord record) {
             StringBuilder builder = new StringBuilder();
-            builder.append(Long.toHexString(record.getMillis()));
+            builder.append(DATE_FORMAT.format(new java.util.Date(record.getMillis())));
             builder.append(": ");
             builder.append(formatMessage(record));
             builder.append('\n');
@@ -42,7 +42,7 @@ public class Manager {
     }
     
 
-    private  static class LogFilter implements Filter {
+    private static class LogFilter implements Filter {
 
         @Override
         public boolean isLoggable(LogRecord record) {
@@ -61,10 +61,10 @@ public class Manager {
     
     
     private static String[] filterPaths;
-    
-    private static final Filter logFilter = new LogFilter();
-    
     private static FileHandler fileHandler;
-    private static SimpleFormatter formatter;
+    
+    private static final Formatter FORMATTER = new DefaultFormatter();
+    private static final Filter LOG_FILTER = new LogFilter();
+    private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyyMMdd HHmmss SSS");
 
 }
