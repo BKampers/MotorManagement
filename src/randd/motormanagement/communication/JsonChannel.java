@@ -7,6 +7,8 @@ package randd.motormanagement.communication;
 
 import bka.communication.*;
 import java.util.concurrent.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.json.*;
 
 
@@ -43,7 +45,9 @@ public class JsonChannel {
     
     
     void send(JSONObject message) {
-        channel.send(message.toString().getBytes());
+        StringBuilder builder = new StringBuilder(message.toString());
+        builder.append(EOT);
+        channel.send(builder.toString().getBytes());
     }
     
     
@@ -54,36 +58,32 @@ public class JsonChannel {
     
     private class ObjectReceiver implements ChannelListener {
 
+        @Override
         public void receive(byte[] bytes) {
+            logger.info(new String(bytes));
             for (int i = 0; i < bytes.length; ++i) {
                 char character = (char) bytes[i];
-                if (character == '{') {
-                    bracketCount++;
-                }
-                if (bracketCount > 0) {
+                if (character != EOT) {
                     receivedData.append(character);
-                    if (character == '}') {
-                        bracketCount--;
+                }
+                else {
+                    try {
+                        receivedObjects.add(new JSONObject(receivedData.toString()));
+                        receivedData = new StringBuilder();
                     }
-                    if (bracketCount == 0) {
-                        try {
-                            receivedObjects.add(new JSONObject(receivedData.toString()));
-                            receivedData = new StringBuilder();
-                        }
-                        catch (org.json.JSONException ex) {
-                            handleException(ex);
-                        }
+                    catch (org.json.JSONException ex) {
+                        handleException(ex);
                     }
                 }
             }
         }
 
+        @Override
         public void handleException(Exception ex) {
-            ex.printStackTrace(System.err);
+            logger.log(Level.WARNING, ex, null);
         }
         
         private StringBuilder receivedData = new StringBuilder();
-        private int bracketCount = 0;
         
     }
     
@@ -94,5 +94,9 @@ public class JsonChannel {
     private ChannelListener objectReceiver = null;
     
     private final BlockingQueue<JSONObject> receivedObjects = new LinkedBlockingQueue<>();
+    
+    private static final Logger logger = Logger.getLogger(JsonChannel.class.getName());
+    
+    private static final char EOT = '~';
    
 }

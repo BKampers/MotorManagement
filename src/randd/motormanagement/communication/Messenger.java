@@ -71,6 +71,7 @@ class Messenger {
     
     private class ReceiveTask implements Runnable {
         
+        @Override
         public void run() {
             try {
                 while (running && channel != null) {
@@ -96,7 +97,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
+                logger.log(Level.WARNING, ex, null);
                 running = false;
             }
         }
@@ -127,6 +128,7 @@ class Messenger {
          * Assigns timeout object otherwise.
          * Next transaction in queue is sent after previous is responded or timed out. 
          */
+        @Override
         public void run() {
             try {
                 while (running) {
@@ -141,7 +143,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
+                logger.log(Level.WARNING, ex, null);
                 running = false;
             }
         }
@@ -160,7 +162,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                ex.printStackTrace(System.err);
+                logger.log(Level.WARNING, ex, null);
             }
         }
         
@@ -172,7 +174,7 @@ class Messenger {
                 }
                 catch (JSONException ex) {
                     // Will not occur since key in put method is not null
-                    ex.printStackTrace(System.err);
+                    logger.log(Level.WARNING, ex, null);
                 }
             }
         }
@@ -217,6 +219,6 @@ class Messenger {
 
     private static Logger logger;
     
-    private static final long MAXIMUM_RESPONSE_TIME = 2500; // ms
+    private static final long MAXIMUM_RESPONSE_TIME = 5000; // ms
 
 }
