@@ -270,7 +270,6 @@ public class MessagingTest {
     public void requestFlashElements() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Request", "FlashElements");
         JSONObject response = receiveResponse(message);
-        System.out.println(response.toString());
         assertEquals("OK", response.get("Status"));
         JSONArray elements = response.getJSONArray("Elements");
         assertNotNull(elements);
