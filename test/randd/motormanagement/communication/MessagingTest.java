@@ -72,7 +72,7 @@ public class MessagingTest {
         JSONObject message = createMessage("Request", null);
         JSONObject response = receiveResponse(message);
         assertEquals("Request", response.optString("Response"));
-        assertEquals("No subject", response.optString("Error"));
+        assertEquals("Invalid subject", response.optString("Error"));
     }
     
     
@@ -263,6 +263,23 @@ public class MessagingTest {
         response = receiveResponse(message);
         assertNotNull(response.get("Status"));
         assertFalse("OK".equals(response.get("Status")));
+    }
+    
+    
+    @Test(timeout=750)
+    public void requestFlashElements() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("Request", "FlashElements");
+        JSONObject response = receiveResponse(message);
+        System.out.println(response.toString());
+        assertEquals("OK", response.get("Status"));
+        JSONArray elements = response.getJSONArray("Elements");
+        assertNotNull(elements);
+        for (int i = 0; i < elements.length(); ++i) {
+            JSONObject element = elements.getJSONObject(i);
+            assertNotNull(element.getInt("TypeId"));
+            assertNotNull(element.getInt("Reference"));
+            assertNotNull(element.getInt("Size"));
+        }
     }
     
     
