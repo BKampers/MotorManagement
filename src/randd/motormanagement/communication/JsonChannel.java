@@ -80,7 +80,7 @@ public class JsonChannel {
 
         @Override
         public void handleException(Exception ex) {
-            logger.log(Level.WARNING, ex, null);
+            logger.log(Level.WARNING, "", ex);
         }
         
         private StringBuilder receivedData = new StringBuilder();

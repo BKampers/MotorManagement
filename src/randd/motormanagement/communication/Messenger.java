@@ -97,7 +97,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, ex, null);
+                logger.log(Level.WARNING, null, ex);
                 running = false;
             }
         }
@@ -143,7 +143,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, ex, null);
+                logger.log(Level.WARNING, null, ex);
                 running = false;
             }
         }
@@ -162,7 +162,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, ex, null);
+                logger.log(Level.WARNING, null, ex);
             }
         }
         
@@ -174,7 +174,7 @@ class Messenger {
                 }
                 catch (JSONException ex) {
                     // Will not occur since key in put method is not null
-                    logger.log(Level.WARNING, ex, null);
+                    logger.log(Level.WARNING, null, ex);
                 }
             }
         }
