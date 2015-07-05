@@ -77,20 +77,22 @@ public class Monitor extends bka.swing.FrameApplication {
 
     
     private void initializePanels() {
-//        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
-//        settingsPanel.add(ignitionTimerPanel);
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
-        channelComboBox.setEditable(developerMode);
-        addMeasurementPanel("RPM", developerMode);
-        addMeasurementPanel("Load", developerMode);
-        addMeasurementPanel("Water", developerMode);
-        addMeasurementPanel("Air", developerMode);
-        addMeasurementPanel("Battery", developerMode);
-        addMeasurementPanel("Map", developerMode);
-//        addMeasurementPanel("Lambda")));
-//        addMeasurementPanel("Aux1")));
-//        addMeasurementPanel("Aux2")));
-        addEnginePanel();
+        if (getBooleanProperty(LIVE_MODE, true)) {
+    //        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
+    //        settingsPanel.add(ignitionTimerPanel);
+            channelComboBox.setEditable(developerMode);
+            addMeasurementPanel("RPM", developerMode);
+            addMeasurementPanel("Load", developerMode);
+            addMeasurementPanel("Water", developerMode);
+            addMeasurementPanel("Air", developerMode);
+            addMeasurementPanel("Battery", developerMode);
+            addMeasurementPanel("Map", developerMode);
+    //        addMeasurementPanel("Lambda")));
+    //        addMeasurementPanel("Aux1")));
+    //        addMeasurementPanel("Aux2")));
+            addEnginePanel();
+        }
         if (developerMode) {
             addMemoryPanel();
             addStatusPanel();
@@ -237,8 +239,10 @@ public class Monitor extends bka.swing.FrameApplication {
             memoryPanel.setMemory(flash);
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
-            populateTableTabs();
-            remoteSystem.startPolling();
+            if (getBooleanProperty(LIVE_MODE, true)) {
+                populateTableTabs();
+                remoteSystem.startPolling();
+            }
         }
         catch (ChannelException ex) {
             handle(ex);
@@ -472,7 +476,7 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
         
-}
+    }
     
 
     private final MemoryPanel memoryPanel = new MemoryPanel(new MemoryPanel.Listener() {
@@ -502,7 +506,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private final Engine engine = new Engine();
     private final Flash flash = new Flash();
-
+    
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox channelComboBox;
@@ -522,6 +526,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String SELECTED_CHANNEL = "SelectedChannel";
     private static final String SOCKET_HOSTS = "SocketChannels";
     private static final String DEVELOPER_MODE = "DeveloperMode";
+    private static final String LIVE_MODE = "LiveMode";
 
     private static final int RANDD_MM_PORT = 44252;
     
