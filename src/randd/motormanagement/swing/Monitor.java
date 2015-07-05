@@ -502,41 +502,44 @@ public class Monitor extends bka.swing.FrameApplication {
         public void loadButtonPressed() {
             JFileChooser fileChooser = new JFileChooser();
             if (fileChooser.showOpenDialog(Monitor.this) == JFileChooser.APPROVE_OPTION) {
-            java.io.FileReader reader = null;
-            try {
-                final int MAX = 0x10;
-                java.io.File file = fileChooser.getSelectedFile();
-                reader = new java.io.FileReader(file);
-                char[] chars = new char[(int) file.length()];
-                reader.read(chars);
-                JSONObject jsonObject = new JSONObject(chars);
-                int reference = jsonObject.getInt("Reference");
-                JSONArray jsonValues = jsonObject.getJSONArray("Value");
-                int sourceIndex = 0;
-                int count = jsonValues.length();
-                while (sourceIndex < count) {
-                    int[] values = new int[Math.min(count - sourceIndex, MAX)];
-                    for (int i = 0; i < values.length; ++i) {
-                        values[i] = jsonValues.getInt(sourceIndex);
-                        sourceIndex++;
-                    }
-                    remoteSystem.modifyFlash(reference, values);
-                }
-            }
-            catch (java.io.IOException | JSONException | InterruptedException ex) {
-                logger.log(Level.SEVERE, null, ex);
-            }
-            finally {
+                java.io.FileReader reader = null;
                 try {
-                    if (reader != null) {
-                        reader.close();
+                    final int MAX = 0x10;
+                    java.io.File file = fileChooser.getSelectedFile();
+                    reader = new java.io.FileReader(file);
+                    char[] chars = new char[(int) file.length()];
+                    reader.read(chars);
+                    String source = new String(chars);
+                    JSONObject jsonObject = new JSONObject(source);
+                    int reference = jsonObject.getInt("Reference");
+                    JSONArray jsonValues = jsonObject.getJSONArray("Value");
+                    int sourceIndex = 0;
+                    int count = jsonValues.length();
+                    while (sourceIndex < count) {
+                        int[] values = new int[Math.min(count - sourceIndex, MAX)];
+                        for (int i = 0; i < values.length; ++i) {
+                            values[i] = jsonValues.getInt(sourceIndex);
+                            sourceIndex++;
+                        }
+                        remoteSystem.modifyFlash(reference, values);
+                        reference += values.length;
                     }
                 }
-                catch (java.io.IOException ex) {
+                catch (java.io.IOException | JSONException | InterruptedException ex) {
                     logger.log(Level.SEVERE, null, ex);
                 }
+                finally {
+                    try {
+                        if (reader != null) {
+                            reader.close();
+                        }
+                    }
+                    catch (java.io.IOException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
+                }
             }
-        }        }
+        }
         
     }) ;
     
