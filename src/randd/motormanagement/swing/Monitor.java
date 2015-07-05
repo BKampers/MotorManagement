@@ -10,8 +10,11 @@ package randd.motormanagement.swing;
 
 import bka.communication.*;
 import java.util.*;
+import java.util.logging.*;
 import javax.swing.JOptionPane;
+import javax.swing.JFileChooser;
 import javax.swing.event.ChangeEvent;
+import org.json.*;
 import randd.motormanagement.communication.*;
 import randd.motormanagement.system.*;
 
@@ -232,10 +235,10 @@ public class Monitor extends bka.swing.FrameApplication {
     private void connect(Channel selectedItem) {
         selectedChannel = selectedItem;
         try {
-            JsonChannel channel = new JsonChannel(selectedItem, title());
-            remoteSystem = new RemoteSystem(channel);
+            Transporter transporter = new Transporter(selectedItem, title());
+            remoteSystem = new RemoteSystem(transporter);
             remoteSystem.connect();
-            setProperty(SELECTED_CHANNEL, channel.getName());
+            setProperty(SELECTED_CHANNEL, transporter.getName());
             memoryPanel.setMemory(flash);
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
@@ -495,6 +498,46 @@ public class Monitor extends bka.swing.FrameApplication {
             
         }
         
+        @Override
+        public void loadButtonPressed() {
+            JFileChooser fileChooser = new JFileChooser();
+            if (fileChooser.showOpenDialog(Monitor.this) == JFileChooser.APPROVE_OPTION) {
+            java.io.FileReader reader = null;
+            try {
+                final int MAX = 0x10;
+                java.io.File file = fileChooser.getSelectedFile();
+                reader = new java.io.FileReader(file);
+                char[] chars = new char[(int) file.length()];
+                reader.read(chars);
+                JSONObject jsonObject = new JSONObject(chars);
+                int reference = jsonObject.getInt("Reference");
+                JSONArray jsonValues = jsonObject.getJSONArray("Value");
+                int sourceIndex = 0;
+                int count = jsonValues.length();
+                while (sourceIndex < count) {
+                    int[] values = new int[Math.min(count - sourceIndex, MAX)];
+                    for (int i = 0; i < values.length; ++i) {
+                        values[i] = jsonValues.getInt(sourceIndex);
+                        sourceIndex++;
+                    }
+                    remoteSystem.modifyFlash(reference, values);
+                }
+            }
+            catch (java.io.IOException | JSONException | InterruptedException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+            finally {
+                try {
+                    if (reader != null) {
+                        reader.close();
+                    }
+                }
+                catch (java.io.IOException ex) {
+                    logger.log(Level.SEVERE, null, ex);
+                }
+            }
+        }        }
+        
     }) ;
     
     
@@ -529,5 +572,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String LIVE_MODE = "LiveMode";
 
     private static final int RANDD_MM_PORT = 44252;
+    
+    private static final Logger logger = Logger.getLogger(Monitor.class.getName());
     
 }

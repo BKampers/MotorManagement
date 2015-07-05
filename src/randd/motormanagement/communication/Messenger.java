@@ -23,9 +23,9 @@ class Messenger {
     static final String SUBJECT  = "Subject";
 
     
-    Messenger(JsonChannel channel) {
-        this.channel = channel;
-        String channelName = channel.getName().replaceAll("\\.", "-");
+    Messenger(Transporter transporter) {
+        this.transporter = transporter;
+        String channelName = transporter.getName().replaceAll("\\.", "-");
         logger = Logger.getLogger(Messenger.class.getName() + "." + channelName);
         logger.info(Messenger.class.getName());
     }
@@ -37,7 +37,7 @@ class Messenger {
     
 
     void open() throws bka.communication.ChannelException {
-        channel.open();
+        transporter.open();
         Thread receiveThread = new Thread(receiveTask);
         Thread transactionThread = new Thread(transactionTask);
         receiveThread.start();
@@ -48,7 +48,7 @@ class Messenger {
     void close() throws bka.communication.ChannelException {
         transactionTask.stop();
         receiveTask.stop();
-        channel.close();
+        transporter.close();
     }
     
     
@@ -74,8 +74,8 @@ class Messenger {
         @Override
         public void run() {
             try {
-                while (running && channel != null) {
-                    JSONObject receivedObject = channel.nextReceivedObject();
+                while (running && transporter != null) {
+                    JSONObject receivedObject = transporter.nextReceivedObject();
                     if (receivedObject.length() > 0) {
                         logger.log(Level.INFO, "<< {0}", receivedObject);
                         boolean responded = false;
@@ -157,7 +157,7 @@ class Messenger {
             try {
                 synchronized (outstanding) {
                     outstanding.transaction = transaction;
-                    channel.send(transaction.message);
+                    transporter.send(transaction.message);
                     outstanding.wait(MAXIMUM_RESPONSE_TIME);
                 }
             }
@@ -207,7 +207,7 @@ class Messenger {
     }
     
     
-    private final JsonChannel channel;
+    private final Transporter transporter;
 
     private Listener listener = null;
     

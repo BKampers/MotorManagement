@@ -23,19 +23,19 @@ public class MessagingTest {
          * Windows allows to open a serial port only once per application,
          * so it needs to be a static member to be used for all tests.
          */
-        if (jsonChannel == null) {
+        if (transporter == null) {
             Channel channel = createChannel(); 
-            jsonChannel = new JsonChannel(channel, "MessagingTest");
-            jsonChannel.open();
+            transporter = new Transporter(channel, "MessagingTest");
+            transporter.open();
         }
     }
     
     
     @AfterClass
     public static void closePort() throws ChannelException {
-        if (jsonChannel != null) {
-            jsonChannel.close();
-            jsonChannel = null;
+        if (transporter != null) {
+            transporter.close();
+            transporter = null;
         }
     }
     
@@ -266,7 +266,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=750)
+    @Test(timeout=400)
     public void requestFlashElements() throws JSONException, InterruptedException {
         JSONObject message = createMessage("Request", "FlashElements");
         JSONObject response = receiveResponse(message);
@@ -291,8 +291,8 @@ public class MessagingTest {
   
     
     private JSONObject receiveResponse(JSONObject messageObject) throws InterruptedException {
-        jsonChannel.send(messageObject);
-        return jsonChannel.nextReceivedObject();
+        transporter.send(messageObject);
+        return transporter.nextReceivedObject();
     }
     
     
@@ -315,6 +315,6 @@ public class MessagingTest {
     }
 
 
-    private static JsonChannel jsonChannel = null;
+    private static Transporter transporter = null;
      
 }

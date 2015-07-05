@@ -12,10 +12,10 @@ import java.util.logging.Logger;
 import org.json.*;
 
 
-public class JsonChannel {
+public class Transporter {
 
     
-    public JsonChannel(Channel channel, String applicationName) {
+    public Transporter(Channel channel, String applicationName) {
         this.channel = channel;
         this.applicationName = applicationName;
     }
@@ -45,9 +45,9 @@ public class JsonChannel {
     
     
     void send(JSONObject message) {
-        StringBuilder builder = new StringBuilder(message.toString());
-        builder.append(EOT);
-        channel.send(builder.toString().getBytes());
+        channel.send(message.toString().getBytes());
+        StringBuilder eot = new StringBuilder().append(EOT);
+        channel.send(eot.toString().getBytes());
     }
     
     
@@ -95,7 +95,7 @@ public class JsonChannel {
     
     private final BlockingQueue<JSONObject> receivedObjects = new LinkedBlockingQueue<>();
     
-    private static final Logger logger = Logger.getLogger(JsonChannel.class.getName());
+    private static final Logger logger = Logger.getLogger(Transporter.class.getName());
     
     private static final char EOT = '~';
    

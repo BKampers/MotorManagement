@@ -22,9 +22,9 @@ public class RemoteSystem {
     }
     
     
-    public RemoteSystem(JsonChannel channel) {
-        assert(channel != null);
-        messenger = new Messenger(channel);
+    public RemoteSystem(Transporter transporter) {
+        assert(transporter != null);
+        messenger = new Messenger(transporter);
         messenger.setListener(new MessengerListener());
     }
     
@@ -164,6 +164,11 @@ public class RemoteSystem {
     
     public String modifyFlash(int reference, int count, int value) throws JSONException, InterruptedException {
         return modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
+    }
+    
+    
+    public String modifyFlash(int reference, int[] value) throws JSONException, InterruptedException {
+        return modify(FLASH, REFERENCE, reference, VALUE, value);
     }
     
     
@@ -315,6 +320,7 @@ public class RemoteSystem {
     
     private class PollTask implements Runnable {
         
+        @Override
         public void run() {
             while (running) {
                 try {
@@ -355,6 +361,7 @@ public class RemoteSystem {
     
     private class MessengerListener implements Messenger.Listener {
 
+        @Override
         public void notifyMessage(JSONObject message) {
             if (NOTIFICATION.equals(message.optString(Messenger.MESSAGE))) {
                 Iterator keys = message.keys();

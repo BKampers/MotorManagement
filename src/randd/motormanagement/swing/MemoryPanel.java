@@ -5,8 +5,11 @@
 package randd.motormanagement.swing;
 
 import java.awt.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
+import org.json.JSONObject;
 import randd.motormanagement.system.Flash;
 
 
@@ -15,6 +18,7 @@ public class MemoryPanel extends javax.swing.JPanel {
     
     public interface Listener {
         void clearButtonPressed();
+        void loadButtonPressed();
     }
 
 
@@ -59,6 +63,7 @@ public class MemoryPanel extends javax.swing.JPanel {
         elementScrollPane = new javax.swing.JScrollPane();
         elementList = new javax.swing.JList();
         clearButton = new javax.swing.JButton();
+        loadButton = new javax.swing.JButton();
 
         memoryTable.setModel(tableModel);
         tableScrollPane.setViewportView(memoryTable);
@@ -70,6 +75,13 @@ public class MemoryPanel extends javax.swing.JPanel {
         clearButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 clearButton_actionPerformed(evt);
+            }
+        });
+
+        loadButton.setText("Load");
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButton_actionPerformed(evt);
             }
         });
 
@@ -85,6 +97,8 @@ public class MemoryPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addGap(58, 58, 58)
                         .addComponent(clearButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(loadButton)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
@@ -99,7 +113,9 @@ public class MemoryPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addComponent(elementScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 109, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(17, 17, 17)
-                .addComponent(clearButton))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(clearButton)
+                    .addComponent(loadButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -117,21 +133,30 @@ public class MemoryPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_clearButton_actionPerformed
 
+    
+    private void loadButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton_actionPerformed
+        listener.loadButtonPressed();
+    }//GEN-LAST:event_loadButton_actionPerformed
+
 
     private class TableModel extends javax.swing.table.DefaultTableModel {
         
+        @Override
         public int getColumnCount() {
             return (flash != null) ? Math.min(flash.getSize(), COLUMN_COUNT) : 0;
         }
         
+        @Override
         public int getRowCount() {
             return (flash != null) ? flash.getSize() / COLUMN_COUNT : 0; 
         }
         
+        @Override
         public String getColumnName(int column) {
             return String.format("%X", column);
         }
         
+        @Override
         public Object getValueAt(int row, int column) {
             byte b = flash.getByteAt(row * COLUMN_COUNT + column);
             return String.format("%02X", b);
@@ -152,6 +177,7 @@ public class MemoryPanel extends javax.swing.JPanel {
     
     private class RowHeaders extends bka.swing.TableRowHeaders {
         
+        @Override
         public Object rowName(int row) {
             return String.format("%04X", row * COLUMN_COUNT);
         }    
@@ -161,6 +187,7 @@ public class MemoryPanel extends javax.swing.JPanel {
     
     private class CellRenderer extends javax.swing.table.DefaultTableCellRenderer {
         
+        @Override
         public Component getTableCellRendererComponent(JTable grid, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer = super.getTableCellRendererComponent(grid, value, isSelected, hasFocus, row, column);
             if (flash != null) {
@@ -191,6 +218,7 @@ public class MemoryPanel extends javax.swing.JPanel {
     private javax.swing.JButton clearButton;
     private javax.swing.JList elementList;
     private javax.swing.JScrollPane elementScrollPane;
+    private javax.swing.JButton loadButton;
     private javax.swing.JTable memoryTable;
     private javax.swing.JScrollPane tableScrollPane;
     // End of variables declaration//GEN-END:variables
@@ -200,6 +228,7 @@ public class MemoryPanel extends javax.swing.JPanel {
 
     
     private final Flash.Listener flashListener = new Flash.Listener() {
+        @Override
         public void refreshed() {
             tableModel.fireTableStructureChanged();
             ((javax.swing.DefaultListModel) elementList.getModel()).removeAllElements();
