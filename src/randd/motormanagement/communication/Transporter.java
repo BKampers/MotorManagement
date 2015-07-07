@@ -45,9 +45,9 @@ public class Transporter {
     
     
     void send(JSONObject message) {
-        channel.send(message.toString().getBytes());
-        StringBuilder eot = new StringBuilder().append(EOT);
-        channel.send(eot.toString().getBytes());
+        StringBuilder builder = new StringBuilder(message.toString());
+        builder.append(TRANSMISSION_END);
+        channel.send(builder.toString().getBytes());
     }
     
     
@@ -63,7 +63,7 @@ public class Transporter {
             logger.info(new String(bytes));
             for (int i = 0; i < bytes.length; ++i) {
                 char character = (char) bytes[i];
-                if (character != EOT) {
+                if (character != TRANSMISSION_END) {
                     receivedData.append(character);
                 }
                 else {
@@ -97,6 +97,6 @@ public class Transporter {
     
     private static final Logger logger = Logger.getLogger(Transporter.class.getName());
     
-    private static final char EOT = '~';
+    private static final char TRANSMISSION_END = '\n';
    
 }
