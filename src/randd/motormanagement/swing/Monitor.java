@@ -350,6 +350,34 @@ public class Monitor extends bka.swing.FrameApplication {
         }
     }
     
+    
+    private String loadTextFile() {
+        String source = null;
+        java.io.FileReader reader = null;
+        JFileChooser fileChooser = new JFileChooser();
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            java.io.File file = fileChooser.getSelectedFile();
+            try {
+                reader = new java.io.FileReader(file);
+                char[] chars = new char[(int) file.length()];
+                reader.read(chars);
+                source = new String(chars);
+            }
+            catch (java.io.IOException ex) {
+                logger.log(Level.WARNING, null, ex);
+            }
+        }
+        if (reader != null) {
+            try {
+                reader.close();
+            }
+            catch (java.io.IOException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }
+        return source;
+    }
+    
 
     private class TabChangeListener implements javax.swing.event.ChangeListener {
 
@@ -500,48 +528,28 @@ public class Monitor extends bka.swing.FrameApplication {
         
         @Override
         public void loadButtonPressed() {
-            JFileChooser fileChooser = new JFileChooser();
-            if (fileChooser.showOpenDialog(Monitor.this) == JFileChooser.APPROVE_OPTION) {
-                java.io.FileReader reader = null;
-                try {
-                    final int MAX = 0x10;
-                    java.io.File file = fileChooser.getSelectedFile();
-                    reader = new java.io.FileReader(file);
-                    char[] chars = new char[(int) file.length()];
-                    reader.read(chars);
-                    String source = new String(chars);
-                    JSONObject jsonObject = new JSONObject(source);
-                    int reference = jsonObject.getInt("Reference");
-                    JSONArray jsonValues = jsonObject.getJSONArray("Value");
-                    int sourceIndex = 0;
-                    int count = jsonValues.length();
-                    while (sourceIndex < count) {
-                        int[] values = new int[Math.min(count - sourceIndex, MAX)];
-                        for (int i = 0; i < values.length; ++i) {
-                            values[i] = jsonValues.getInt(sourceIndex);
-                            sourceIndex++;
-                        }
-                        remoteSystem.modifyFlash(reference, values);
-                        reference += values.length;
-                    }
-                }
-                catch (java.io.IOException | JSONException | InterruptedException ex) {
-                    logger.log(Level.SEVERE, null, ex);
-                }
-                finally {
-                    try {
-                        if (reader != null) {
-                            reader.close();
-                        }
-                    }
-                    catch (java.io.IOException ex) {
-                        logger.log(Level.SEVERE, null, ex);
-                    }
-                }
+            try {
+                String source = loadTextFile();
+                JSONObject jsonObject = new JSONObject(source);
+                int reference = jsonObject.getInt(RemoteSystem.REFERENCE);
+                int[] values = getIntArray(jsonObject.getJSONArray(RemoteSystem.VALUE));
+                remoteSystem.modifyFlash(reference, values);
             }
+            catch (JSONException | InterruptedException ex) {
+                logger.log(Level.SEVERE, null, ex);
+            }
+        }        
+
+        private int[] getIntArray(JSONArray jsonArray) throws JSONException {
+            int length = jsonArray.length();
+            int[] intArray = new int[length];
+            for (int i = 0; i < length; ++i) {
+                intArray[i] = jsonArray.getInt(i);
+            }
+            return intArray;
         }
         
-    }) ;
+    });
     
     
     private final StatusPanel statusPanel = new StatusPanel();

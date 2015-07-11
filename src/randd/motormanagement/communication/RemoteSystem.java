@@ -10,9 +10,10 @@ import randd.motormanagement.system.*;
 
 
 public class RemoteSystem {
-
     
     public static final String OK = "OK";
+    public static final String REFERENCE = "Reference";
+    public static final String VALUE = "Value";
 
     
     public interface Listener {
@@ -167,8 +168,16 @@ public class RemoteSystem {
     }
     
     
-    public String modifyFlash(int reference, int[] value) throws JSONException, InterruptedException {
-        return modify(FLASH, REFERENCE, reference, VALUE, value);
+    public String modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
+        String status = OK;
+        int index = 0;
+        int total = values.length;
+        while (index < total && OK.equals(status)) {
+            int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
+            status = modify(FLASH, REFERENCE, reference, VALUE, Arrays.copyOfRange(values, index, count));
+            reference += count;
+        }
+        return status;
     }
     
     
@@ -419,7 +428,6 @@ public class RemoteSystem {
     private static final String MODIFY = "Modify";
     
     private static final String PROPERTIES = "Properties";
-    private static final String VALUE = "Value";
     private static final String TABLE = "Table";
     private static final String DECIMALS = "Decimals";
     private static final String INDEX = "Index";
@@ -433,7 +441,6 @@ public class RemoteSystem {
     private static final String NAMES = "Names";
     private static final String ELEMENTS = "Elements";
     private static final String COUNT = "Count";
-    private static final String REFERENCE = "Reference";
     private static final String SIZE = "Size";
     private static final String TYPE_ID = "TypeId";
     
@@ -454,5 +461,7 @@ public class RemoteSystem {
     private static final String OFFSET = "Offset";
     private static final String DEAD_POINTS = "DeadPoints";
     private static final String CYLINDER_COUNT = "CylinderCount";
+    
+    private static final int MAX_FLASH_SIZE_TO_SEND = 0x10;
     
 }
