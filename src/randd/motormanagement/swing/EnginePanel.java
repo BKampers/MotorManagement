@@ -5,7 +5,9 @@
 package randd.motormanagement.swing;
 
 
+import java.util.logging.*;
 import javax.swing.*;
+import org.json.*;
 
 import randd.motormanagement.system.Engine;
 
@@ -24,8 +26,13 @@ public class EnginePanel extends javax.swing.JPanel {
     public EnginePanel(Engine engine) {
         this.engine = engine;
         initComponents();
-        cogTotalSpinner.setModel(totalCogSpinnerModel);
-        gapSizeSpinner.setModel(gapLengthSpinnerModel);
+        java.util.List<CogwheelType> cogwheelTypes = loadCogwheelTypes();
+        if (! cogwheelTypes.isEmpty()) {
+            initCogwheelComboBox(cogwheelTypes);
+        }
+        else {
+            initCogwheelSpinners();
+        }
         offsetSpinner.setModel(offsetSpinnerModel);
         engine.addListener(new EngineListener());
     }
@@ -47,10 +54,8 @@ public class EnginePanel extends javax.swing.JPanel {
 
         scrollPane = new javax.swing.JScrollPane();
         controlPanel = new javax.swing.JPanel();
-        typeLabel = new javax.swing.JLabel();
-        cogTotalSpinner = new javax.swing.JSpinner();
-        minusLabel = new javax.swing.JLabel();
-        gapSizeSpinner = new javax.swing.JSpinner();
+        cogwheelTypeLabel = new javax.swing.JLabel();
+        cogwheelTypePanel = new javax.swing.JPanel();
         offsetLabel = new javax.swing.JLabel();
         offsetSpinner = new javax.swing.JSpinner();
         cylinderComboBox = new javax.swing.JComboBox();
@@ -59,55 +64,26 @@ public class EnginePanel extends javax.swing.JPanel {
 
         controlPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        typeLabel.setText(Bundle.getInstance().get("CogWheel"));
-
-        cogTotalSpinner.setMinimumSize(new java.awt.Dimension(40, 28));
-        cogTotalSpinner.setPreferredSize(new java.awt.Dimension(40, 28));
-        cogTotalSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                cogTotalSpinner_stateChanged(evt);
-            }
-        });
-
-        minusLabel.setText("-");
-
-        gapSizeSpinner.setMinimumSize(new java.awt.Dimension(40, 28));
-        gapSizeSpinner.setPreferredSize(new java.awt.Dimension(40, 28));
-        gapSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                gapSizeSpinner_stateChanged(evt);
-            }
-        });
+        cogwheelTypeLabel.setText(Bundle.getInstance().get("CogWheel"));
 
         javax.swing.GroupLayout controlPanelLayout = new javax.swing.GroupLayout(controlPanel);
         controlPanel.setLayout(controlPanelLayout);
         controlPanelLayout.setHorizontalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(controlPanelLayout.createSequentialGroup()
-                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(controlPanelLayout.createSequentialGroup()
-                        .addGap(5, 5, 5)
-                        .addComponent(typeLabel))
-                    .addGroup(controlPanelLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(cogTotalSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 51, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(minusLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(gapSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 52, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addGap(5, 5, 5)
+                .addComponent(cogwheelTypeLabel)
+                .addContainerGap(58, Short.MAX_VALUE))
+            .addComponent(cogwheelTypePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         controlPanelLayout.setVerticalGroup(
             controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(controlPanelLayout.createSequentialGroup()
                 .addGap(12, 12, 12)
-                .addComponent(typeLabel)
-                .addGap(12, 12, 12)
-                .addGroup(controlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(cogTotalSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(minusLabel)
-                    .addComponent(gapSizeSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addComponent(cogwheelTypeLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cogwheelTypePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 16, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         offsetLabel.setText(Bundle.getInstance().get("Offset"));
@@ -163,20 +139,69 @@ public class EnginePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+
+    private void initCogwheelComboBox(java.util.List<CogwheelType> types) {
+        cogwheelTypeComboBox = new javax.swing.JComboBox<>();
+        for (CogwheelType type : types) {
+            cogwheelTypeComboBox.addItem(type);
+        }
+        cogwheelTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cogwheelTypeComboBox_actionPerformed(evt);
+            }
+        });
+        cogwheelTypePanel.add(cogwheelTypeComboBox);
+    }
     
-    private void cogTotalSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_cogTotalSpinner_stateChanged
+    
+    private void initCogwheelSpinners() {
+        cogTotalSpinner = new javax.swing.JSpinner();
+        minusLabel = new javax.swing.JLabel();
+        gapSizeSpinner = new javax.swing.JSpinner();
+        cogTotalSpinner.setMinimumSize(new java.awt.Dimension(48, 28));
+        cogTotalSpinner.setPreferredSize(new java.awt.Dimension(48, 28));
+        cogTotalSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                cogTotalSpinner_stateChanged(evt);
+            }
+        });
+        minusLabel.setText("-");
+        gapSizeSpinner.setMinimumSize(new java.awt.Dimension(40, 28));
+        gapSizeSpinner.setPreferredSize(new java.awt.Dimension(40, 28));
+        gapSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+            @Override
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                gapSizeSpinner_stateChanged(evt);
+            }
+        });
+        cogTotalSpinner.setModel(totalCogSpinnerModel);
+        gapSizeSpinner.setModel(gapLengthSpinnerModel);
+        cogwheelTypePanel.add(cogTotalSpinner);
+        cogwheelTypePanel.add(minusLabel);
+        cogwheelTypePanel.add(gapSizeSpinner);
+    }
+    
+    
+    private void cogwheelTypeComboBox_actionPerformed(java.awt.event.ActionEvent evt) {
+        
+    }
+    
+    
+    private void cogTotalSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                              
         if (listener != null && cogTotalSpinner.isEnabled()) {
             listener.totalCogsModified((Integer) cogTotalSpinner.getValue());
         }
-    }//GEN-LAST:event_cogTotalSpinner_stateChanged
+    }                                             
 
     
-    private void gapSizeSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_gapSizeSpinner_stateChanged
+    private void gapSizeSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                             
         if (listener != null && gapSizeSpinner.isEnabled()) {
             listener.gapSizeModified((Integer) gapSizeSpinner.getValue());
         }
-    }//GEN-LAST:event_gapSizeSpinner_stateChanged
-
+    }                                            
+    
     
     private void offsetSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_offsetSpinner_stateChanged
         if (listener != null && offsetSpinner.isEnabled()) {
@@ -198,6 +223,28 @@ public class EnginePanel extends javax.swing.JPanel {
         cogwheelRenderer.setGapLength(cogwheel.getGapSize());
         cogwheelRenderer.setDeadPoints(engine.getDeadPoints());
         cogwheelRenderer.repaint();
+    }
+    
+    
+    private java.util.List<CogwheelType> loadCogwheelTypes() {
+        java.util.List<CogwheelType> types = new java.util.ArrayList<>();
+        Resource resource = new Resource("randd/motormanagement/Cogwheel.json");
+        try {
+            JSONObject cogwheelObject = new JSONObject(resource.loadText());
+            JSONArray typesArray = cogwheelObject.getJSONArray("CogwheelType");
+            int count = typesArray.length();
+            for (int i = 0; i < count; ++i) {
+                JSONObject typeObject = typesArray.getJSONObject(i);
+                CogwheelType type = new CogwheelType();
+                type.cogTotal = typeObject.getInt("cogTotal");
+                type.gapSize = typeObject.getInt("gapSize");
+                types.add(type);
+            }
+        }
+        catch (java.io.IOException | JSONException ex) {
+            logger.log(Level.WARNING, null, ex);
+        }
+        return types;
     }
     
     
@@ -258,11 +305,37 @@ public class EnginePanel extends javax.swing.JPanel {
         
         @Override
         public String toString() {
-            Object[] params = {count};
-            return java.text.MessageFormat.format(Bundle.getInstance().get("CylinderCount"), params);
+            if (title == null) {
+                Object[] params = {count};
+                title = java.text.MessageFormat.format(Bundle.getInstance().get("CylinderCount"), params);
+            }
+            return title;
         }
         
         int count;
+        
+        private String title;
+    }
+    
+    
+    private class CogwheelType {
+        
+        @Override
+        public String toString() {
+            if (title == null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(cogTotal);
+                builder.append(" - ");
+                builder.append(gapSize);
+                title = builder.toString();
+            }
+            return title;
+        }
+                
+        int cogTotal;
+        int gapSize;
+        
+        private String title;
     }
     
     
@@ -272,21 +345,28 @@ public class EnginePanel extends javax.swing.JPanel {
     
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JSpinner cogTotalSpinner;
+    private javax.swing.JLabel cogwheelTypeLabel;
+    private javax.swing.JPanel cogwheelTypePanel;
     private javax.swing.JPanel controlPanel;
     private javax.swing.JComboBox cylinderComboBox;
-    private javax.swing.JSpinner gapSizeSpinner;
-    private javax.swing.JLabel minusLabel;
     private javax.swing.JLabel offsetLabel;
     private javax.swing.JSpinner offsetSpinner;
     private javax.swing.JScrollPane scrollPane;
-    private javax.swing.JLabel typeLabel;
     // End of variables declaration//GEN-END:variables
 
+    private JComboBox<CogwheelType> cogwheelTypeComboBox;
+
+    private javax.swing.JSpinner cogTotalSpinner;
+    private javax.swing.JSpinner gapSizeSpinner;
+    private javax.swing.JLabel minusLabel;
+    
     private final CogwheelRenderer cogwheelRenderer = new CogwheelRenderer();
     
     private final SpinnerNumberModel totalCogSpinnerModel = new SpinnerNumberModel(60, 2, 200, 1);
     private final SpinnerNumberModel gapLengthSpinnerModel = new javax.swing.SpinnerNumberModel(2, 1, 9, 1);
     private final SpinnerNumberModel offsetSpinnerModel = new SpinnerNumberModel(20, 1, 100, 1);
+    
+    
+    private final Logger logger = Logger.getLogger(EnginePanel.class.getName());
         
 }

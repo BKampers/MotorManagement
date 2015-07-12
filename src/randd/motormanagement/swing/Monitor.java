@@ -353,26 +353,14 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private String loadTextFile() {
         String source = null;
-        java.io.FileReader reader = null;
         JFileChooser fileChooser = new JFileChooser();
         if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
-            java.io.File file = fileChooser.getSelectedFile();
+            Resource resource = new Resource(fileChooser.getSelectedFile());
             try {
-                reader = new java.io.FileReader(file);
-                char[] chars = new char[(int) file.length()];
-                reader.read(chars);
-                source = new String(chars);
+                source = resource.loadText();
             }
             catch (java.io.IOException ex) {
                 logger.log(Level.WARNING, null, ex);
-            }
-        }
-        if (reader != null) {
-            try {
-                reader.close();
-            }
-            catch (java.io.IOException ex) {
-                logger.log(Level.SEVERE, null, ex);
             }
         }
         return source;
