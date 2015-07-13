@@ -17,8 +17,7 @@ public class EnginePanel extends javax.swing.JPanel {
 
     public interface Listener {
         void cylinderCountModified(int count);
-        void totalCogsModified(int totalCogs);
-        void gapSizeModified(int gapSize);
+        void cogwheelTypeModified(int cogTotal, int gapSize);
         void offsetModified(int offset);
     }
     
@@ -185,20 +184,23 @@ public class EnginePanel extends javax.swing.JPanel {
     
     
     private void cogwheelTypeComboBox_actionPerformed(java.awt.event.ActionEvent evt) {
-        
+        if (listener != null && cogwheelTypeComboBox.isEnabled()) {
+            CogwheelType type = (CogwheelType) cogwheelTypeComboBox.getSelectedItem();
+            listener.cogwheelTypeModified(type.cogTotal, type.gapSize);
+        }
     }
     
     
     private void cogTotalSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                              
         if (listener != null && cogTotalSpinner.isEnabled()) {
-            listener.totalCogsModified((Integer) cogTotalSpinner.getValue());
+            listener.cogwheelTypeModified((Integer) cogTotalSpinner.getValue(), (Integer) gapSizeSpinner.getValue());
         }
     }                                             
 
     
     private void gapSizeSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                             
         if (listener != null && gapSizeSpinner.isEnabled()) {
-            listener.gapSizeModified((Integer) gapSizeSpinner.getValue());
+            listener.cogwheelTypeModified((Integer) cogTotalSpinner.getValue(), (Integer) gapSizeSpinner.getValue());
         }
     }                                            
     
@@ -255,8 +257,15 @@ public class EnginePanel extends javax.swing.JPanel {
             if (engine == EnginePanel.this.engine) {
                 switch (property) {
                     case COGWHEEL:
-                        cogTotalSpinner.setValue(engine.getCogwheel().getCogTotal());
-                        gapSizeSpinner.setValue(engine.getCogwheel().getGapSize());
+                        if (cogwheelTypeComboBox != null) {
+                            selectCogwheelType(engine);
+                        }
+                        if (cogTotalSpinner != null) {
+                            cogTotalSpinner.setValue(engine.getCogwheel().getCogTotal());
+                        }
+                        if (gapSizeSpinner != null) {
+                            gapSizeSpinner.setValue(engine.getCogwheel().getGapSize());
+                        }
                         offsetSpinner.setValue(engine.getCogwheel().getOffset());
                         break;
                     case CYLINDER_COUNT:
@@ -267,6 +276,30 @@ public class EnginePanel extends javax.swing.JPanel {
                         break;
                 }                    
             }
+        }
+
+        private void selectCogwheelType(Engine engine) {
+            int cogTotal = engine.getCogwheel().getCogTotal();
+            int gapSize = engine.getCogwheel().getGapSize();
+            CogwheelType type = findCogwheelTypeItem(cogTotal, gapSize);
+            if (type == null) {
+                type = new CogwheelType();
+                type.cogTotal = cogTotal;
+                type.gapSize = gapSize;
+                cogwheelTypeComboBox.addItem(type);
+            }
+            cogwheelTypeComboBox.setSelectedItem(type);
+        }
+
+        private CogwheelType findCogwheelTypeItem(int cogTotal, int gapSize) {
+            int count = cogwheelTypeComboBox.getItemCount();
+            for (int i = 0; i < count; ++i) {
+                CogwheelType type = cogwheelTypeComboBox.getItemAt(i);
+                if (type.cogTotal == cogTotal && type.gapSize == gapSize) {
+                    return type;
+                }
+            }
+            return null;
         }
         
     }

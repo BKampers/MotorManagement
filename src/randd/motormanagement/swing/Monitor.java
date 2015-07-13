@@ -463,23 +463,18 @@ public class Monitor extends bka.swing.FrameApplication {
         }
 
         @Override
-        public void totalCogsModified(int cogTotal) {
-            if (engine.getCogwheel().getCogTotal() != cogTotal) {
-                modifyCogwheel(cogTotal, engine.getCogwheel().getGapSize(), engine.getCogwheel().getOffset());
-            }
-        }
-
-        @Override
-        public void gapSizeModified(int gapSize) {
-            if (engine.getCogwheel().getGapSize() != gapSize) {
-                modifyCogwheel(engine.getCogwheel().getCogTotal(), gapSize, engine.getCogwheel().getOffset());
+        public void cogwheelTypeModified(int cogTotal, int gapSize) {
+            Engine.Cogwheel cogwheel = engine.getCogwheel();
+            if (cogwheel.getCogTotal() != cogTotal || cogwheel.getGapSize() != gapSize) {
+                modifyCogwheel(cogTotal, gapSize, cogwheel.getOffset());
             }
         }
 
         @Override
         public void offsetModified(int offset) {
-            if (engine.getCogwheel().getOffset() != offset) {
-                modifyCogwheel(engine.getCogwheel().getCogTotal(), engine.getCogwheel().getGapSize(), offset);
+            Engine.Cogwheel cogwheel = engine.getCogwheel();
+            if (cogwheel.getOffset() != offset) {
+                modifyCogwheel(cogwheel.getCogTotal(), cogwheel.getGapSize(), offset);
             }
         }
         
