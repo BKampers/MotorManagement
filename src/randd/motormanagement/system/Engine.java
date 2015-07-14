@@ -31,11 +31,24 @@ public class Engine {
     }
 
     
-    public enum Property { COGWHEEL, CYLINDER_COUNT, DEAD_POINTS }
+    public enum Property { IS_RUNNING, COGWHEEL, CYLINDER_COUNT, DEAD_POINTS }
     
     
     public interface Listener {
         void propertyChanged(Engine engine, Property property);
+    }
+    
+    
+    public boolean isRunning() {
+        return running;
+    } 
+    
+    
+    public void setRunning(boolean running) {
+        if (this.running != running) {
+            this.running = running;
+            notifyPropertyChanged(Property.IS_RUNNING);
+        }
     }
     
     
@@ -103,6 +116,7 @@ public class Engine {
     }
     
     
+    private boolean running;
     private final Cogwheel cogwheel = new Cogwheel();
     private int cylinderCount;
     private List<Integer> deadPoints;

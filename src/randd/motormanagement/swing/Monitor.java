@@ -244,7 +244,7 @@ public class Monitor extends bka.swing.FrameApplication {
             statusPanel.setRemoteSystem(remoteSystem);
             if (getBooleanProperty(LIVE_MODE, true)) {
                 populateTableTabs();
-                remoteSystem.startPolling();
+                remoteSystem.startPolling(engine);
             }
         }
         catch (ChannelException ex) {
@@ -339,6 +339,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 }
                 else if (selectedTab instanceof EnginePanel) {
                     remoteSystem.requestEngine(engine);
+                    ((EnginePanel) selectedTab).activate();
                 }
                 else if (selectedTab instanceof MemoryPanel) {
                     remoteSystem.requestFlash(flash);
@@ -560,6 +561,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private static final String NO_SELECTION = "-";
 
+    private static final String SELECTED_TAB = "SelectedTab";
     private static final String SELECTED_CHANNEL = "SelectedChannel";
     private static final String SOCKET_HOSTS = "SocketChannels";
     private static final String DEVELOPER_MODE = "DeveloperMode";

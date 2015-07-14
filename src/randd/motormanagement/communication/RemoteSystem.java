@@ -5,7 +5,10 @@
 package randd.motormanagement.communication;
 
 import java.util.*;
+import java.util.logging.*;
+
 import org.json.*;
+
 import randd.motormanagement.system.*;
 
 
@@ -41,9 +44,10 @@ public class RemoteSystem {
     }
 
     
-    public void startPolling() {
+    public void startPolling(Engine engine) {
         if (pollTask == null) {
             pollTask = new PollTask();
+            engineToPoll = engine;
             Thread pollThread = new Thread(pollTask);
             pollThread.start();
         }
@@ -54,6 +58,7 @@ public class RemoteSystem {
         if (pollTask != null) {
             pollTask.stop();
             pollTask = null;
+            engineToPoll = null;
         }
     }
     
@@ -350,11 +355,16 @@ public class RemoteSystem {
                             JSONObject response = messenger.send(message);
                             updateTableIndex(response);
                         }
+                        if (engineToPoll != null) {
+                            JSONObject message = messageObject(REQUEST, ENGINE_IS_RUNNING);
+                            JSONObject response = messenger.send(message);
+                            engineToPoll.setRunning(response.getBoolean(VALUE));
+                        }                        
                         index = 0;
                     }
                 }
                 catch (InterruptedException | JSONException ex) {
-                    ex.printStackTrace(System.err);
+                    logger.log(Level.SEVERE, null, ex);
                 }
             }
         }
@@ -398,7 +408,7 @@ public class RemoteSystem {
         
     }
     
-    
+    private Engine engineToPoll;
     private final Collection<Table> tablesToPoll = new ArrayList<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 
@@ -419,7 +429,7 @@ public class RemoteSystem {
         Measurement.get("Aux1"),
         Measurement.get("Aux2")*/
     };
-
+        
     
     private static final String STATUS = "Status";
     private static final String NOTIFICATION = "Notification";
@@ -437,6 +447,7 @@ public class RemoteSystem {
     private static final String MEASUREMENT_TABLES = "MeasurementTables";
     private static final String FLASH = "Flash";
     private static final String FLASH_ELEMENTS = "FlashElements";
+    private static final String ENGINE_IS_RUNNING = "EngineIsRunning";
     
     private static final String NAMES = "Names";
     private static final String ELEMENTS = "Elements";
@@ -462,6 +473,9 @@ public class RemoteSystem {
     private static final String DEAD_POINTS = "DeadPoints";
     private static final String CYLINDER_COUNT = "CylinderCount";
     
+    
     private static final int MAX_FLASH_SIZE_TO_SEND = 0x10;
     
+    private static final Logger logger = Logger.getLogger(RemoteSystem.class.getName());
+
 }
