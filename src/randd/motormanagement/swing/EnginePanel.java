@@ -144,10 +144,9 @@ public class EnginePanel extends javax.swing.JPanel {
 
 
     private void initCogwheelComboBox(java.util.List<CogwheelType> types) {
-        cogwheelTypeComboBox = new javax.swing.JComboBox<>();
-        for (CogwheelType type : types) {
-            cogwheelTypeComboBox.addItem(type);
-        }
+        cogwheelTypeComboBoxModel = new CogwheelTypeComboBoxModel();
+        cogwheelTypeComboBoxModel.types = types;
+        cogwheelTypeComboBox = new javax.swing.JComboBox<>(cogwheelTypeComboBoxModel);
         cogwheelTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -256,10 +255,7 @@ public class EnginePanel extends javax.swing.JPanel {
             int count = typesArray.length();
             for (int i = 0; i < count; ++i) {
                 JSONObject typeObject = typesArray.getJSONObject(i);
-                CogwheelType type = new CogwheelType();
-                type.cogTotal = typeObject.getInt("cogTotal");
-                type.gapSize = typeObject.getInt("gapSize");
-                types.add(type);
+                types.add(new CogwheelType(typeObject.getInt("cogTotal"), typeObject.getInt("gapSize")));
             }
         }
         catch (java.io.IOException | JSONException ex) {
@@ -305,29 +301,37 @@ public class EnginePanel extends javax.swing.JPanel {
         }
         
         private void selectCogwheelType(Engine.Cogwheel cogwheel) {
-            int cogTotal = cogwheel.getCogTotal();
-            int gapSize = cogwheel.getGapSize();
-            CogwheelType type = findCogwheelTypeItem(cogTotal, gapSize);
-            if (type == null) {
-                type = new CogwheelType();
-                type.cogTotal = cogTotal;
-                type.gapSize = gapSize;
-                cogwheelTypeComboBox.addItem(type);
-            }
+            CogwheelType type = cogwheelTypeComboBoxModel.getCogwheelType(cogwheel.getCogTotal(), cogwheel.getGapSize());
             cogwheelTypeComboBox.setSelectedItem(type);
         }
 
-        private CogwheelType findCogwheelTypeItem(int cogTotal, int gapSize) {
-            int count = cogwheelTypeComboBox.getItemCount();
-            for (int i = 0; i < count; ++i) {
-                CogwheelType type = cogwheelTypeComboBox.getItemAt(i);
+    }
+    
+    
+    private class CogwheelTypeComboBoxModel extends javax.swing.DefaultComboBoxModel<CogwheelType> {
+        
+        @Override
+        public int getSize() {
+            return (types != null) ? types.size() : 0;
+        }
+        
+        @Override
+        public CogwheelType getElementAt(int index) {
+            return (index < getSize()) ? types.get(index) : null;
+        }
+        
+        CogwheelType getCogwheelType(int cogTotal, int gapSize) {
+            for (CogwheelType type : types) {
                 if (type.cogTotal == cogTotal && type.gapSize == gapSize) {
                     return type;
                 }
             }
-            return null;
+            CogwheelType newType = new CogwheelType(cogTotal, gapSize);
+            types.add(newType);
+            return newType;
         }
         
+        java.util.List<CogwheelType> types;
     }
     
     
@@ -343,6 +347,32 @@ public class EnginePanel extends javax.swing.JPanel {
             return CylinderCount.values()[index];
         }
         
+    }
+    
+    
+    private class CogwheelType {
+        
+        CogwheelType(int cogTotal, int gapSize) {
+            this.cogTotal = cogTotal;
+            this.gapSize  = gapSize;
+        }
+        
+        @Override
+        public String toString() {
+            if (title == null) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(cogTotal);
+                builder.append(" - ");
+                builder.append(gapSize);
+                title = builder.toString();
+            }
+            return title;
+        }
+                
+        int cogTotal;
+        int gapSize;
+        
+        private String title;
     }
     
     
@@ -377,27 +407,6 @@ public class EnginePanel extends javax.swing.JPanel {
     }
     
     
-    private class CogwheelType {
-        
-        @Override
-        public String toString() {
-            if (title == null) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(cogTotal);
-                builder.append(" - ");
-                builder.append(gapSize);
-                title = builder.toString();
-            }
-            return title;
-        }
-                
-        int cogTotal;
-        int gapSize;
-        
-        private String title;
-    }
-    
-    
     private final Engine engine;
     
     private Listener listener;
@@ -414,6 +423,7 @@ public class EnginePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private JComboBox<CogwheelType> cogwheelTypeComboBox;
+    private CogwheelTypeComboBoxModel cogwheelTypeComboBoxModel;
 
     private javax.swing.JSpinner cogTotalSpinner;
     private javax.swing.JSpinner gapSizeSpinner;
