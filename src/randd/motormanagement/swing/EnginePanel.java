@@ -144,9 +144,7 @@ public class EnginePanel extends javax.swing.JPanel {
 
 
     private void initCogwheelComboBox(java.util.List<CogwheelType> types) {
-        cogwheelTypeComboBoxModel = new CogwheelTypeComboBoxModel();
-        cogwheelTypeComboBoxModel.types = types;
-        cogwheelTypeComboBox = new javax.swing.JComboBox<>(cogwheelTypeComboBoxModel);
+        cogwheelTypeComboBox = new javax.swing.JComboBox<>(new CogwheelTypeComboBoxModel(types));
         cogwheelTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -301,7 +299,8 @@ public class EnginePanel extends javax.swing.JPanel {
         }
         
         private void selectCogwheelType(Engine.Cogwheel cogwheel) {
-            CogwheelType type = cogwheelTypeComboBoxModel.getCogwheelType(cogwheel.getCogTotal(), cogwheel.getGapSize());
+            CogwheelTypeComboBoxModel model = (CogwheelTypeComboBoxModel) cogwheelTypeComboBox.getModel();
+            CogwheelType type = model.getCogwheelType(cogwheel.getCogTotal(), cogwheel.getGapSize());
             cogwheelTypeComboBox.setSelectedItem(type);
         }
 
@@ -310,14 +309,18 @@ public class EnginePanel extends javax.swing.JPanel {
     
     private class CogwheelTypeComboBoxModel extends javax.swing.DefaultComboBoxModel<CogwheelType> {
         
+        CogwheelTypeComboBoxModel(java.util.List<CogwheelType> types) {
+            this.types = types;
+        }
+        
         @Override
         public int getSize() {
-            return (types != null) ? types.size() : 0;
+            return types.size();
         }
         
         @Override
         public CogwheelType getElementAt(int index) {
-            return (index < getSize()) ? types.get(index) : null;
+            return types.get(index);
         }
         
         CogwheelType getCogwheelType(int cogTotal, int gapSize) {
@@ -423,7 +426,6 @@ public class EnginePanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private JComboBox<CogwheelType> cogwheelTypeComboBox;
-    private CogwheelTypeComboBoxModel cogwheelTypeComboBoxModel;
 
     private javax.swing.JSpinner cogTotalSpinner;
     private javax.swing.JSpinner gapSizeSpinner;
