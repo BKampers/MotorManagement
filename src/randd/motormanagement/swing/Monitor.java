@@ -11,9 +11,8 @@ package randd.motormanagement.swing;
 import bka.communication.*;
 import java.util.*;
 import java.util.logging.*;
-import javax.swing.JOptionPane;
-import javax.swing.JFileChooser;
-import javax.swing.event.ChangeEvent;
+import javax.swing.*;
+import javax.swing.event.*;
 import org.json.*;
 import randd.motormanagement.communication.*;
 import randd.motormanagement.system.*;
@@ -21,6 +20,10 @@ import randd.motormanagement.system.*;
 
 public class Monitor extends bka.swing.FrameApplication {
 
+    public static final int RANDD_MM_PORT = 44252;
+    public static final int RANDD_CONTROL_PORT = RANDD_MM_PORT - 1;
+    
+    
     public static void main(final String arguments[]) {
         setLookAndFeel("Nimbus");
         /* Create and display the form */
@@ -94,11 +97,12 @@ public class Monitor extends bka.swing.FrameApplication {
     //        addMeasurementPanel("Lambda")));
     //        addMeasurementPanel("Aux1")));
     //        addMeasurementPanel("Aux2")));
-            addEnginePanel();
+            addEngineTabPanel();
         }
         if (developerMode) {
-            addMemoryPanel();
-            addStatusPanel();
+            addTabPanel(memoryPanel, "Flash");
+            addTabPanel(statusPanel, "Status");
+            addTabPanel(new ControlPanel(), "Control");
         }
     }
     
@@ -286,7 +290,7 @@ public class Monitor extends bka.swing.FrameApplication {
         try {
             Collection<String> tableNames = remoteSystem.requestTableNames();
             for (String name : tableNames) {
-                addTable(name);
+                addTableTabPanel(name);
             }
         }
         catch (InterruptedException | org.json.JSONException ex) {
@@ -295,32 +299,23 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
     
-    private void addTable(String name) {
+    private void addTableTabPanel(String name) {
         Table table = Table.getInstance(name);
-        tabsPanel.add(new TablePanel(new TablePanelListener(), table));
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get(name));
+        addTabPanel(new TablePanel(new TablePanelListener(), table), name);
     }
     
     
-    private void addEnginePanel() {
+    private void addEngineTabPanel() {
         EnginePanel panel = new EnginePanel(engine);
         panel.setListener(new EnginePanelListener());
+        addTabPanel(panel, "Engine");
+    }
+    
+    
+    private void  addTabPanel(JPanel panel, String titleKey) {
         tabsPanel.add(panel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get("Engine"));
+        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get(titleKey));
     }
-    
-    
-    private void addMemoryPanel() {
-        tabsPanel.add(memoryPanel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, "Flash");
-    }
-    
-    
-    private void addStatusPanel() {
-        tabsPanel.add(statusPanel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get("Status"));
-    }
-    
     
     private void activateSelectedTab() {
         if (remoteSystem != null) {
@@ -368,7 +363,7 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
 
-    private class TabChangeListener implements javax.swing.event.ChangeListener {
+    private class TabChangeListener implements ChangeListener {
 
         @Override
         public void stateChanged(ChangeEvent evt) {
@@ -537,7 +532,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
     
     private final StatusPanel statusPanel = new StatusPanel();
-
     
     private RemoteSystem remoteSystem = null;
     private Channel selectedChannel = null;
@@ -567,8 +561,6 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
     private static final String LIVE_MODE = "LiveMode";
 
-    private static final int RANDD_MM_PORT = 44252;
-    
     private static final Logger logger = Logger.getLogger(Monitor.class.getName());
     
 }
