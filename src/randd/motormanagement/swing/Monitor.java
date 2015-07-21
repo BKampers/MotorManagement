@@ -67,14 +67,26 @@ public class Monitor extends bka.swing.FrameApplication {
     
     RemoteSystem getRemoteSystem() {
         return remoteSystem;
-    } 
+    }
+    
+    
+    private Collection<String> getLogPaths(Level level) {
+        String property = getProperty(level.getName());
+        return (property != null) ? Arrays.asList(property.split(";")) : null;
+    }
+    
+    
+    private Map<Level, Collection<String>> getLogLevelMap() {
+        Map<Level, Collection<String>> map = new HashMap<>();
+        map.put(Level.SEVERE, getLogPaths(Level.SEVERE));
+        map.put(Level.INFO, getLogPaths(Level.INFO));
+        return map;
+    }
     
 
     private void setupLogging() {
         try {
-            String logFilters = getProperty("logFilters");
-            String[] logPaths = (logFilters != null) ? logFilters.split(";") : null;
-            randd.motormanagement.logging.Manager.setup(logPaths);
+            randd.motormanagement.logging.Manager.setup(getLogLevelMap());
         }
         catch (java.io.IOException ex) {
             handle(ex);
@@ -85,8 +97,6 @@ public class Monitor extends bka.swing.FrameApplication {
     private void initializePanels() {
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
         if (getBooleanProperty(LIVE_MODE, true)) {
-    //        ignitionTimerPanel = new TimerPanel(this, "Ignition timer");
-    //        settingsPanel.add(ignitionTimerPanel);
             channelComboBox.setEditable(developerMode);
             addMeasurementPanel("RPM", developerMode);
             addMeasurementPanel("Load", developerMode);
@@ -108,7 +118,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
 
     private void handle(Throwable throwable) {
-        throwable.printStackTrace(System.err);
         JOptionPane.showMessageDialog(this, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
     

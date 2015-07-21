@@ -3,26 +3,37 @@
 */
 package randd.motormanagement.logging;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.logging.*;
 
 
 public class Manager {
     
 
-    public static void setup(String[] paths) throws java.io.IOException {
-        filterPaths = paths;
+    public static void setup(Map<Level, Collection<String>> levelMap) throws java.io.IOException {
+        for (Map.Entry<Level, Collection<String>> entry : levelMap.entrySet()) {
+            Level level = entry.getKey();
+            java.util.Collection<String> paths = entry.getValue();
+            if (paths != null) {
+                for (String path : paths) {
+                    Logger logger = Logger.getLogger(path);
+                    logger.setLevel(level);
+                }
+            }
+        }
         
         Logger rootLogger = Logger.getLogger("");
+        rootLogger.setLevel(Level.SEVERE);
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
-                handler.setFilter(LOG_FILTER);
                 handler.setFormatter(FORMATTER);
             }
         }
         
         Logger logger = Logger.getLogger("randd");
-        logger.setLevel(Level.INFO);
-        fileHandler = new FileHandler("Logging.log");
+        logger.setLevel(Level.SEVERE);
+        fileHandler = new FileHandler("MotorManagement.log");
         fileHandler.setFormatter(FORMATTER);
         logger.addHandler(fileHandler);
     }
@@ -34,37 +45,25 @@ public class Manager {
         public String format(LogRecord record) {
             StringBuilder builder = new StringBuilder();
             builder.append(DATE_FORMAT.format(new java.util.Date(record.getMillis())));
-            builder.append(": ");
+            builder.append(": [");
+            builder.append(record.getLevel());
+            builder.append("]{");
+            builder.append(record.getLoggerName());
+            builder.append("} ");
             builder.append(formatMessage(record));
+            if (record.getThrown() != null) {
+                builder.append(" thrown ");
+                builder.append(record.getThrown().getMessage());
+            }
             builder.append('\n');
             return builder.toString();
         }
     }
     
 
-    private static class LogFilter implements Filter {
-
-        @Override
-        public boolean isLoggable(LogRecord record) {
-            if (filterPaths != null) {
-                for (String path : filterPaths) {
-                    if (record.getLoggerName().startsWith(path)) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        
-    }
-    
-    
-    private static String[] filterPaths;
     private static FileHandler fileHandler;
     
     private static final Formatter FORMATTER = new DefaultFormatter();
-    private static final Filter LOG_FILTER = new LogFilter();
     private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyyMMdd HHmmss SSS");
 
 }
