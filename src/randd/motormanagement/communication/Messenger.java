@@ -27,8 +27,7 @@ class Messenger {
         this.transporter = transporter;
         String channelName = transporter.getName().replaceAll("\\.", "-");
         logger = Logger.getLogger(Messenger.class.getName() + "." + channelName);
-        logger.info(Messenger.class.getName());
-    }
+     }
     
     
     void setListener(Listener listener) {
@@ -77,7 +76,7 @@ class Messenger {
                 while (running && transporter != null) {
                     JSONObject receivedObject = transporter.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        logger.log(Level.INFO, "<< {0}", receivedObject);
+                        logger.log(Level.FINE, "<< {0}", receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -97,7 +96,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, null, ex);
+                logger.log(Level.SEVERE, getClass().getName(), ex);
                 running = false;
             }
         }
@@ -135,7 +134,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        logger.log(Level.INFO, ">> {0}", transaction.message.toString());
+                        logger.log(Level.FINE, ">> {0}", transaction.message.toString());
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);
@@ -143,7 +142,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, null, ex);
+                logger.log(Level.SEVERE, getClass().getName(), ex);
                 running = false;
             }
         }
@@ -162,7 +161,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, null, ex);
+                logger.log(Level.WARNING, getClass().getName(), ex);
             }
         }
         
@@ -174,7 +173,7 @@ class Messenger {
                 }
                 catch (JSONException ex) {
                     // Will not occur since key in put method is not null
-                    logger.log(Level.WARNING, null, ex);
+                    logger.log(Level.WARNING, getClass().getName(), ex);
                 }
             }
         }

@@ -18,10 +18,10 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
-              <Component id="externalTicksLabel" min="-2" max="-2" attributes="0"/>
+              <Component id="pulseNanosLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="externalTicksSpinner" min="-2" pref="111" max="-2" attributes="0"/>
-              <EmptySpace pref="178" max="32767" attributes="0"/>
+              <Component id="pulseNanosSpinner" min="-2" pref="111" max="-2" attributes="0"/>
+              <EmptySpace pref="190" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -30,8 +30,8 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="externalTicksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="externalTicksSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="pulseNanosLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="pulseNanosSpinner" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace pref="266" max="32767" attributes="0"/>
           </Group>
@@ -39,22 +39,22 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="externalTicksLabel">
+    <Component class="javax.swing.JLabel" name="pulseNanosLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" value="External Ticks"/>
+        <Property name="text" type="java.lang.String" value="Pulse Nanos"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JSpinner" name="externalTicksSpinner">
+    <Component class="javax.swing.JSpinner" name="pulseNanosSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="1000" maximum="1000000" minimum="0" numberType="java.lang.Integer" stepSize="100" type="number"/>
+          <SpinnerModel initial="1000000" maximum="20000000" minimum="500" numberType="java.lang.Integer" stepSize="50000" type="number"/>
         </Property>
         <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.editors.SpinnerEditorEditor">
           <SpinnerEditor format="#" type="3"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="externalTicksSpinner_stateChanged"/>
+        <EventHandler event="stateChanged" listener="javax.swing.event.ChangeListener" parameters="javax.swing.event.ChangeEvent" handler="pulseNanosSpinner_stateChanged"/>
       </Events>
     </Component>
   </SubComponents>

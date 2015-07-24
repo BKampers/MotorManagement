@@ -24,16 +24,16 @@ public class ControlPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        externalTicksLabel = new javax.swing.JLabel();
-        externalTicksSpinner = new javax.swing.JSpinner();
+        pulseNanosLabel = new javax.swing.JLabel();
+        pulseNanosSpinner = new javax.swing.JSpinner();
 
-        externalTicksLabel.setText("External Ticks");
+        pulseNanosLabel.setText("Pulse Nanos");
 
-        externalTicksSpinner.setModel(new javax.swing.SpinnerNumberModel(1000, 0, 1000000, 100));
-        externalTicksSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(externalTicksSpinner, "#"));
-        externalTicksSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
+        pulseNanosSpinner.setModel(new javax.swing.SpinnerNumberModel(1000000, 500, 20000000, 50000));
+        pulseNanosSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(pulseNanosSpinner, "#"));
+        pulseNanosSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                externalTicksSpinner_stateChanged(evt);
+                pulseNanosSpinner_stateChanged(evt);
             }
         });
 
@@ -43,28 +43,28 @@ public class ControlPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(16, 16, 16)
-                .addComponent(externalTicksLabel)
+                .addComponent(pulseNanosLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(externalTicksSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(178, Short.MAX_VALUE))
+                .addComponent(pulseNanosSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, 111, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(190, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(externalTicksLabel)
-                    .addComponent(externalTicksSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(pulseNanosLabel)
+                    .addComponent(pulseNanosSpinner, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(266, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     
-    private void externalTicksSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_externalTicksSpinner_stateChanged
+    private void pulseNanosSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_pulseNanosSpinner_stateChanged
         openConnection();
-        String message = "{\"ExternalTicks\":" + externalTicksSpinner.getValue() + "}";
+        String message = "{\"PulseNanos\":" + pulseNanosSpinner.getValue() + "}";
         channel.send(message.getBytes());
-    }//GEN-LAST:event_externalTicksSpinner_stateChanged
+    }//GEN-LAST:event_pulseNanosSpinner_stateChanged
 
     
     private void openConnection() {
@@ -80,8 +80,8 @@ public class ControlPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel externalTicksLabel;
-    private javax.swing.JSpinner externalTicksSpinner;
+    private javax.swing.JLabel pulseNanosLabel;
+    private javax.swing.JSpinner pulseNanosSpinner;
     // End of variables declaration//GEN-END:variables
     
     private Channel channel;

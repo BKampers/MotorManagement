@@ -78,8 +78,15 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private Map<Level, Collection<String>> getLogLevelMap() {
         Map<Level, Collection<String>> map = new HashMap<>();
+        map.put(Level.OFF, getLogPaths(Level.OFF));
         map.put(Level.SEVERE, getLogPaths(Level.SEVERE));
+        map.put(Level.WARNING, getLogPaths(Level.WARNING));
         map.put(Level.INFO, getLogPaths(Level.INFO));
+        map.put(Level.CONFIG, getLogPaths(Level.CONFIG));
+        map.put(Level.FINE, getLogPaths(Level.FINE));
+        map.put(Level.FINER, getLogPaths(Level.FINER));
+        map.put(Level.FINEST, getLogPaths(Level.FINEST));
+        map.put(Level.ALL, getLogPaths(Level.ALL));
         return map;
     }
     
