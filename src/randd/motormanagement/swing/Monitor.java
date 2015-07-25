@@ -259,15 +259,16 @@ public class Monitor extends bka.swing.FrameApplication {
             remoteSystem = new RemoteSystem(transporter);
             remoteSystem.connect();
             setProperty(SELECTED_CHANNEL, transporter.getName());
-            memoryPanel.setMemory(flash);
+            memoryPanel.setMemory(remoteSystem.getFlash());
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
             if (getBooleanProperty(LIVE_MODE, true)) {
-                populateTableTabs();
-                remoteSystem.startPolling(engine);
+                remoteSystem.addListener(new RemoteSystemListener());
+                remoteSystem.requestTableNames();
+                remoteSystem.startPolling();
             }
         }
-        catch (ChannelException ex) {
+        catch (ChannelException | InterruptedException | JSONException ex) {
             handle(ex);
         }
     }
@@ -302,19 +303,6 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
 
-    private void populateTableTabs() {
-        try {
-            Collection<String> tableNames = remoteSystem.requestTableNames();
-            for (String name : tableNames) {
-                addTableTabPanel(name);
-            }
-        }
-        catch (InterruptedException | org.json.JSONException ex) {
-            handle(ex);
-        }
-    }
-    
-    
     private void addTableTabPanel(String name) {
         Table table = Table.getInstance(name);
         addTabPanel(new TablePanel(new TablePanelListener(), table), name);
@@ -322,7 +310,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     
     private void addEngineTabPanel() {
-        EnginePanel panel = new EnginePanel(engine);
+        EnginePanel panel = new EnginePanel(remoteSystem.getEngine());
         panel.setListener(new EnginePanelListener());
         addTabPanel(panel, "Engine");
     }
@@ -349,11 +337,11 @@ public class Monitor extends bka.swing.FrameApplication {
                     remoteSystem.startIndexPoll(table);
                 }
                 else if (selectedTab instanceof EnginePanel) {
-                    remoteSystem.requestEngine(engine);
+                    remoteSystem.requestEngine();
                     ((EnginePanel) selectedTab).activate();
                 }
                 else if (selectedTab instanceof MemoryPanel) {
-                    remoteSystem.requestFlash(flash);
+                    remoteSystem.requestFlash();
                 }
             }
             catch (InterruptedException | org.json.JSONException ex) {
@@ -396,8 +384,8 @@ public class Monitor extends bka.swing.FrameApplication {
             Measurement measurement = panel.getMeasurement();
             Table table = getCorrectionTable(measurement);
             try {
-                String result = remoteSystem.enableTable(table, enabled);
-                panel.notifyResult(Measurement.Property.TABLE_ENABLED, result);
+                remoteSystem.enableTable(table, enabled);
+                //panel.notifyResult(Measurement.Property.TABLE_ENABLED, result);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -409,8 +397,8 @@ public class Monitor extends bka.swing.FrameApplication {
             Measurement measurement = panel.getMeasurement();
             try {
                 if (measurement.isSimulationEnabled() != enabled) {
-                    String result = remoteSystem.enableMeasurementSimulation(measurement, enabled);
-                    panel.notifyResult(Measurement.Property.SIMULATION_ENABLED, result);
+                    remoteSystem.enableMeasurementSimulation(measurement, enabled);
+//                    panel.notifyResult(Measurement.Property.SIMULATION_ENABLED, result);
                 }
             }
             catch (org.json.JSONException | InterruptedException ex) {
@@ -421,8 +409,8 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void simulationValueModified(MeasurementPanel panel, double value) {
             try {
-                String result = remoteSystem.setMeasurementSimulationValue(panel.getMeasurement(), value);
-                panel.notifyResult(Measurement.Property.SIMULATION_VALUE, result);
+                remoteSystem.setMeasurementSimulationValue(panel.getMeasurement(), value);
+                //panel.notifyResult(Measurement.Property.SIMULATION_VALUE, result);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -436,18 +424,17 @@ public class Monitor extends bka.swing.FrameApplication {
         
         @Override
         public void startIndexPoll(Table table) {
-            if (remoteSystem != null) {
-                remoteSystem.startIndexPoll(table);
-            }
+            assert remoteSystem != null;
+            remoteSystem.startIndexPoll(table);
         }
         
         @Override
         public void setValue(Table table, int column, int row, float value) {
             try {
-                String result = remoteSystem.modifyTable(table, column, row, value);
-                if (RemoteSystem.OK.equals(result)) {
-                    table.setField(column, row, value);
-                }
+                remoteSystem.modifyTable(table, column, row, value);
+//                if (RemoteSystem.OK.equals(result)) {
+//                    table.setField(column, row, value);
+//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -461,12 +448,12 @@ public class Monitor extends bka.swing.FrameApplication {
 
         @Override
         public void cylinderCountModified(int count) {
-            if (engine.getCylinderCount() != count) {
+            if (remoteSystem.getEngine().getCylinderCount() != count) {
                 try {
-                    String status = remoteSystem.modifyCylinderCount(count);
-                    if (RemoteSystem.OK.equals(status)) {
-                        remoteSystem.requestEngine(engine);
-                    }
+                    remoteSystem.modifyCylinderCount(count);
+//                    if (RemoteSystem.OK.equals(status)) {
+//                        remoteSystem.requestEngine(engine);
+//                    }
                 }
                 catch (org.json.JSONException | InterruptedException ex) {
                     handle(ex);
@@ -476,7 +463,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
         @Override
         public void cogwheelTypeModified(int cogTotal, int gapSize) {
-            Engine.Cogwheel cogwheel = engine.getCogwheel();
+            Engine.Cogwheel cogwheel = remoteSystem.getEngine().getCogwheel();
             if (cogwheel.getCogTotal() != cogTotal || cogwheel.getGapSize() != gapSize) {
                 modifyCogwheel(cogTotal, gapSize, cogwheel.getOffset());
             }
@@ -484,7 +471,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
         @Override
         public void offsetModified(int offset) {
-            Engine.Cogwheel cogwheel = engine.getCogwheel();
+            Engine.Cogwheel cogwheel = remoteSystem.getEngine().getCogwheel();
             if (cogwheel.getOffset() != offset) {
                 modifyCogwheel(cogwheel.getCogTotal(), cogwheel.getGapSize(), offset);
             }
@@ -492,10 +479,10 @@ public class Monitor extends bka.swing.FrameApplication {
         
         private void modifyCogwheel(int cogTotal, int gapSize, int offset) {
             try {
-                String status = remoteSystem.modifyCogwheel(cogTotal, gapSize, offset);
-                if (RemoteSystem.OK.equals(status)) {
-                    remoteSystem.requestEngine(engine);
-                }
+                remoteSystem.modifyCogwheel(cogTotal, gapSize, offset);
+//                if (RemoteSystem.OK.equals(status)) {
+//                    remoteSystem.requestEngine(engine);
+//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -510,10 +497,10 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void clearButtonPressed() {
             try {
-                String status = remoteSystem.modifyFlash(0, flash.getSize(), 0xAA);
-                if (RemoteSystem.OK.equals(status)) {
-                    remoteSystem.requestFlash(flash);
-                }
+                remoteSystem.modifyFlash(0, remoteSystem.getFlash().getSize(), 0xAA);
+//                if (RemoteSystem.OK.equals(status)) {
+//                    remoteSystem.requestFlash(flash);
+//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -547,13 +534,27 @@ public class Monitor extends bka.swing.FrameApplication {
     });
     
     
+    private class RemoteSystemListener implements RemoteSystem.Listener {
+
+        @Override
+        public void notificationReceived(Notification notification) {
+        }
+        
+        @Override
+        public void tableNames(Collection<String> names) {
+            for (String name : names) {
+                addTableTabPanel(name);
+            }
+            
+        }
+        
+    }
+
+
     private final StatusPanel statusPanel = new StatusPanel();
     
     private RemoteSystem remoteSystem = null;
     private Channel selectedChannel = null;
-    
-    private final Engine engine = new Engine();
-    private final Flash flash = new Flash();
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

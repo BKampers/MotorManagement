@@ -64,6 +64,10 @@ public class StatusPanel extends javax.swing.JPanel {
             ((Model) notificationTable.getModel()).fireTableStructureChanged();
         }
         
+        @Override
+        public void tableNames(Collection<String> names) {           
+        }
+        
     }
 
     

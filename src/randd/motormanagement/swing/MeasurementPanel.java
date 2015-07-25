@@ -40,7 +40,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     
     
     void notifyResult(Measurement.Property property, String result) {
-        logger.log(Level.INFO, "notifyResult {0} {1}", new Object[] { property, result });
+        logger.log(Level.FINE, "notifyResult {0} {1}", new Object[] { property, result });
         switch (property) {
             case TABLE_ENABLED:
                 enableCorrectionToggleButton.setEnabled(true);
@@ -166,7 +166,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     
     
     private void enableSimulation(boolean enabled) {
-        logger.log(Level.INFO, "enableSimulation {0}", enabled);
+        logger.log(Level.FINE, "enableSimulation {0}", enabled);
         simulationToggleButton.setSelected(enabled);
         valueTextField.setEnabled(enabled);      
     }
@@ -192,15 +192,17 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
     private class MeasurementListener implements Measurement.Listener {
 
+        @Override
         public void valueUpdated() {
-            logger.log(Level.INFO, "valueUpdated {0}", measurement.getValue());
+            logger.log(Level.FINE, "valueUpdated {0}", measurement.getValue());
             if (! simulationToggleButton.isSelected()) {
                 updateValueText();
             }
         }
 
+        @Override
         public void simulationUpdated() {
-            logger.log(Level.INFO, "simulationUpdated {0}", measurement.isSimulationEnabled());
+            logger.log(Level.FINE, "simulationUpdated {0}", measurement.isSimulationEnabled());
             if (simulationToggleButton.isEnabled()) {
                 enableSimulation(measurement.isSimulationEnabled());
             }
@@ -212,7 +214,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     private class TableListener implements Table.Listener {
 
         @Override
-        public void propertyChanged(Table table, Table.Property property) {
+        public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
             switch (property) {
                 case ENABLED:
                     showCorrectionEnabled(table.isEnabled());

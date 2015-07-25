@@ -103,14 +103,14 @@ public class TimerPanel extends javax.swing.JPanel {
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
         if (monitor.getRemoteSystem() != null) {
             try {
-                String result = monitor.getRemoteSystem().modifyIgnitionTimerSettings(settings());
-                if (RemoteSystem.OK.equals(result)) {
-                    messageLabel.setForeground(new Color(23, 219, 36));
-                }
-                else {
-                    messageLabel.setForeground(Color.RED);                
-                }
-                messageLabel.setText(result);
+                monitor.getRemoteSystem().modifyIgnitionTimerSettings(settings());
+//                if (RemoteSystem.OK.equals(result)) {
+//                    messageLabel.setForeground(new Color(23, 219, 36));
+//                }
+//                else {
+//                    messageLabel.setForeground(Color.RED);                
+//                }
+//                messageLabel.setText(result);
             }
             catch (InterruptedException | org.json.JSONException ex) {
                 messageLabel.setForeground(Color.RED);
