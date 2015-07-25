@@ -26,8 +26,10 @@ public class TablePanel extends JPanel {
 
     public TablePanel(Listener listener, Table table) {
         assert listener != null;
+        assert table != null;
         this.tablePanelListener = listener;
-        setTable(table);
+        this.table = table;
+        table.addListener(tableListener);
         initComponents();
         grid.setDefaultRenderer(Object.class, new CellRenderer());
         grid.setDefaultEditor(Object.class, new NumberCellEditor());
@@ -45,17 +47,6 @@ public class TablePanel extends JPanel {
     
     Table getTable() {
         return table;
-    }
-    
-    
-    private void setTable(Table table) {
-        if (this.table != null) {
-            this.table.removeListener(tableListener);
-        }
-        this.table = table;
-        if (table != null) {
-            table.addListener(tableListener);
-        }
     }
     
     
@@ -340,14 +331,14 @@ public class TablePanel extends JPanel {
     private class TableListener implements Table.Listener {
 
         @Override
-        public void propertyChanged(Table table, Table.Property property) {
+        public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
             if (table == TablePanel.this.table) {
                 switch (property) {
                     case INDEX:
                         indexChanged();
                         break;
                     case VALUE:
-                        valueChanged(grid.getSelectedRow(), grid.getSelectedColumn());
+                        valueChanged((Integer) attributes[0], (Integer) attributes[1]);
                         break;
                     default:
                         initializationPropertyChanged(property);
@@ -401,7 +392,7 @@ public class TablePanel extends JPanel {
     }
 
     
-    private Table table;   
+    private final Table table;   
     private final java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
     
     private int activeColumn = -1;

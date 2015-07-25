@@ -24,7 +24,7 @@ public class Table {
 
 
     public interface Listener {
-        public void propertyChanged(Table table, Property property);
+        public void propertyChanged(Table table, Property property, Object ... attributes);
     }
     
     
@@ -77,7 +77,7 @@ public class Table {
     public void setField(int column, int row, float value) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
             fields[row][column] = value;
-            notifyPropertyChanged(Property.VALUE);
+            notifyPropertyChanged(Property.VALUE, column, row);
         }
         else {
             throw new java.lang.IndexOutOfBoundsException();
@@ -226,10 +226,10 @@ public class Table {
     }
     
     
-    private void notifyPropertyChanged(Property property) {
+    private void notifyPropertyChanged(Property property, Object ... attributes) {
         synchronized (listeners) {
             for (Listener listener : listeners) {
-                listener.propertyChanged(this, property);
+                listener.propertyChanged(this, property, attributes);
             }        
         }
     }

@@ -20,9 +20,8 @@ public class RemoteSystem {
 
     
     public interface Listener {
-        
         void notificationReceived(Notification notification);
-        
+        void tableNames(Collection<String> names);
     }
     
     
@@ -44,10 +43,10 @@ public class RemoteSystem {
     }
 
     
-    public void startPolling(Engine engine) {
+    public void startPolling() {
         if (pollTask == null) {
             pollTask = new PollTask();
-            engineToPoll = engine;
+            pollEngine = true;
             Thread pollThread = new Thread(pollTask);
             pollThread.start();
         }
@@ -58,7 +57,7 @@ public class RemoteSystem {
         if (pollTask != null) {
             pollTask.stop();
             pollTask = null;
-            engineToPoll = null;
+            pollEngine = false;
         }
     }
     
@@ -79,110 +78,92 @@ public class RemoteSystem {
     }
     
     
-    public Collection<String> requestTableNames() throws InterruptedException, JSONException {
-        ArrayList<String> names = new ArrayList<>();
-        JSONObject namesObject = request(MEASUREMENT_TABLES);
-        JSONArray namesArray = namesObject.optJSONArray(NAMES);
-        if (namesArray != null) {
-            for (int i = 0; i < namesArray.length(); ++i) {
-                String name = namesArray.optString(i);
-                if (name != null) {
-                    names.add(name);
-                }
-            }
-        }
-        return names;
+    public void requestTableNames() throws InterruptedException, JSONException {
+        request(MEASUREMENT_TABLES);
     }
     
     
     public void requestTable(Table table) throws InterruptedException, JSONException {
         final JSONArray TABLE_PROPERTY = new JSONArray(new String[] {TABLE});
-        JSONObject tableObject = request(table.getName(), PROPERTIES, TABLE_PROPERTY);
-        updateTable(tableObject);
+        request(table.getName(), PROPERTIES, TABLE_PROPERTY);
+        //updateTable(tableObject);
     }
     
     
-    public String modifyTable(Table table, int column, int row, float value) throws JSONException, InterruptedException {
-        return modify(table.getName(),
-            COLUMN, column,
-            ROW, row,
-            VALUE, value);
+    public void modifyTable(Table table, int column, int row, float value) throws JSONException, InterruptedException {
+        modify(table.getName(), COLUMN, column, ROW, row, VALUE, value);
     }
     
     
     public void requestTableEnabled(Table table) throws InterruptedException, JSONException {
         final JSONArray ENABLED_PROPERTY = new JSONArray(new String[] {ENABLED});
-        JSONObject tableObject = request(table.getName(), PROPERTIES, ENABLED_PROPERTY);
-        updateTableEnabled(tableObject);
+        request(table.getName(), PROPERTIES, ENABLED_PROPERTY);
+        //updateTableEnabled(tableObject);
     }
     
     
-    public void requestEngine(Engine engine) throws InterruptedException, JSONException {
-        JSONObject engineObject = request(ENGINE);
-        updateEngine(engine, engineObject);
+    public void requestEngine() throws InterruptedException, JSONException {
+        request(ENGINE);
+        //updateEngine(engine, engineObject);
     }
     
     
-    public String modifyCylinderCount(int count) throws InterruptedException, JSONException {
-        return modify(CYLINDER_COUNT, VALUE, count);
+    public void modifyCylinderCount(int count) throws InterruptedException, JSONException {
+        modify(CYLINDER_COUNT, VALUE, count);
     }
     
     
-    public String modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException, JSONException {
-        return modify(COGWHEEL, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
+    public void modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException, JSONException {
+        modify(COGWHEEL, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
     }
     
 
-    public String enableTable(Table table, boolean enabled) throws JSONException, InterruptedException {
-        return modify(table.getName(), ENABLED, enabled);
+    public void enableTable(Table table, boolean enabled) throws JSONException, InterruptedException {
+        modify(table.getName(), ENABLED, enabled);
     }
 
     
-    public String enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
+    public void enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
         if (enable) {
-            return modify(measurement.getName(), SIMULATION, true, VALUE, measurement.getValue());
+            modify(measurement.getName(), SIMULATION, true, VALUE, measurement.getValue());
         }
         else {
-            return modify(measurement.getName(), SIMULATION, false);            
+            modify(measurement.getName(), SIMULATION, false);            
         }
     }
     
     
-    public String setMeasurementSimulationValue(Measurement measurement, double value) throws JSONException, InterruptedException {
-        return modify(measurement.getName(), SIMULATION, true, VALUE, value);
+    public void setMeasurementSimulationValue(Measurement measurement, double value) throws JSONException, InterruptedException {
+        modify(measurement.getName(), SIMULATION, true, VALUE, value);
     }
     
     
-    public String modifyIgnitionTimerSettings(TimerSettings settings) throws JSONException, InterruptedException {
-        return modify("IgnitionTimer",
-            "Prescaler", settings.getPrescaler(),
-            "Period", settings.getPeriod(),
-            "Counter", settings.getCounter());
+    public void modifyIgnitionTimerSettings(TimerSettings settings) throws JSONException, InterruptedException {
+        modify("IgnitionTimer", "Prescaler", settings.getPrescaler(), "Period", settings.getPeriod(), "Counter", settings.getCounter());
     }
     
     
-    public void requestFlash(Flash flash) throws InterruptedException, JSONException {
-        JSONObject flashObject = request(FLASH);
-        JSONObject elementsObject = request(FLASH_ELEMENTS);
-        updateFlash(flash, flashObject, elementsObject);
+    public void requestFlash() throws InterruptedException, JSONException {
+        request(FLASH);
+        request(FLASH_ELEMENTS);
+//        updateFlash(flash, flashObject, elementsObject);
     }
     
     
-    public String modifyFlash(int reference, int count, int value) throws JSONException, InterruptedException {
-        return modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
+    public void modifyFlash(int reference, int count, int value) throws JSONException, InterruptedException {
+        modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
     }
     
     
-    public String modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
-        String status = OK;
+    public void modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
         int index = 0;
         int total = values.length;
-        while (index < total && OK.equals(status)) {
+        while (index < total) {
             int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
-            status = modify(FLASH, REFERENCE, reference, VALUE, Arrays.copyOfRange(values, index, count));
+            modify(FLASH, REFERENCE, reference, VALUE, Arrays.copyOfRange(values, index, count));
             reference += count;
+            index += count;
         }
-        return status;
     }
     
     
@@ -202,20 +183,30 @@ public class RemoteSystem {
     }
     
     
-    private JSONObject request(String subject, Object ... options) throws JSONException, InterruptedException {
-        return send(REQUEST, subject, options);
+    public Engine getEngine() {
+        return engine;
     }
     
     
-    private String modify(String subject, Object ... options) throws JSONException, InterruptedException {
-        JSONObject responseObject = send(MODIFY, subject, options);
-        return responseObject.getString(STATUS);
+    public Flash getFlash() {
+        return flash;
     }
     
     
-    private JSONObject send(String message, String subject, Object ... options) throws JSONException, InterruptedException {
+    private void request(String subject, Object ... options) throws JSONException, InterruptedException {
+        send(REQUEST, subject, options);
+    }
+    
+    
+    private void modify(String subject, Object ... options) throws JSONException, InterruptedException {
+        send(MODIFY, subject, options);
+//        return responseObject.getString(STATUS);
+    }
+    
+    
+    private void send(String message, String subject, Object ... options) throws JSONException, InterruptedException {
         JSONObject messageObject = messageObject(message, subject, options);
-        return messenger.send(messageObject);
+        messenger.send(messageObject);
     }
     
     
@@ -223,8 +214,7 @@ public class RemoteSystem {
         JSONObject object = new JSONObject();
         object.put(Messenger.MESSAGE, message);
         object.put(Messenger.SUBJECT, subject);
-        for (int i = 0; i < options.length - 1; i += 2)
-        {
+        for (int i = 0; i < options.length - 1; i += 2) {
             object.put(options[i].toString(), options[i+1]);
         }
         return object;
@@ -253,8 +243,14 @@ public class RemoteSystem {
     }
     
 
+    private void updateTableField(JSONObject object) throws JSONException {
+        Table table = Table.getInstance(object.getString(SUBJECT));
+        table.setField(object.getInt(COLUMN), object.getInt(ROW), (float) object.getDouble(VALUE));
+    }
+    
+    
     private void updateTable(JSONObject object) throws JSONException {
-        Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
+        Table table = Table.getInstance(object.getString(SUBJECT));
         JSONArray tableArray = object.getJSONArray(TABLE);
         final int rowCount = tableArray.length();
         float[][] fields = new float[rowCount][];
@@ -283,7 +279,7 @@ public class RemoteSystem {
     }
     
     
-    private void updateEngine(Engine engine, JSONObject engineObject) throws JSONException {
+    private void updateEngine(JSONObject engineObject) throws JSONException {
         engine.setCylinderCount(engineObject.getInt(CYLINDER_COUNT));
         JSONObject cogwheelObject = engineObject.getJSONObject(COGWHEEL);
         engine.setCogwheel(cogwheelObject.getInt(COG_TOTAL), cogwheelObject.getInt(GAP_SIZE), cogwheelObject.getInt(OFFSET));
@@ -297,15 +293,20 @@ public class RemoteSystem {
     }
     
 
-    private void updateFlash(Flash flash, JSONObject flashObject, JSONObject elementsObject) throws JSONException {
+    private void updateFlash(JSONObject flashObject) throws JSONException {
         JSONArray memoryArray = flashObject.getJSONArray(VALUE);
         int length = memoryArray.length();
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; ++i) {
             bytes[i] = (byte) memoryArray.getInt(i);
         }
+        flash.setBytes(bytes);
+    }
+    
+    
+    private void updateFlashElements(JSONObject elementsObject) throws JSONException {
         JSONArray elementsArray = elementsObject.getJSONArray(ELEMENTS);
-        length = elementsArray.length();
+        int length = elementsArray.length();
         Flash.Element[] elements = new Flash.Element[length];
         for (int i = 0; i < length; ++i) {
             JSONObject elementObject = elementsArray.getJSONObject(i);
@@ -314,7 +315,6 @@ public class RemoteSystem {
                 elementObject.getInt(REFERENCE),
                 elementObject.getInt(SIZE));
         }
-        flash.setBytes(bytes);
         flash.setElements(elements);
     }
 
@@ -330,6 +330,16 @@ public class RemoteSystem {
         Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
         table.setEnabled(object.getBoolean(ENABLED));
     }
+    
+    
+    private final Map<JSONObject, JSONObject> messageMap = new HashMap<>();
+    
+    private void send(JSONObject message) throws InterruptedException {
+        synchronized (messageMap) {
+            messageMap.put(message, null);
+        }
+        messenger.send(message);
+    }
 
     
     private class PollTask implements Runnable {
@@ -337,36 +347,42 @@ public class RemoteSystem {
         @Override
         public void run() {
             while (running) {
-                try {
-                    if (index < MEASUREMENTS.length) {
-                        JSONObject message = messageObject(REQUEST, MEASUREMENTS[index].getName());
-                        JSONObject response = messenger.send(message);
-                        updateMeasurement(response);
-                        index++;
-                    }
-                    else {
-                        Collection<Table> tables;
-                        synchronized (tablesToPoll) {
-                            tables = new ArrayList<>(tablesToPoll);
+                if (message == null) {
+                    try {
+                        if (index < MEASUREMENTS.length) {
+                            message = messageObject(REQUEST, MEASUREMENTS[index].getName());
+                            send(message);
+    //                        updateMeasurement(response);
+                            index++;
                         }
-                        for (Table table : tables) {
-                            final JSONArray INDEX_PROPERTY = new JSONArray(new String[] {INDEX});
-                            JSONObject message = messageObject(REQUEST, table.getName(), PROPERTIES, INDEX_PROPERTY);
-                            JSONObject response = messenger.send(message);
-                            updateTableIndex(response);
+                        else {
+                            Collection<Table> tables;
+                            synchronized (tablesToPoll) {
+                                tables = new ArrayList<>(tablesToPoll);
+                            }
+                            for (Table table : tables) {
+                                final JSONArray INDEX_PROPERTY = new JSONArray(new String[] {INDEX});
+                                message = messageObject(REQUEST, table.getName(), PROPERTIES, INDEX_PROPERTY);
+                                send(message);
+    //                            updateTableIndex(response);
+                            }
+                            if (pollEngine) {
+                                message = messageObject(REQUEST, ENGINE_IS_RUNNING);
+                                send(message);
+    //                            engineToPoll.setRunning(response.getBoolean(VALUE));
+                            }                        
+                            index = 0;
                         }
-                        if (engineToPoll != null) {
-                            JSONObject message = messageObject(REQUEST, ENGINE_IS_RUNNING);
-                            JSONObject response = messenger.send(message);
-                            engineToPoll.setRunning(response.getBoolean(VALUE));
-                        }                        
-                        index = 0;
                     }
-                }
-                catch (InterruptedException | JSONException ex) {
-                    logger.log(Level.SEVERE, null, ex);
+                    catch (InterruptedException | JSONException ex) {
+                        logger.log(Level.SEVERE, null, ex);
+                    }
                 }
             }
+        }
+        
+        void resume() {
+            message = null;
         }
         
         void stop() {
@@ -375,6 +391,7 @@ public class RemoteSystem {
         
         private volatile boolean running = true;
         private int index = 0;
+        private JSONObject message = null;
     }
     
     
@@ -406,9 +423,107 @@ public class RemoteSystem {
             }
         }
         
+        @Override
+        public void notifyResponse(JSONObject message, JSONObject response) {
+            try {
+                logger.log(Level.FINE, "<< {0}", response);
+                String subject = response.getString(SUBJECT);
+                for (Measurement measurement : MEASUREMENTS) {
+                    if (subject.equals(measurement.getName())) {
+                        updateMeasurement(response);
+                        resumePolling();
+                        return;
+                    }
+                }
+                for (Table table : tablesToPoll) {
+                    if (subject.equals(table.getName())) {
+                        if (response.has(COLUMN) && response.has(ROW)) {
+                            if (response.has(VALUE)) {
+                                updateTableField(response);
+                            }
+                            else {
+                                updateTableIndex(response);
+                                resumePolling();
+                            }
+                            return;
+                        }
+                        else if (response.has(ENABLED)) {
+                            updateTableEnabled(response);
+                            resumePolling();
+                            return;
+                        }
+                    }
+                }
+                if (subject.equals(ENGINE_IS_RUNNING)) {
+                    engine.setRunning(response.getBoolean(VALUE));
+                    resumePolling();
+                    return;
+                }
+                if (subject.equals(MEASUREMENT_TABLES)) {
+                    Collection<String> names = new ArrayList<>();
+                    JSONArray namesArray = response.getJSONArray(NAMES);
+                    for (int i = 0; i < namesArray.length(); ++i) {
+                        names.add(namesArray.getString(i));
+                    }
+                    synchronized (listeners) {
+                        for (Listener listener : listeners) {
+                            listener.tableNames(names);
+                        }
+                    }
+                    return;
+                }
+                if (subject.equals(ENGINE)) {
+                    updateEngine(response);
+                    return;
+                }
+                if (subject.equals(CYLINDER_COUNT)) {
+                    //FIXME: set engine's cylinder count
+                    return;
+                }
+                if (subject.equals(COGWHEEL)) {
+                    //FIXME: set engine's cogwheel
+                    return;
+                }
+                if (subject.equals(FLASH)) {
+                    updateFlash(response);
+                    return;
+                }
+                if (subject.equals(FLASH_ELEMENTS)) {
+                    updateFlashElements(response);
+                    return;
+                }
+                if (subject.equals("IgnitionTimer")) {
+                    //TODO: update TimerSettings
+                    return;
+                }
+                if (response.has(SIMULATION)) {
+                    //TODO: set measurement's simulation
+                    return;
+                }
+                if (response.has(TABLE)) {
+                    updateTable(response);
+                }
+                else if (response.has(ENABLED)) {
+                    updateTableEnabled(response);
+                }
+            }
+            catch (JSONException ex) {
+                logger.log(Level.WARNING, getClass().getName(), ex);
+            }
+        }
+        
+        private void resumePolling() {
+            if (pollTask != null) {
+                pollTask.resume();
+            }
+        }
+        
     }
     
-    private Engine engineToPoll;
+    private final Engine engine = new Engine();
+    private final Flash flash = new Flash();
+    
+    private boolean pollEngine = false;
     private final Collection<Table> tablesToPoll = new ArrayList<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 
@@ -433,6 +548,8 @@ public class RemoteSystem {
     
     private static final String STATUS = "Status";
     private static final String NOTIFICATION = "Notification";
+    private static final String RESPONSE = "Response";
+    private static final String SUBJECT = "Subject";
     
     private static final String REQUEST = "Request";
     private static final String MODIFY = "Modify";

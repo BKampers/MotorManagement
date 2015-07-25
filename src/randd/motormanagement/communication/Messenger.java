@@ -15,6 +15,7 @@ class Messenger {
     
     interface Listener { 
         void notifyMessage(JSONObject message);
+        void notifyResponse(JSONObject message, JSONObject response);
     }
     
     
@@ -57,14 +58,14 @@ class Messenger {
      * @return response or time out object
      * @throws InterruptedException
      */
-    JSONObject send(JSONObject message) throws InterruptedException{
+    void send(JSONObject message) throws InterruptedException {
         Transaction transaction = new Transaction(message);
-        synchronized (transaction) {
+//        synchronized (transaction) {
             transactions.add(transaction);
-            transaction.wait(MAXIMUM_RESPONSE_TIME * 2); // Should not timeout as long as transactionTask is running.
-        }
-        assert (transaction.response != null);
-        return transaction.response;
+//            transaction.wait(MAXIMUM_RESPONSE_TIME * 2); // Should not timeout as long as transactionTask is running.
+//        }
+//        assert (transaction.response != null);
+//        return transaction.response;
     }
     
     
@@ -76,7 +77,7 @@ class Messenger {
                 while (running && transporter != null) {
                     JSONObject receivedObject = transporter.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        logger.log(Level.FINE, "<< {0}", receivedObject);
+                        logger.log(Level.FINEST, "<< {0}", receivedObject);
                         boolean responded = false;
                         if (outstanding.transaction != null) {
                             String message = outstanding.transaction.message.optString(MESSAGE);
@@ -134,7 +135,7 @@ class Messenger {
                     Transaction transaction;
                     transaction = transactions.take();
                     if (transaction.message != null) {
-                        logger.log(Level.FINE, ">> {0}", transaction.message.toString());
+                        logger.log(Level.FINEST, ">> {0}", transaction.message);
                         sendAndWait(transaction);
                         ensureResponse(transaction);
                         notifyResponse(transaction);
@@ -179,10 +180,13 @@ class Messenger {
         }
 
         private void notifyResponse(Transaction transaction) {
-            synchronized (transaction) {
+//            synchronized (transaction) {
                 outstanding.transaction = null;
-                transaction.notify();
-            }
+//                transaction.notify();
+//            }
+                if (listener != null) {
+                    listener.notifyResponse(transaction.message, transaction.response);
+                }
         }
 
         private volatile boolean running = true;

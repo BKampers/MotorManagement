@@ -24,7 +24,7 @@ public class Manager {
         }
         
         Logger rootLogger = Logger.getLogger("");
-        rootLogger.setLevel(Level.SEVERE);
+        rootLogger.setLevel(Level.FINE);
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
                 handler.setFormatter(FORMATTER);
@@ -32,7 +32,7 @@ public class Manager {
         }
         
         Logger logger = Logger.getLogger("randd");
-        logger.setLevel(Level.SEVERE);
+        logger.setLevel(Level.ALL);
         fileHandler = new FileHandler("MotorManagement.log");
         fileHandler.setFormatter(FORMATTER);
         logger.addHandler(fileHandler);

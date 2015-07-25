@@ -60,7 +60,7 @@ public class Transporter {
 
         @Override
         public void receive(byte[] bytes) {
-            logger.info(new String(bytes));
+            logger.log(Level.FINE, new String(bytes));
             for (int i = 0; i < bytes.length; ++i) {
                 char character = (char) bytes[i];
                 if (character != TRANSMISSION_END) {
