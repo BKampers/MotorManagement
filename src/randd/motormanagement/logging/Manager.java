@@ -24,15 +24,14 @@ public class Manager {
         }
         
         Logger rootLogger = Logger.getLogger("");
-        rootLogger.setLevel(Level.FINE);
         for (Handler handler : rootLogger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {
                 handler.setFormatter(FORMATTER);
+                handler.setLevel(Level.ALL);
             }
         }
         
         Logger logger = Logger.getLogger("randd");
-        logger.setLevel(Level.ALL);
         fileHandler = new FileHandler("MotorManagement.log");
         fileHandler.setFormatter(FORMATTER);
         logger.addHandler(fileHandler);
@@ -45,10 +44,10 @@ public class Manager {
         public String format(LogRecord record) {
             StringBuilder builder = new StringBuilder();
             builder.append(DATE_FORMAT.format(new java.util.Date(record.getMillis())));
-            builder.append(": [");
+            builder.append(" [");
             builder.append(record.getLevel());
-            builder.append("]{");
-            builder.append(record.getLoggerName());
+            builder.append("] {");
+            builder.append(String.format(record.getLoggerName(), "%-8s"));
             builder.append("} ");
             builder.append(formatMessage(record));
             if (record.getThrown() != null) {
@@ -64,6 +63,6 @@ public class Manager {
     private static FileHandler fileHandler;
     
     private static final Formatter FORMATTER = new DefaultFormatter();
-    private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyyMMdd HHmmss SSS");
+    private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 
 }

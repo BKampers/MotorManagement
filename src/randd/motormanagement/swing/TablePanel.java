@@ -6,6 +6,7 @@ package randd.motormanagement.swing;
 
 import java.awt.*;
 import java.util.*;
+import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.event.*;
@@ -109,8 +110,11 @@ public class TablePanel extends JPanel {
         public void setValueAt(Object value, int row, int column) {
             try {
                 tablePanelListener.setValue(table, column, row, ((Number) value).floatValue());
+                modifyingRow = row;
+                modifyingColumn = column;
             }
             catch (ClassCastException ex) {
+                Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, getClass().getName(), ex);
                 JOptionPane.showMessageDialog(
                     TablePanel.this, 
                     value.toString(), 
@@ -118,6 +122,14 @@ public class TablePanel extends JPanel {
                     JOptionPane.ERROR_MESSAGE);
             }
         }
+        
+        @Override
+        public boolean isCellEditable(int row, int column) {
+            return row != modifyingRow || column != modifyingColumn;
+        }
+        
+        private int modifyingColumn = NONE;
+        private int modifyingRow = NONE;
 
     }
     
@@ -189,9 +201,17 @@ public class TablePanel extends JPanel {
                 activeRenderer.setText(valueString);
                 return activeRenderer;
             }
-            else {
-                JLabel renderer = (JLabel) super.getTableCellRendererComponent(grid, valueString, isSelected, hasFocus, row, column);
+            else if (! model.isCellEditable(row, column)) {
+                JLabel renderer = new JLabel();
+                renderer.setOpaque(true);
+                renderer.setBackground(Color.GRAY);
+                renderer.setForeground(Color.LIGHT_GRAY);
+                renderer.setHorizontalAlignment(DefaultTableCellRenderer.RIGHT);
+                renderer.setText(valueString);
                 return renderer;
+            }
+            else {
+                return super.getTableCellRendererComponent(grid, valueString, isSelected, hasFocus, row, column);
             }
         }
         
@@ -338,7 +358,7 @@ public class TablePanel extends JPanel {
                         indexChanged();
                         break;
                     case VALUE:
-                        valueChanged((Integer) attributes[0], (Integer) attributes[1]);
+                        valueChanged((Integer) attributes[1], (Integer) attributes[0]);
                         break;
                     default:
                         initializationPropertyChanged(property);
@@ -372,6 +392,8 @@ public class TablePanel extends JPanel {
         
         private void valueChanged(int row, int column) {
             if (0 <= row && row < model.getRowCount() && 0 <= column && column < model.getColumnCount()) {
+                model.modifyingRow = NONE;
+                model.modifyingColumn = NONE;
                 model.fireTableCellUpdated(row, column);
             }
         }
@@ -395,8 +417,8 @@ public class TablePanel extends JPanel {
     private final Table table;   
     private final java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
     
-    private int activeColumn = -1;
-    private int activeRow = -1;
+    private int activeColumn = NONE;
+    private int activeRow = NONE;
     private boolean followActiveCell = true;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -410,5 +432,8 @@ public class TablePanel extends JPanel {
     
     private static final Color DEFAULT_BACKGROUND = UIManager.getColor("Textfield.Background");
     private static final Color INVALID_BACKGROUND = UIManager.getColor("errorBackground");
+    
+    private static final int NONE = -1;
+
     
 }
