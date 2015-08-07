@@ -5,6 +5,7 @@ package randd.motormanagement.logging;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.logging.*;
 
 
@@ -13,12 +14,14 @@ public class Manager {
 
     public static void setup(Map<Level, Collection<String>> levelMap) throws java.io.IOException {
         for (Map.Entry<Level, Collection<String>> entry : levelMap.entrySet()) {
+            loggers.clear();
             Level level = entry.getKey();
             java.util.Collection<String> paths = entry.getValue();
             if (paths != null) {
                 for (String path : paths) {
                     Logger logger = Logger.getLogger(path);
                     logger.setLevel(level);
+                    loggers.add(logger);
                 }
             }
         }
@@ -36,7 +39,7 @@ public class Manager {
         fileHandler.setFormatter(FORMATTER);
         logger.addHandler(fileHandler);
     }
-
+    
     
     static class DefaultFormatter extends Formatter {
 
@@ -59,6 +62,7 @@ public class Manager {
         }
     }
     
+    private static final Collection<Logger> loggers = new HashSet<>();
 
     private static FileHandler fileHandler;
     
