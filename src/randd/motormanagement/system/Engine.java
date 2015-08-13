@@ -4,12 +4,13 @@
 
 package randd.motormanagement.system;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 
 public class Engine {
 
-    
     public class Cogwheel {
 
         public int getCogTotal() {
@@ -39,14 +40,15 @@ public class Engine {
     }
     
     
-    public boolean isRunning() {
+    public Boolean isRunning() {
         return running;
     } 
     
     
     public void setRunning(boolean running) {
-        if (this.running != running) {
-            this.running = running;
+        Boolean newValue = running;
+        if (! newValue.equals(this.running)) {
+            this.running = newValue;
             notifyPropertyChanged(Property.IS_RUNNING);
         }
     }
@@ -58,6 +60,9 @@ public class Engine {
     
     
     public void setCogwheel(int cogTotal, int gapSize, int offset) {
+        if (cogwheel == null) {
+            cogwheel = new Cogwheel();
+        }
         if (cogwheel.cogTotal != cogTotal || cogwheel.gapSize != gapSize || cogwheel.offset != offset) {
             cogwheel.cogTotal = cogTotal;
             cogwheel.gapSize = gapSize;
@@ -67,14 +72,15 @@ public class Engine {
     }
 
     
-    public int getCylinderCount() {
+    public Integer getCylinderCount() {
         return cylinderCount;
     }
 
     
     public void setCylinderCount(int cylinderCount) {
-        if (this.cylinderCount != cylinderCount) {
-            this.cylinderCount = cylinderCount;
+        Integer newValue = cylinderCount;
+        if (! newValue.equals(this.cylinderCount)) {
+            this.cylinderCount = newValue;
             notifyPropertyChanged(Property.CYLINDER_COUNT);
         }
     }
@@ -87,7 +93,7 @@ public class Engine {
     
     public void setDeadPoints(List<Integer> deadPoints) {
         this.deadPoints = (deadPoints != null) ? new ArrayList<>(deadPoints) : null;
-            notifyPropertyChanged(Property.DEAD_POINTS);
+        notifyPropertyChanged(Property.DEAD_POINTS);
     }
 
     
@@ -116,9 +122,9 @@ public class Engine {
     }
     
     
-    private boolean running;
-    private final Cogwheel cogwheel = new Cogwheel();
-    private int cylinderCount;
+    private Boolean running;
+    private Cogwheel cogwheel;
+    private Integer cylinderCount;
     private List<Integer> deadPoints;
     
     

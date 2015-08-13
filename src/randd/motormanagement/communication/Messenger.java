@@ -4,10 +4,12 @@
 
 package randd.motormanagement.communication;
 
-import java.util.concurrent.*;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.*;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 
 class Messenger {
@@ -137,8 +139,16 @@ class Messenger {
                     if (transaction.message != null) {
                         logger.log(Level.FINEST, ">> {0}", transaction.message);
                         sendAndWait(transaction);
-                        ensureResponse(transaction);
-                        notifyResponse(transaction);
+                        //ensureResponse(transaction);
+                        if (transaction.response != null) {
+                            notifyResponse(transaction);
+                        }
+                        else {
+                            logger.log(
+                                    Level.WARNING,
+                                    "Response timeout\nmessage = {0}\ntimeout = {1} ms",
+                                    new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
+                        }
                     }
                 }
             }
