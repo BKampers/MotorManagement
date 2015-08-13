@@ -8,14 +8,31 @@
 
 package randd.motormanagement.swing;
 
-import bka.communication.*;
-import java.util.*;
-import java.util.logging.*;
-import javax.swing.*;
-import javax.swing.event.*;
-import org.json.*;
-import randd.motormanagement.communication.*;
-import randd.motormanagement.system.*;
+import bka.communication.Channel;
+import bka.communication.ChannelException;
+import bka.communication.SerialPortChannel;
+import bka.communication.SocketChannel;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import randd.motormanagement.communication.RemoteSystem;
+import randd.motormanagement.communication.Transporter;
+import randd.motormanagement.system.Engine;
+import randd.motormanagement.system.Measurement;
+import randd.motormanagement.system.Notification;
+import randd.motormanagement.system.Table;
 
 
 public class Monitor extends bka.swing.FrameApplication {
@@ -448,16 +465,11 @@ public class Monitor extends bka.swing.FrameApplication {
 
         @Override
         public void cylinderCountModified(int count) {
-            if (remoteSystem.getEngine().getCylinderCount() != count) {
-                try {
-                    remoteSystem.modifyCylinderCount(count);
-//                    if (RemoteSystem.OK.equals(status)) {
-//                        remoteSystem.requestEngine(engine);
-//                    }
-                }
-                catch (org.json.JSONException | InterruptedException ex) {
-                    handle(ex);
-                }
+            try {
+                remoteSystem.modifyCylinderCount(count);
+            }
+            catch (org.json.JSONException | InterruptedException ex) {
+                handle(ex);
             }
         }
 
@@ -480,9 +492,6 @@ public class Monitor extends bka.swing.FrameApplication {
         private void modifyCogwheel(int cogTotal, int gapSize, int offset) {
             try {
                 remoteSystem.modifyCogwheel(cogTotal, gapSize, offset);
-//                if (RemoteSystem.OK.equals(status)) {
-//                    remoteSystem.requestEngine(engine);
-//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -498,9 +507,6 @@ public class Monitor extends bka.swing.FrameApplication {
         public void clearButtonPressed() {
             try {
                 remoteSystem.modifyFlash(0, remoteSystem.getFlash().getSize(), 0xAA);
-//                if (RemoteSystem.OK.equals(status)) {
-//                    remoteSystem.requestFlash(flash);
-//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);

@@ -4,12 +4,22 @@
 
 package randd.motormanagement.communication;
 
-import java.util.*;
-import java.util.logging.*;
-
-import org.json.*;
-
-import randd.motormanagement.system.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import randd.motormanagement.system.Engine;
+import randd.motormanagement.system.Flash;
+import randd.motormanagement.system.Measurement;
+import randd.motormanagement.system.Notification;
+import randd.motormanagement.system.Table;
+import randd.motormanagement.system.TimerSettings;
 
 
 public class RemoteSystem {
@@ -332,66 +342,83 @@ public class RemoteSystem {
     }
     
     
-    private final Map<JSONObject, JSONObject> messageMap = new HashMap<>();
-    
-    private void send(JSONObject message) throws InterruptedException {
-        synchronized (messageMap) {
-            messageMap.put(message, null);
-        }
-        messenger.send(message);
-    }
-
-    
     private class PollTask implements Runnable {
         
         @Override
         public void run() {
             while (running) {
-                if (message == null) {
-                    try {
-                        if (index < MEASUREMENTS.length) {
-                            message = messageObject(REQUEST, MEASUREMENTS[index].getName());
-                            send(message);
-    //                        updateMeasurement(response);
-                            index++;
+                try {
+                    message = nextMessage();
+                    if (message != null) {
+                        logger.log(Level.FINEST, ">> {0}", message);
+                        synchronized (semaphore) {
+                            messenger.send(message);
+                            semaphore.wait(POLL_TIMEOUT);
                         }
-                        else {
-                            Collection<Table> tables;
-                            synchronized (tablesToPoll) {
-                                tables = new ArrayList<>(tablesToPoll);
-                            }
-                            for (Table table : tables) {
-                                final JSONArray INDEX_PROPERTY = new JSONArray(new String[] {INDEX});
-                                message = messageObject(REQUEST, table.getName(), PROPERTIES, INDEX_PROPERTY);
-                                send(message);
-    //                            updateTableIndex(response);
-                            }
-                            if (pollEngine) {
-                                message = messageObject(REQUEST, ENGINE_IS_RUNNING);
-                                send(message);
-    //                            engineToPoll.setRunning(response.getBoolean(VALUE));
-                            }                        
-                            index = 0;
-                        }
-                    }
-                    catch (InterruptedException | JSONException ex) {
-                        logger.log(Level.SEVERE, null, ex);
                     }
                 }
+                catch (InterruptedException | JSONException ex) {
+                    logger.log(Level.WARNING, getClass().getName(), ex);
+                }
             }
-        }
-        
-        void resume() {
-            message = null;
         }
         
         void stop() {
             running = false;
         }
         
+        private JSONObject nextMessage() throws JSONException {
+            JSONObject pollMessage = nextMeasurementMessage();
+            if (pollMessage == null) {
+                pollMessage = nextTableMessage();
+                if (pollMessage == null) {
+                    pollMessage = engineMessage(pollMessage);
+                    measurmentIndex = 0;
+                    tableIndex = 0;
+                }
+            }
+            return pollMessage;
+        }
+
+        private JSONObject nextMeasurementMessage() throws JSONException {
+            JSONObject pollMessage = null;
+            if (measurmentIndex < MEASUREMENTS.length) {
+                pollMessage = messageObject(REQUEST, MEASUREMENTS[measurmentIndex].getName());
+                measurmentIndex++;
+            }
+            return pollMessage;
+        }
+
+        private JSONObject nextTableMessage() throws JSONException {
+            JSONObject pollMessage = null;
+            List<Table> tables;
+            synchronized (tablesToPoll) {
+                tables = new ArrayList<>(tablesToPoll);
+            }
+            if (tableIndex < tables.size()) {
+                Table table = tables.get(tableIndex);
+                final JSONArray INDEX_PROPERTY = new JSONArray(new String[] {INDEX});
+                pollMessage = messageObject(REQUEST, table.getName(), PROPERTIES, INDEX_PROPERTY);
+                tableIndex++;
+            }
+            return pollMessage;
+        }
+        
+        private JSONObject engineMessage(JSONObject pollMessage) throws JSONException {
+            if (pollEngine) {
+                pollMessage = messageObject(REQUEST, ENGINE_IS_RUNNING);
+            }
+            return pollMessage;
+        }
+        
+        private final Object semaphore = new Object();
         private volatile boolean running = true;
-        private int index = 0;
+        
+        private int measurmentIndex = 0;
+        private int tableIndex = 0;
         private JSONObject message = null;
+
+        private static final long POLL_TIMEOUT = 1000;
     }
     
     
@@ -425,13 +452,17 @@ public class RemoteSystem {
         
         @Override
         public void notifyResponse(JSONObject message, JSONObject response) {
+            if (pollTask != null && message == pollTask.message) {
+                synchronized (pollTask.semaphore) {
+                    pollTask.semaphore.notify();
+                }
+            }
             try {
-                logger.log(Level.FINE, "<< {0}", response);
+                logger.log(Level.FINEST, "<< {0}", response);
                 String subject = response.getString(SUBJECT);
                 for (Measurement measurement : MEASUREMENTS) {
                     if (subject.equals(measurement.getName())) {
                         updateMeasurement(response);
-                        resumePolling();
                         return;
                     }
                 }
@@ -443,20 +474,17 @@ public class RemoteSystem {
                             }
                             else {
                                 updateTableIndex(response);
-                                resumePolling();
                             }
                             return;
                         }
                         else if (response.has(ENABLED)) {
                             updateTableEnabled(response);
-                            resumePolling();
                             return;
                         }
                     }
                 }
                 if (subject.equals(ENGINE_IS_RUNNING)) {
                     engine.setRunning(response.getBoolean(VALUE));
-                    resumePolling();
                     return;
                 }
                 if (subject.equals(MEASUREMENT_TABLES)) {
@@ -477,11 +505,13 @@ public class RemoteSystem {
                     return;
                 }
                 if (subject.equals(CYLINDER_COUNT)) {
-                    //FIXME: set engine's cylinder count
+                    engine.setCylinderCount(response.getInt(VALUE));
+                    requestEngineUpdate();
                     return;
                 }
                 if (subject.equals(COGWHEEL)) {
-                    //FIXME: set engine's cogwheel
+                    engine.setCogwheel(response.getInt(COG_TOTAL), response.getInt(GAP_SIZE), response.getInt(OFFSET));
+                    requestEngineUpdate();
                     return;
                 }
                 if (subject.equals(FLASH)) {
@@ -510,11 +540,15 @@ public class RemoteSystem {
             catch (JSONException ex) {
                 logger.log(Level.WARNING, getClass().getName(), ex);
             }
-        }
         
-        private void resumePolling() {
-            if (pollTask != null) {
-                pollTask.resume();
+        }
+
+        private void requestEngineUpdate() {
+            try {
+                requestEngine();
+            }
+            catch (InterruptedException | JSONException ex) {
+                logger.log(Level.WARNING, getClass().getName(), ex);
             }
         }
         
