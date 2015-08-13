@@ -1,20 +1,27 @@
 /*
 ** Copyright © Bart Kampers
 */
+
 package randd.motormanagement.logging;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.HashSet;
-import java.util.logging.*;
+import java.util.Map;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 
 public class Manager {
     
 
     public static void setup(Map<Level, Collection<String>> levelMap) throws java.io.IOException {
+        loggers.clear();
         for (Map.Entry<Level, Collection<String>> entry : levelMap.entrySet()) {
-            loggers.clear();
             Level level = entry.getKey();
             java.util.Collection<String> paths = entry.getValue();
             if (paths != null) {
@@ -61,7 +68,7 @@ public class Manager {
             return builder.toString();
         }
     }
-    
+
     private static final Collection<Logger> loggers = new HashSet<>();
 
     private static FileHandler fileHandler;
