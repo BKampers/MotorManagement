@@ -9,7 +9,8 @@ import java.awt.Color;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
-import randd.motormanagement.system.*;
+import randd.motormanagement.system.Measurement;
+import randd.motormanagement.system.Table;
 
 
 public class MeasurementPanel extends javax.swing.JPanel {
@@ -36,21 +37,6 @@ public class MeasurementPanel extends javax.swing.JPanel {
     
     Measurement getMeasurement() {
         return measurement;
-    }
-    
-    
-    void notifyResult(Measurement.Property property, String result) {
-        logger.log(Level.FINE, "notifyResult {0} {1}", new Object[] { property, result });
-        switch (property) {
-            case TABLE_ENABLED:
-                enableCorrectionToggleButton.setEnabled(true);
-                showCorrectionEnabled(enableCorrectionToggleButton.isSelected());
-                break;
-            case SIMULATION_ENABLED:
-                simulationToggleButton.setEnabled(true);
-                enableSimulation(simulationToggleButton.isSelected());
-                break;
-        }
     }
     
     
@@ -140,14 +126,16 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
     
     private void valueTextField_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextField_actionPerformed
+        String text = valueTextField.getText();
+        java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
         try {
-            java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
-            double value = numberFormat.parse(valueTextField.getText()).doubleValue();
+            double value = numberFormat.parse(text).doubleValue();
             listener.simulationValueModified(this, value);
             valueTextField.setBackground(Color.WHITE);
         }
         catch (java.text.ParseException ex) {
             valueTextField.setBackground(Color.RED);
+            logger.log(Level.FINE, text, ex);
         }
     }//GEN-LAST:event_valueTextField_actionPerformed
 
@@ -165,7 +153,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    private void enableSimulation(boolean enabled) {
+    private void enableSimulationControls(boolean enabled) {
         logger.log(Level.FINE, "enableSimulation {0}", enabled);
         simulationToggleButton.setSelected(enabled);
         valueTextField.setEnabled(enabled);      
@@ -203,9 +191,8 @@ public class MeasurementPanel extends javax.swing.JPanel {
         @Override
         public void simulationUpdated() {
             logger.log(Level.FINE, "simulationUpdated {0}", measurement.isSimulationEnabled());
-            if (simulationToggleButton.isEnabled()) {
-                enableSimulation(measurement.isSimulationEnabled());
-            }
+            enableSimulationControls(measurement.isSimulationEnabled());
+            simulationToggleButton.setEnabled(true);
         }
     
     }    
@@ -218,6 +205,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
             switch (property) {
                 case ENABLED:
                     showCorrectionEnabled(table.isEnabled());
+                    enableCorrectionToggleButton.setEnabled(true);
                     break;
             }
         }

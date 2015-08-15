@@ -120,19 +120,17 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private void initializePanels() {
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
-        if (getBooleanProperty(LIVE_MODE, true)) {
-            channelComboBox.setEditable(developerMode);
-            addMeasurementPanel("RPM", developerMode);
-            addMeasurementPanel("Load", developerMode);
-            addMeasurementPanel("Water", developerMode);
-            addMeasurementPanel("Air", developerMode);
-            addMeasurementPanel("Battery", developerMode);
-            addMeasurementPanel("Map", developerMode);
-    //        addMeasurementPanel("Lambda")));
-    //        addMeasurementPanel("Aux1")));
-    //        addMeasurementPanel("Aux2")));
-            addEngineTabPanel();
-        }
+        channelComboBox.setEditable(developerMode);
+        addMeasurementPanel("RPM", developerMode);
+        addMeasurementPanel("Load", developerMode);
+        addMeasurementPanel("Water", developerMode);
+        addMeasurementPanel("Air", developerMode);
+        addMeasurementPanel("Battery", developerMode);
+        addMeasurementPanel("Map", developerMode);
+//        addMeasurementPanel("Lambda")));
+//        addMeasurementPanel("Aux1")));
+//        addMeasurementPanel("Aux2")));
+        addEngineTabPanel();
         if (developerMode) {
             addTabPanel(memoryPanel, "Flash");
             addTabPanel(statusPanel, "Status");
@@ -279,9 +277,9 @@ public class Monitor extends bka.swing.FrameApplication {
             memoryPanel.setMemory(remoteSystem.getFlash());
             activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
+            remoteSystem.addListener(new RemoteSystemListener());
+            remoteSystem.requestTableNames();
             if (getBooleanProperty(LIVE_MODE, true)) {
-                remoteSystem.addListener(new RemoteSystemListener());
-                remoteSystem.requestTableNames();
                 remoteSystem.startPolling();
             }
         }
@@ -294,7 +292,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
         Table correctionTable = getCorrectionTable(measurement);
-        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelLsitener, developerMode);
+        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
         valuesPanel.add(panel);
         Table table = getCorrectionTable(measurement);
         if (table != null) {
@@ -312,7 +310,7 @@ public class Monitor extends bka.swing.FrameApplication {
         assert (measurement != null);
         String measurementName = measurement.getName();
         if (! "Load".equals(measurementName) && ! "RPM".equals(measurementName)) {
-            return Table.getInstance(measurementName + "Correction");
+            return Table.getInstance(measurementName + RemoteSystem.CORRECTION_SUFFIX);
         }
         else {
             return null;
@@ -402,7 +400,6 @@ public class Monitor extends bka.swing.FrameApplication {
             Table table = getCorrectionTable(measurement);
             try {
                 remoteSystem.enableTable(table, enabled);
-                //panel.notifyResult(Measurement.Property.TABLE_ENABLED, result);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -415,7 +412,6 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 if (measurement.isSimulationEnabled() != enabled) {
                     remoteSystem.enableMeasurementSimulation(measurement, enabled);
-//                    panel.notifyResult(Measurement.Property.SIMULATION_ENABLED, result);
                 }
             }
             catch (org.json.JSONException | InterruptedException ex) {
@@ -427,7 +423,6 @@ public class Monitor extends bka.swing.FrameApplication {
         public void simulationValueModified(MeasurementPanel panel, double value) {
             try {
                 remoteSystem.setMeasurementSimulationValue(panel.getMeasurement(), value);
-                //panel.notifyResult(Measurement.Property.SIMULATION_VALUE, result);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -449,9 +444,6 @@ public class Monitor extends bka.swing.FrameApplication {
         public void setValue(Table table, int column, int row, float value) {
             try {
                 remoteSystem.modifyTable(table, column, row, value);
-//                if (RemoteSystem.OK.equals(result)) {
-//                    table.setField(column, row, value);
-//                }
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -574,7 +566,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private java.awt.Component selectedTab = null;
     
-    private final MeasurementPanelListener measurementPanelLsitener = new MeasurementPanelListener();
+    private final MeasurementPanelListener measurementPanelListener = new MeasurementPanelListener();
     
     private static final String NO_SELECTION = "-";
 

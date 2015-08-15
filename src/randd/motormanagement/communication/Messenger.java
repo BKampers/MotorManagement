@@ -8,7 +8,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 
@@ -145,9 +144,9 @@ class Messenger {
                         }
                         else {
                             logger.log(
-                                    Level.WARNING,
-                                    "Response timeout\nmessage = {0}\ntimeout = {1} ms",
-                                    new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
+                                Level.WARNING,
+                                "Response timeout\nmessage = {0}\ntimeout = {1} ms",
+                                new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
                         }
                     }
                 }
@@ -176,27 +175,12 @@ class Messenger {
             }
         }
         
-        private void ensureResponse(Transaction transaction) {
-            if (transaction.response == null) {
-                try {
-                    transaction.response = new JSONObject();
-                    transaction.response.put("TransactionTimeout", MAXIMUM_RESPONSE_TIME);
-                }
-                catch (JSONException ex) {
-                    // Will not occur since key in put method is not null
-                    logger.log(Level.WARNING, getClass().getName(), ex);
-                }
-            }
-        }
 
         private void notifyResponse(Transaction transaction) {
-//            synchronized (transaction) {
-                outstanding.transaction = null;
-//                transaction.notify();
-//            }
-                if (listener != null) {
-                    listener.notifyResponse(transaction.message, transaction.response);
-                }
+            outstanding.transaction = null;
+            if (listener != null) {
+                listener.notifyResponse(transaction.message, transaction.response);
+            }
         }
 
         private volatile boolean running = true;
