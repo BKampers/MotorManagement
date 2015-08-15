@@ -27,6 +27,7 @@ public class RemoteSystem {
     public static final String OK = "OK";
     public static final String REFERENCE = "Reference";
     public static final String VALUE = "Value";
+    public static final String CORRECTION_SUFFIX = "Correction";
 
     
     public interface Listener {
@@ -96,7 +97,6 @@ public class RemoteSystem {
     public void requestTable(Table table) throws InterruptedException, JSONException {
         final JSONArray TABLE_PROPERTY = new JSONArray(new String[] {TABLE});
         request(table.getName(), PROPERTIES, TABLE_PROPERTY);
-        //updateTable(tableObject);
     }
     
     
@@ -108,13 +108,11 @@ public class RemoteSystem {
     public void requestTableEnabled(Table table) throws InterruptedException, JSONException {
         final JSONArray ENABLED_PROPERTY = new JSONArray(new String[] {ENABLED});
         request(table.getName(), PROPERTIES, ENABLED_PROPERTY);
-        //updateTableEnabled(tableObject);
     }
     
     
     public void requestEngine() throws InterruptedException, JSONException {
         request(ENGINE);
-        //updateEngine(engine, engineObject);
     }
     
     
@@ -135,7 +133,11 @@ public class RemoteSystem {
     
     public void enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
         if (enable) {
-            modify(measurement.getName(), SIMULATION, true, VALUE, measurement.getValue());
+            Float value = measurement.getValue();
+            if (value == null) {
+                value = 0.0f;
+            }
+            modify(measurement.getName(), SIMULATION, true, VALUE, value);
         }
         else {
             modify(measurement.getName(), SIMULATION, false);            
@@ -156,7 +158,6 @@ public class RemoteSystem {
     public void requestFlash() throws InterruptedException, JSONException {
         request(FLASH);
         request(FLASH_ELEMENTS);
-//        updateFlash(flash, flashObject, elementsObject);
     }
     
     
@@ -210,7 +211,6 @@ public class RemoteSystem {
     
     private void modify(String subject, Object ... options) throws JSONException, InterruptedException {
         send(MODIFY, subject, options);
-//        return responseObject.getString(STATUS);
     }
     
     
@@ -355,6 +355,7 @@ public class RemoteSystem {
                             messenger.send(message);
                             semaphore.wait(POLL_TIMEOUT);
                         }
+                        Thread.sleep(500);
                     }
                 }
                 catch (InterruptedException | JSONException ex) {
@@ -432,6 +433,7 @@ public class RemoteSystem {
                     String key = keys.next().toString();
                     if (! Messenger.MESSAGE.equals(key)) {
                         Notification notification = new Notification(key, message.optString(key));
+                        logger.log(Level.FINE, "<< {0}", message);
                         synchronized (listeners) {
                             for (Listener listener : listeners) {
                                 listener.notificationReceived(notification);
@@ -533,12 +535,12 @@ public class RemoteSystem {
                 if (response.has(TABLE)) {
                     updateTable(response);
                 }
-                else if (response.has(ENABLED)) {
+                if (response.has(ENABLED)) {
                     updateTableEnabled(response);
                 }
             }
             catch (JSONException ex) {
-                logger.log(Level.WARNING, getClass().getName(), ex);
+                logger.log(Level.WARNING, response.toString(), ex);
             }
         
         }
@@ -548,7 +550,7 @@ public class RemoteSystem {
                 requestEngine();
             }
             catch (InterruptedException | JSONException ex) {
-                logger.log(Level.WARNING, getClass().getName(), ex);
+                logger.log(Level.WARNING, "requestEngineUpdate", ex);
             }
         }
         
