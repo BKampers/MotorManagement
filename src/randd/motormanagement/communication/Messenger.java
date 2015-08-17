@@ -56,17 +56,10 @@ class Messenger {
     /**
      * Enqueues JSON message for sending and waits for response. 
      * @param message
-     * @return response or time out object
      * @throws InterruptedException
      */
     void send(JSONObject message) throws InterruptedException {
-        Transaction transaction = new Transaction(message);
-//        synchronized (transaction) {
-            transactions.add(transaction);
-//            transaction.wait(MAXIMUM_RESPONSE_TIME * 2); // Should not timeout as long as transactionTask is running.
-//        }
-//        assert (transaction.response != null);
-//        return transaction.response;
+        transactions.add(new Transaction(message));
     }
     
     
@@ -138,7 +131,6 @@ class Messenger {
                     if (transaction.message != null) {
                         logger.log(Level.FINEST, ">> {0}", transaction.message);
                         sendAndWait(transaction);
-                        //ensureResponse(transaction);
                         if (transaction.response != null) {
                             notifyResponse(transaction);
                         }
@@ -171,7 +163,7 @@ class Messenger {
                 }
             }
             catch (InterruptedException ex) {
-                logger.log(Level.WARNING, getClass().getName(), ex);
+                logger.log(Level.WARNING, "sendAndWait", ex);
             }
         }
         

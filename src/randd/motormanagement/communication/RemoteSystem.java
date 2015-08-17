@@ -4,22 +4,11 @@
 
 package randd.motormanagement.communication;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import randd.motormanagement.system.Engine;
-import randd.motormanagement.system.Flash;
-import randd.motormanagement.system.Measurement;
-import randd.motormanagement.system.Notification;
-import randd.motormanagement.system.Table;
-import randd.motormanagement.system.TimerSettings;
+import randd.motormanagement.system.*;
+
+import java.util.*;
+import java.util.logging.*;
+import org.json.*;
 
 
 public class RemoteSystem {
@@ -167,14 +156,9 @@ public class RemoteSystem {
     
     
     public void modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
-        int index = 0;
-        int total = values.length;
-        while (index < total) {
-            int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
-            modify(FLASH, REFERENCE, reference, VALUE, Arrays.copyOfRange(values, index, count));
-            reference += count;
-            index += count;
-        }
+        loadTask = new LoadTask(reference, values);
+        Thread loadThread = new Thread(loadTask);
+        loadThread.start();
     }
     
     
@@ -304,13 +288,14 @@ public class RemoteSystem {
     
 
     private void updateFlash(JSONObject flashObject) throws JSONException {
+        int reference = flashObject.getInt(REFERENCE);
         JSONArray memoryArray = flashObject.getJSONArray(VALUE);
         int length = memoryArray.length();
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; ++i) {
             bytes[i] = (byte) memoryArray.getInt(i);
         }
-        flash.setBytes(bytes);
+        flash.setBytes(reference, bytes);
     }
     
     
@@ -421,6 +406,47 @@ public class RemoteSystem {
 
         private static final long POLL_TIMEOUT = 1000;
     }
+
+
+    private class LoadTask implements Runnable {
+
+        LoadTask(int reference, int[] values) {
+            this.reference = reference;
+            this.values = values;
+        }
+
+        @Override
+        public void run() {
+            try {
+                int index = 0;
+                int total = values.length;
+                while (index < total) {
+                    int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
+                    int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
+                    message = messageObject(MODIFY, FLASH, REFERENCE, reference, VALUE, valuesToSend);
+                    synchronized (semaphore) {
+                        messenger.send(message);
+                        semaphore.wait(5000);
+                    }
+                    Thread.sleep(500);
+                    reference += count;
+                    index += count;
+                }
+            }
+            catch (InterruptedException | JSONException | RuntimeException ex) {
+                logger.log(Level.SEVERE, "LoadTask", ex);
+            }
+
+        }
+
+        JSONObject message = null;
+
+        private int reference;
+        private final int[] values;
+
+        private final Object semaphore = new Object();
+
+    }
     
     
     private class MessengerListener implements Messenger.Listener {
@@ -457,6 +483,11 @@ public class RemoteSystem {
             if (pollTask != null && message == pollTask.message) {
                 synchronized (pollTask.semaphore) {
                     pollTask.semaphore.notify();
+                }
+            }
+            if (loadTask != null && message == loadTask.message) {
+                synchronized (loadTask.semaphore) {
+                    loadTask.semaphore.notify();
                 }
             }
             try {
@@ -565,6 +596,7 @@ public class RemoteSystem {
 
     
     private PollTask pollTask = null;
+    private LoadTask loadTask = null;
     
     private final Messenger messenger;
     

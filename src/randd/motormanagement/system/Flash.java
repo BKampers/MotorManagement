@@ -34,7 +34,8 @@ public class Flash {
         public int getSize() {
             return size;
         }
-        
+
+        @Override
         public String toString() {
             return String.format("Type: %d, Address %X - %X, Size: %d", typeId, reference, reference + size -1, size);
         }
@@ -45,16 +46,17 @@ public class Flash {
     }
     
     
-    public void setBytes(byte[] bytes) {
-        this.bytes = bytes;
+    public void setBytes(int address, byte[] bytes) {
+        ensureBuffer(address + bytes.length);
+        System.arraycopy(bytes, 0, this.bytes, address, bytes.length);
         synchronized (listeners) {
             for (Listener listener : listeners) {
                 listener.refreshed();
             }
         }
     }
-    
-    
+
+
     public boolean hasBytes() {
         return bytes != null;
     }
@@ -106,6 +108,18 @@ public class Flash {
     }
     
     
+    private void ensureBuffer(int size) {
+        if (bytes == null) {
+            bytes = new byte[size];
+        }
+        else if (bytes.length < size) {
+            byte[] old = this.bytes;
+            bytes = new byte[size];
+            System.arraycopy(old, 0, bytes, 0, old.length);
+        }
+    }
+
+
     private byte[] bytes;
     private Element[] elements;
     

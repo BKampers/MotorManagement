@@ -64,12 +64,12 @@ public class Transporter {
             for (int i = 0; i < bytes.length; ++i) {
                 char character = (char) bytes[i];
                 if (character != TRANSMISSION_END) {
-                    receivedData.append(character);
+                    receivedCharacters.append(character);
                 }
                 else {
                     try {
-                        receivedObjects.add(new JSONObject(receivedData.toString()));
-                        receivedData = new StringBuilder();
+                        receivedObjects.add(new JSONObject(receivedCharacters.toString()));
+                        receivedCharacters = new StringBuilder();
                     }
                     catch (org.json.JSONException ex) {
                         handleException(ex);
@@ -80,10 +80,10 @@ public class Transporter {
 
         @Override
         public void handleException(Exception ex) {
-            logger.log(Level.WARNING, "", ex);
+            logger.log(Level.WARNING, "ObjectReceiver", ex);
         }
         
-        private StringBuilder receivedData = new StringBuilder();
+        private StringBuilder receivedCharacters = new StringBuilder();
         
     }
     
