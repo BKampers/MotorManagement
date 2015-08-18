@@ -139,11 +139,6 @@ public class RemoteSystem {
     }
     
     
-    public void modifyIgnitionTimerSettings(TimerSettings settings) throws JSONException, InterruptedException {
-        modify("IgnitionTimer", "Prescaler", settings.getPrescaler(), "Period", settings.getPeriod(), "Counter", settings.getCounter());
-    }
-    
-    
     public void requestFlash() throws InterruptedException, JSONException {
         request(FLASH);
         request(FLASH_ELEMENTS);
@@ -553,14 +548,6 @@ public class RemoteSystem {
                 }
                 if (subject.equals(FLASH_ELEMENTS)) {
                     updateFlashElements(response);
-                    return;
-                }
-                if (subject.equals("IgnitionTimer")) {
-                    //TODO: update TimerSettings
-                    return;
-                }
-                if (response.has(SIMULATION)) {
-                    //TODO: set measurement's simulation
                     return;
                 }
                 if (response.has(TABLE)) {

@@ -8,31 +8,14 @@
 
 package randd.motormanagement.swing;
 
-import bka.communication.Channel;
-import bka.communication.ChannelException;
-import bka.communication.SerialPortChannel;
-import bka.communication.SocketChannel;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import randd.motormanagement.communication.RemoteSystem;
-import randd.motormanagement.communication.Transporter;
-import randd.motormanagement.system.Engine;
-import randd.motormanagement.system.Measurement;
-import randd.motormanagement.system.Notification;
-import randd.motormanagement.system.Table;
+import bka.communication.*;
+import java.util.*;
+import java.util.logging.*;
+import javax.swing.*;
+import javax.swing.event.*;
+import org.json.*;
+import randd.motormanagement.communication.*;
+import randd.motormanagement.system.*;
 
 
 public class Monitor extends bka.swing.FrameApplication {
