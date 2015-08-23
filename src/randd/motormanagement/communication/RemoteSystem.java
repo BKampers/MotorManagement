@@ -33,13 +33,13 @@ public class RemoteSystem {
     
     
     public void connect() throws bka.communication.ChannelException  {
-        messenger.open();
+        messenger.start();
     }
     
     
     public void disconnect() throws bka.communication.ChannelException {
         stopPolling();
-        messenger.close();
+        messenger.stop();
     }
 
     
@@ -193,7 +193,7 @@ public class RemoteSystem {
     }
     
     
-    private void send(String message, String subject, Object ... options) throws JSONException, InterruptedException {
+    private void send(String message, String subject, Object ... options) throws JSONException {
         JSONObject messageObject = messageObject(message, subject, options);
         messenger.send(messageObject);
     }
