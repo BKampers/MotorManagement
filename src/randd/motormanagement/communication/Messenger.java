@@ -27,8 +27,14 @@ class Messenger {
     
     Messenger(Transporter transporter) {
         this.transporter = transporter;
-        String channelName = transporter.getName().replaceAll("\\.", "-");
-        logger = Logger.getLogger(Messenger.class.getName() + "." + channelName);
+        String transporterName = transporter.getName();
+        if (transporterName != null) {
+            transporterName = transporterName.replaceAll("\\.", "-");
+        }
+        else {
+            transporterName = transporter.getClass().getSimpleName();
+        }
+        logger = Logger.getLogger(Messenger.class.getName() + "." + transporterName);
      }
     
     
@@ -37,7 +43,12 @@ class Messenger {
     }
     
 
-    void open() throws bka.communication.ChannelException {
+    /**
+     * Starts messenger. The messenger is ready to send and receive until close is called;
+     * @see #stop()
+     * @throws bka.communication.ChannelException
+     */
+    void start() throws bka.communication.ChannelException {
         transporter.open();
         Thread receiveThread = new Thread(receiveTask);
         Thread transactionThread = new Thread(transactionTask);
@@ -45,8 +56,13 @@ class Messenger {
         transactionThread.start();
     }
     
-    
-    void close() throws bka.communication.ChannelException {
+
+    /**
+     * Stop sending and receiving messages.
+     * @see #start()
+     * @throws bka.communication.ChannelException
+     */
+    void stop() throws bka.communication.ChannelException {
         transactionTask.stop();
         receiveTask.stop();
         transporter.close();
@@ -54,11 +70,13 @@ class Messenger {
     
     
     /**
-     * Enqueues JSON message for sending and waits for response. 
+     * Enqueues message for sending. Received responses will be notified through Listener.
+     * When this Messenger is not open the message will not be sent.
+     * @see #start()
+     * @see #setListener(Listener)
      * @param message
-     * @throws InterruptedException
      */
-    void send(JSONObject message) throws InterruptedException {
+    void send(JSONObject message) {
         transactions.add(new Transaction(message));
     }
     

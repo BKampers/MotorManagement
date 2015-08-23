@@ -64,11 +64,11 @@ public class MessengerTest {
         MessengerListener listener = new MessengerListener();
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.setListener(listener);
-        messenger.open();
+        messenger.start();
         when(transporter.nextReceivedObject()).thenReturn(notification);
         Thread.sleep(5);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
-        messenger.close();
+        messenger.stop();
         assertEquals(notification, listener.receivedNotification);
     }
 
@@ -90,12 +90,12 @@ public class MessengerTest {
         MessengerListener listener = new MessengerListener();
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.setListener(listener);
-        messenger.open();
+        messenger.start();
         messenger.send(message);
         when(transporter.nextReceivedObject()).thenReturn(response);
         Thread.sleep(5);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
-        messenger.close();
+        messenger.stop();
         assertEquals(message, listener.receivedMessage);
         assertEquals(response, listener.receivedResponse);
     }
@@ -107,7 +107,7 @@ public class MessengerTest {
      * @throws org.json.JSONException
      */
     @Test
-    public void testNotOpen() throws InterruptedException, JSONException  {
+    public void testNotStarted() throws InterruptedException, JSONException  {
         JSONObject notification = new JSONObject();
         notification.put("Notification", "Mocked notification");
         MessengerListener listener = new MessengerListener();
@@ -127,14 +127,14 @@ public class MessengerTest {
      * @throws org.json.JSONException
      */
     @Test
-    public void testClose() throws ChannelException, InterruptedException, JSONException  {
+    public void testStop() throws ChannelException, InterruptedException, JSONException  {
         JSONObject notification = new JSONObject();
         notification.put("Notification", "Mock");
         MessengerListener listener = new MessengerListener();
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.setListener(listener);
-        messenger.open();
-        messenger.close();
+        messenger.start();
+        messenger.stop();
         when(transporter.nextReceivedObject()).thenReturn(notification);
         Thread.sleep(5);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
