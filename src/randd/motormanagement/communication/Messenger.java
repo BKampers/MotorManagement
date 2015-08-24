@@ -26,6 +26,9 @@ class Messenger {
 
     
     Messenger(Transporter transporter) {
+        if (transporter == null) {
+            throw new java.lang.IllegalArgumentException();
+        }
         this.transporter = transporter;
         String transporterName = transporter.getName();
         if (transporterName != null) {
@@ -89,22 +92,7 @@ class Messenger {
                 while (running && transporter != null) {
                     JSONObject receivedObject = transporter.nextReceivedObject();
                     if (receivedObject.length() > 0) {
-                        logger.log(Level.FINEST, "<< {0}", receivedObject);
-                        boolean responded = false;
-                        if (outstanding.transaction != null) {
-                            String message = outstanding.transaction.message.optString(MESSAGE);
-                            String subject = outstanding.transaction.message.optString(SUBJECT);
-                            if (isResponse(receivedObject, message, subject)) {
-                                synchronized (outstanding) {
-                                    outstanding.transaction.response = receivedObject;
-                                    outstanding.notify();
-                                    responded = true;
-                                }
-                            }
-                        }
-                        if (! responded && listener != null) {
-                            listener.notifyMessage(receivedObject);
-                        }
+                        handleReceivedObject(receivedObject);
                     }
                 }
             }
@@ -113,9 +101,34 @@ class Messenger {
                 running = false;
             }
         }
-        
+
         void stop() {
             running = false;
+        }
+
+        private void handleReceivedObject(JSONObject receivedObject) {
+            logger.log(Level.FINEST, "<< {0}", receivedObject);
+            boolean tranactionHandled = false;
+            if (outstanding.transaction != null) {
+                tranactionHandled = handleTransaction(receivedObject);
+            }
+            if (! tranactionHandled && listener != null) {
+                listener.notifyMessage(receivedObject);
+            }
+        }
+
+        private boolean handleTransaction(JSONObject receivedObject) {
+            boolean handled = false;
+            String message = outstanding.transaction.message.optString(MESSAGE);
+            String subject = outstanding.transaction.message.optString(SUBJECT);
+            if (isResponse(receivedObject, message, subject)) {
+                synchronized (outstanding) {
+                    outstanding.transaction.response = receivedObject;
+                    outstanding.notify();
+                    handled = true;
+                }
+            }
+            return handled;
         }
         
         private boolean isResponse(JSONObject object, String message, String subject) {
@@ -144,20 +157,9 @@ class Messenger {
         public void run() {
             try {
                 while (running) {
-                    Transaction transaction;
-                    transaction = transactions.take();
+                    Transaction transaction = transactions.take();
                     if (transaction.message != null) {
-                        logger.log(Level.FINEST, ">> {0}", transaction.message);
                         sendAndWait(transaction);
-                        if (transaction.response != null) {
-                            notifyResponse(transaction);
-                        }
-                        else {
-                            logger.log(
-                                Level.WARNING,
-                                "Response timeout\nmessage = {0}\ntimeout = {1} ms",
-                                new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
-                        }
                     }
                 }
             }
@@ -166,13 +168,27 @@ class Messenger {
                 running = false;
             }
         }
-        
+
         void stop() {
             running = false;
             transactions.add(new Transaction(null)); // deblock if waiting for transaction
         }
 
         private void sendAndWait(Transaction transaction) {
+            logger.log(Level.FINEST, ">> {0}", transaction.message);
+            transportAndWait(transaction);
+            if (transaction.response != null) {
+                notifyResponse(transaction);
+            }
+            else {
+                logger.log(
+                    Level.WARNING,
+                    "Response timeout\nmessage = {0}\ntimeout = {1} ms",
+                    new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
+            }
+        }
+        
+        private void transportAndWait(Transaction transaction) {
             try {
                 synchronized (outstanding) {
                     outstanding.transaction = transaction;
@@ -185,7 +201,6 @@ class Messenger {
             }
         }
         
-
         private void notifyResponse(Transaction transaction) {
             outstanding.transaction = null;
             if (listener != null) {
