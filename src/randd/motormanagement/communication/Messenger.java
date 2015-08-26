@@ -27,7 +27,7 @@ class Messenger {
     
     Messenger(Transporter transporter) {
         if (transporter == null) {
-            throw new java.lang.IllegalArgumentException();
+            throw new IllegalArgumentException();
         }
         this.transporter = transporter;
         String transporterName = transporter.getName();
@@ -184,7 +184,7 @@ class Messenger {
                 logger.log(
                     Level.WARNING,
                     "Response timeout\nmessage = {0}\ntimeout = {1} ms",
-                    new Object[]{transaction.message, MAXIMUM_RESPONSE_TIME});
+                    new Object[] { transaction.message, MAXIMUM_RESPONSE_TIME });
             }
         }
         

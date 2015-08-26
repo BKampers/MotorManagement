@@ -25,13 +25,20 @@ public class RemoteSystem {
     }
     
     
-    public RemoteSystem(Transporter transporter) {
-        assert(transporter != null);
-        messenger = new Messenger(transporter);
-        messenger.setListener(new MessengerListener());
+    RemoteSystem(Messenger messenger) {
+        if (messenger == null) {
+            throw new IllegalArgumentException();
+        }
+        this.messenger = messenger;
+        this.messenger.setListener(new MessengerListener());
     }
-    
-    
+
+
+    public RemoteSystem(Transporter transporter) {
+        this(new Messenger(transporter));
+    }
+
+
     public void connect() throws bka.communication.ChannelException  {
         messenger.start();
     }
@@ -44,20 +51,20 @@ public class RemoteSystem {
 
     
     public void startPolling() {
-        if (pollTask == null) {
-            pollTask = new PollTask();
+        if (pollTimer == null) {
+            PollTask pollTask = new PollTask();
             pollEngine = true;
-            Thread pollThread = new Thread(pollTask);
-            pollThread.start();
+            pollTimer = new Timer();
+            pollTimer.schedule(pollTask, 500, 500);
         }
     }
     
     
     public void stopPolling() {
-        if (pollTask != null) {
-            pollTask.stop();
-            pollTask = null;
+        if (pollTimer != null) {
+            pollTimer.cancel();
             pollEngine = false;
+            pollTimer = null;
         }
     }
     
@@ -151,9 +158,15 @@ public class RemoteSystem {
     
     
     public void modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
-        loadTask = new LoadTask(reference, values);
-        Thread loadThread = new Thread(loadTask);
-        loadThread.start();
+        int index = 0;
+        int total = values.length;
+        while (index < total) {
+            int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
+            int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
+            modify(FLASH, REFERENCE, reference, VALUE, valuesToSend);
+            reference += count;
+            index += count;
+        }
     }
     
     
@@ -195,6 +208,7 @@ public class RemoteSystem {
     
     private void send(String message, String subject, Object ... options) throws JSONException {
         JSONObject messageObject = messageObject(message, subject, options);
+        logger.log(Level.FINEST, ">> {0}", messageObject);
         messenger.send(messageObject);
     }
     
@@ -322,30 +336,20 @@ public class RemoteSystem {
     }
     
     
-    private class PollTask implements Runnable {
+    private class PollTask extends TimerTask /*implements Runnable */{
         
         @Override
         public void run() {
-            while (running) {
-                try {
-                    message = nextMessage();
-                    if (message != null) {
-                        logger.log(Level.FINEST, ">> {0}", message);
-                        synchronized (semaphore) {
-                            messenger.send(message);
-                            semaphore.wait(POLL_TIMEOUT);
-                        }
-                        Thread.sleep(500);
-                    }
-                }
-                catch (InterruptedException | JSONException ex) {
-                    logger.log(Level.WARNING, getClass().getName(), ex);
+            try {
+                message = nextMessage();
+                if (message != null) {
+                    logger.log(Level.FINEST, ">> {0}", message);
+                    messenger.send(message);
                 }
             }
-        }
-        
-        void stop() {
-            running = false;
+            catch (JSONException ex) {
+                logger.log(Level.WARNING, "PollTask", ex);
+            }
         }
         
         private JSONObject nextMessage() throws JSONException {
@@ -392,77 +396,21 @@ public class RemoteSystem {
             return pollMessage;
         }
         
-        private final Object semaphore = new Object();
-        private volatile boolean running = true;
-        
         private int measurmentIndex = 0;
         private int tableIndex = 0;
         private JSONObject message = null;
-
-        private static final long POLL_TIMEOUT = 1000;
     }
 
 
-    private class LoadTask implements Runnable {
-
-        LoadTask(int reference, int[] values) {
-            this.reference = reference;
-            this.values = values;
-        }
-
-        @Override
-        public void run() {
-            try {
-                int index = 0;
-                int total = values.length;
-                while (index < total) {
-                    int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
-                    int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
-                    message = messageObject(MODIFY, FLASH, REFERENCE, reference, VALUE, valuesToSend);
-                    synchronized (semaphore) {
-                        messenger.send(message);
-                        semaphore.wait(5000);
-                    }
-                    Thread.sleep(500);
-                    reference += count;
-                    index += count;
-                }
-            }
-            catch (InterruptedException | JSONException | RuntimeException ex) {
-                logger.log(Level.SEVERE, "LoadTask", ex);
-            }
-
-        }
-
-        JSONObject message = null;
-
-        private int reference;
-        private final int[] values;
-
-        private final Object semaphore = new Object();
-
-    }
-    
-    
     private class MessengerListener implements Messenger.Listener {
 
         @Override
         public void notifyMessage(JSONObject message) {
+            logger.log(Level.FINEST, "<< {0}", message);
             if (NOTIFICATION.equals(message.optString(Messenger.MESSAGE))) {
-                Iterator keys = message.keys();
-                while (keys.hasNext()) {
-                    String key = keys.next().toString();
-                    if (! Messenger.MESSAGE.equals(key)) {
-                        Notification notification = new Notification(key, message.optString(key));
-                        logger.log(Level.FINE, "<< {0}", message);
-                        synchronized (listeners) {
-                            for (Listener listener : listeners) {
-                                listener.notificationReceived(notification);
-                            }
-                        }
-                    }                
-                }
-                //TODO: Handle system reboot
+                handleNotifications(message);
+            }
+            //TODO: Handle system reboot
 //                if ("Randd MM32".equals(message.optString("System"))) {
 //                    synchronized (listeners) {
 //                        for (Listener listener : listeners) {
@@ -470,97 +418,110 @@ public class RemoteSystem {
 //                        }
 //                    }
 //                }
-            }
+
         }
-        
+
         @Override
         public void notifyResponse(JSONObject message, JSONObject response) {
-            if (pollTask != null && message == pollTask.message) {
-                synchronized (pollTask.semaphore) {
-                    pollTask.semaphore.notify();
-                }
-            }
-            if (loadTask != null && message == loadTask.message) {
-                synchronized (loadTask.semaphore) {
-                    loadTask.semaphore.notify();
-                }
-            }
+            logger.log(Level.FINEST, "<< {0}", response);
             try {
-                logger.log(Level.FINEST, "<< {0}", response);
                 String subject = response.getString(SUBJECT);
-                for (Measurement measurement : MEASUREMENTS) {
-                    if (subject.equals(measurement.getName())) {
-                        updateMeasurement(response);
-                        return;
-                    }
+                if (getMeasurement(subject) != null) {
+                    updateMeasurement(response);
                 }
-                for (Table table : tablesToPoll) {
-                    if (subject.equals(table.getName())) {
-                        if (response.has(COLUMN) && response.has(ROW)) {
-                            if (response.has(VALUE)) {
-                                updateTableField(response);
-                            }
-                            else {
-                                updateTableIndex(response);
-                            }
-                            return;
-                        }
-                        else if (response.has(ENABLED)) {
-                            updateTableEnabled(response);
-                            return;
-                        }
-                    }
+                else if (response.has(COLUMN) && response.has(ROW)) {
+                    updateActiveTable(response);
                 }
-                if (subject.equals(ENGINE_IS_RUNNING)) {
-                    engine.setRunning(response.getBoolean(VALUE));
-                    return;
-                }
-                if (subject.equals(MEASUREMENT_TABLES)) {
-                    Collection<String> names = new ArrayList<>();
-                    JSONArray namesArray = response.getJSONArray(NAMES);
-                    for (int i = 0; i < namesArray.length(); ++i) {
-                        names.add(namesArray.getString(i));
-                    }
-                    synchronized (listeners) {
-                        for (Listener listener : listeners) {
-                            listener.tableNames(names);
-                        }
-                    }
-                    return;
-                }
-                if (subject.equals(ENGINE)) {
-                    updateEngine(response);
-                    return;
-                }
-                if (subject.equals(CYLINDER_COUNT)) {
-                    engine.setCylinderCount(response.getInt(VALUE));
-                    requestEngineUpdate();
-                    return;
-                }
-                if (subject.equals(COGWHEEL)) {
-                    engine.setCogwheel(response.getInt(COG_TOTAL), response.getInt(GAP_SIZE), response.getInt(OFFSET));
-                    requestEngineUpdate();
-                    return;
-                }
-                if (subject.equals(FLASH)) {
-                    updateFlash(response);
-                    return;
-                }
-                if (subject.equals(FLASH_ELEMENTS)) {
-                    updateFlashElements(response);
-                    return;
-                }
-                if (response.has(TABLE)) {
+                else if (response.has(TABLE)) {
                     updateTable(response);
                 }
-                if (response.has(ENABLED)) {
+                else if (subject.equals(ENGINE_IS_RUNNING)) {
+                    engine.setRunning(response.getBoolean(VALUE));
+                }
+                else if (subject.equals(MEASUREMENT_TABLES)) {
+                    notifyTableNames(response);
+                }
+                else if (subject.equals(ENGINE)) {
+                    updateEngine(response);
+                }
+                else if (subject.equals(CYLINDER_COUNT)) {
+                    engine.setCylinderCount(response.getInt(VALUE));
+                    requestEngineUpdate();
+                }
+                else if (subject.equals(COGWHEEL)) {
+                    engine.setCogwheel(response.getInt(COG_TOTAL), response.getInt(GAP_SIZE), response.getInt(OFFSET));
+                    requestEngineUpdate();
+                }
+                else if (subject.equals(FLASH)) {
+                    updateFlash(response);
+                }
+                else if (subject.equals(FLASH_ELEMENTS)) {
+                    updateFlashElements(response);
+                }
+                else if (response.has(ENABLED)) {
                     updateTableEnabled(response);
+                }
+                else {
+                    logger.log(Level.WARNING, "Unhandled: {0}", response);
                 }
             }
             catch (JSONException ex) {
                 logger.log(Level.WARNING, response.toString(), ex);
+            }       
+        }
+
+        private void handleNotifications(JSONObject message) {
+            for (Notification notification : createNotifications(message)) {
+                synchronized (listeners) {
+                    for (Listener listener : listeners) {
+                        listener.notificationReceived(notification);
+                    }
+                }
             }
-        
+        }
+
+        Collection<Notification> createNotifications(JSONObject message) {
+            Collection<Notification> notifications = new ArrayList<>(message.length());
+            Iterator keys = message.keys();
+            while (keys.hasNext()) {
+                String key = keys.next().toString();
+                if (! Messenger.MESSAGE.equals(key)) {
+                    notifications.add(new Notification(key, message.optString(key)));
+                }
+            }
+            return notifications;
+        }
+
+
+        private Measurement getMeasurement(String name) {
+            for (Measurement measurement : MEASUREMENTS) {
+                if (name.equals(measurement.getName())) {
+                    return measurement;
+                }
+            }
+            return null;
+        }
+
+        private void updateActiveTable(JSONObject response) throws JSONException {
+            if (response.has(VALUE)) {
+                updateTableField(response);
+            }
+            else {
+                updateTableIndex(response);
+            }
+        }
+
+        private void notifyTableNames(JSONObject response) throws JSONException {
+            Collection<String> names = new ArrayList<>();
+            JSONArray namesArray = response.getJSONArray(NAMES);
+            for (int i = 0; i < namesArray.length(); ++i) {
+                names.add(namesArray.getString(i));
+            }
+            synchronized (listeners) {
+                for (Listener listener : listeners) {
+                    listener.tableNames(names);
+                }
+            }
         }
 
         private void requestEngineUpdate() {
@@ -581,9 +542,8 @@ public class RemoteSystem {
     private final Collection<Table> tablesToPoll = new ArrayList<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 
-    
-    private PollTask pollTask = null;
-    private LoadTask loadTask = null;
+
+    private Timer pollTimer;
     
     private final Messenger messenger;
     
@@ -601,9 +561,7 @@ public class RemoteSystem {
     };
         
     
-    private static final String STATUS = "Status";
     private static final String NOTIFICATION = "Notification";
-    private static final String RESPONSE = "Response";
     private static final String SUBJECT = "Subject";
     
     private static final String REQUEST = "Request";
