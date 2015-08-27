@@ -35,9 +35,6 @@
             </Property>
             <Property name="autoResizeMode" type="int" value="0"/>
             <Property name="cellSelectionEnabled" type="boolean" value="true"/>
-            <Property name="gridColor" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="0" green="0" red="0" type="rgb"/>
-            </Property>
             <Property name="rowHeight" type="int" value="30"/>
           </Properties>
           <AuxValues>

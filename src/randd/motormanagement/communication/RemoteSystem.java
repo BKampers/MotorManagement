@@ -269,13 +269,13 @@ public class RemoteSystem {
         table.setDecimals(object.optInt(DECIMALS, 0));
         table.setMinimum((float) object.optDouble(MINIMUM, 0.0));
         table.setMaximum((float) object.optDouble(MAXIMUM, 100.0));
-        String measurementName = object.optString(COLUMN_MEASUREMENT_NAME);
-        if (measurementName != null) {
+        if (object.has(COLUMN_MEASUREMENT_NAME)) {
+            String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
             Measurement measurement = Measurement.getInstance(measurementName);
             table.setColumnMeasurement(measurement);
         }
-        measurementName = object.optString(ROW_MEASUREMENT_NAME);
-        if (measurementName != null) {
+        if (object.has(ROW_MEASUREMENT_NAME)) {
+            String measurementName = object.getString(ROW_MEASUREMENT_NAME);
             Measurement measurement = Measurement.getInstance(measurementName);
             table.setRowMeasurement(measurement);
         }

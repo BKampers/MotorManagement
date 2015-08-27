@@ -26,10 +26,13 @@ public class TablePanel extends JPanel {
     
 
     public TablePanel(Listener listener, Table table) {
-        assert listener != null;
-        assert table != null;
+        if (listener == null || table == null) {
+            throw new IllegalArgumentException();
+        }
         this.tablePanelListener = listener;
         this.table = table;
+        model = new GridModel();
+        tableListener = new TableListener();
         table.addListener(tableListener);
         initComponents();
         grid.setDefaultRenderer(Object.class, new CellRenderer());
@@ -39,7 +42,6 @@ public class TablePanel extends JPanel {
         columnHeader.setDefaultRenderer(new ColumnHeaderRenderer(grid));
         columnHeader.setResizingAllowed(false);
         columnHeader.setEnabled(false);
-        RowHeaders rowHeaders = new RowHeaders();
         rowHeaders.initialize(model, scrollPane, grid.getRowHeight());
         rowHeaders.setAlignment(JLabel.RIGHT, JLabel.TOP);
         numberFormat.setGroupingUsed(false);
@@ -68,7 +70,6 @@ public class TablePanel extends JPanel {
         grid.setModel(model);
         grid.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         grid.setCellSelectionEnabled(true);
-        grid.setGridColor(new java.awt.Color(0, 0, 0));
         grid.setRowHeight(30);
         grid.getTableHeader().setReorderingAllowed(false);
         scrollPane.setViewportView(grid);
@@ -81,12 +82,12 @@ public class TablePanel extends JPanel {
         
         @Override
         public int getColumnCount() {
-            return (table != null) ? table.getColumnCount() : 0;
+            return table.getColumnCount();
         }
 
         @Override
         public int getRowCount() {
-            return (table != null) ? table.getRowCount() : 0;
+            return table.getRowCount();
         }
         
         @Override
@@ -97,7 +98,7 @@ public class TablePanel extends JPanel {
                 return Integer.toString((int) (columnMeasurement.getMinimum() + column * stepSize));
             }
             else {
-                return Integer.toString(column + 1);
+                return null;
             }
         }
         
@@ -114,7 +115,7 @@ public class TablePanel extends JPanel {
                 modifyingColumn = column;
             }
             catch (ClassCastException ex) {
-                Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, getClass().getName(), ex);
+                Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, "GridModel", ex);
                 JOptionPane.showMessageDialog(
                     TablePanel.this, 
                     value.toString(), 
@@ -149,6 +150,7 @@ public class TablePanel extends JPanel {
         ColumnHeaderRenderer(JTable grid) {
             renderer = (DefaultTableCellRenderer) grid.getTableHeader().getDefaultRenderer();
             renderer.setHorizontalAlignment(JLabel.LEFT);
+            renderer.setPreferredSize(new Dimension(0, PREFERRED_HEADER_HEIGHT));
         }
 
         @Override
@@ -157,6 +159,7 @@ public class TablePanel extends JPanel {
         }
 
         private final DefaultTableCellRenderer renderer;
+        private static final int PREFERRED_HEADER_HEIGHT = 35;
 
     }
     
@@ -165,7 +168,29 @@ public class TablePanel extends JPanel {
         
         @Override
         public String cornerName() {
-            return "RPM / Load";
+            StringBuilder name = new StringBuilder();
+            String columnName = measurementName(table.getColumnMeasurement());
+            String rowName = measurementName(table.getRowMeasurement());
+            name .append("<html>");
+            if (columnName != null) {
+                name.append(columnName);
+                name.append(RIGHT_POINTER);
+            }
+            name .append("<br/>");
+            if (rowName != null) {
+                name.append (rowName);
+                name.append(DOWN_POINTER);
+            }
+            name .append("</html>");
+            return name.toString();
+        }
+
+        private String measurementName(Measurement measurement) {
+            String name = (measurement != null) ? measurement.getName() : null;
+            if (name != null) {
+                name = Bundle.getInstance().get(name);
+            }
+            return name;
         }
         
         @Override
@@ -176,10 +201,13 @@ public class TablePanel extends JPanel {
                 return Integer.toString((int) (rowMeasurement.getMinimum() + row * stepSize));
             }
             else {
-                return Integer.toString(row + 1);
+                return null;
             }
         }
         
+        private static final char DOWN_POINTER = '\u261f';
+        private static final char RIGHT_POINTER = '\u261e';
+
     };
     
     private class CellRenderer extends DefaultTableCellRenderer {
@@ -368,12 +396,27 @@ public class TablePanel extends JPanel {
         }
         
         private void initializationPropertyChanged(Table.Property property) {
-            uninitializedProperties.remove(property);
-            if (uninitializedProperties.isEmpty()) {
-                numberFormat.setMinimumFractionDigits(table.getDecimals());
-                numberFormat.setMaximumFractionDigits(table.getDecimals());
-                numberFormat.setParseIntegerOnly(table.getDecimals() == 0);
-                model.fireTableStructureChanged();
+            if (uninitializedProperties != null) {
+                uninitializedProperties.remove(property);
+                if (property == Table.Property.FIELDS) {
+                    if (table.getColumnCount() <= 1) {
+                        uninitializedProperties.remove(Table.Property.COLUMN_MEASUREMENT);
+                    }
+                    if (table.getRowCount() <= 1) {
+                        uninitializedProperties.remove(Table.Property.ROW_MEASUREMENT);
+                    }
+                }
+                if (uninitializedProperties.isEmpty()) {
+                    numberFormat.setMinimumFractionDigits(table.getDecimals());
+                    numberFormat.setMaximumFractionDigits(table.getDecimals());
+                    numberFormat.setParseIntegerOnly(table.getDecimals() == 0);
+                    model.fireTableStructureChanged();
+                    rowHeaders.repaintCorner();
+                    uninitializedProperties = null;
+                }
+            }
+            else {
+                Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, "Unexpected initialization property {0}", property);
             }
         }
         
@@ -389,7 +432,7 @@ public class TablePanel extends JPanel {
                 grid.scrollRectToVisible(rectangle);
             }
         }
-        
+
         private void valueChanged(int row, int column) {
             if (0 <= row && row < model.getRowCount() && 0 <= column && column < model.getColumnCount()) {
                 model.modifyingRow = NONE;
@@ -403,7 +446,7 @@ public class TablePanel extends JPanel {
          * work properly. Initialized properties need to be removed, so this
          * TablePanel is ready for use as soon as the set is empty.
          */
-        private final Set<Table.Property> uninitializedProperties = EnumSet.of(
+        private Set<Table.Property> uninitializedProperties = EnumSet.of(
             Table.Property.FIELDS,
             Table.Property.MINIMUM,
             Table.Property.MAXIMUM,
@@ -426,9 +469,12 @@ public class TablePanel extends JPanel {
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
+    private final RowHeaders rowHeaders = new RowHeaders();
+
+
     private final Listener tablePanelListener;
-    private final GridModel model = new GridModel();
-    private final TableListener tableListener = new TableListener();
+    private final GridModel model;
+    private final TableListener tableListener;
     
     private static final Color DEFAULT_BACKGROUND = UIManager.getColor("Textfield.Background");
     private static final Color INVALID_BACKGROUND = UIManager.getColor("errorBackground");
