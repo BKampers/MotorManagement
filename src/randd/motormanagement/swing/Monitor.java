@@ -9,6 +9,7 @@
 package randd.motormanagement.swing;
 
 import bka.communication.*;
+import java.io.*;
 import java.util.*;
 import java.util.logging.*;
 import javax.swing.*;
@@ -119,6 +120,8 @@ public class Monitor extends bka.swing.FrameApplication {
             addTabPanel(statusPanel, "Status");
             addTabPanel(new ControlPanel(), "Control");
         }
+        tabsPanel.addChangeListener(new TabChangeListener());
+        tabsPanel.setSelectedIndex(0);
     }
     
 
@@ -134,7 +137,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private Monitor() {
         initComponents();
-        tabsPanel.addChangeListener(new TabChangeListener());
     }
     
     
@@ -233,7 +235,8 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
     }
-    
+
+
     private void disconnect() {
         try {
             if (remoteSystem != null) {
@@ -263,7 +266,8 @@ public class Monitor extends bka.swing.FrameApplication {
             remoteSystem.addListener(new RemoteSystemListener());
             remoteSystem.requestTableNames();
             if (getBooleanProperty(LIVE_MODE, true)) {
-                remoteSystem.startPolling();
+                int pollInterval = getIntProperty(POLL_INTERVAL, DEFAULT_POLL_INTERVAL);
+                remoteSystem.startPolling(pollInterval);
             }
         }
         catch (ChannelException | InterruptedException | JSONException ex) {
@@ -314,10 +318,62 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
     
-    private void  addTabPanel(JPanel panel, String titleKey) {
-        tabsPanel.add(panel);
-        tabsPanel.setTitleAt(tabsPanel.getTabCount() - 1, Bundle.getInstance().get(titleKey));
+    private synchronized void addTabPanel(JPanel panel, String titleKey) {
+        int index = panelIndex(panel);
+        tabsPanel.add(panel, index);
+        String title = Bundle.getInstance().get(titleKey);
+        tabsPanel.setTitleAt(index, title);
     }
+
+
+    private int panelIndex(JPanel panel) {
+        if (panel instanceof EnginePanel) {
+            return 0;
+        }
+        else if (panel instanceof TablePanel) {
+            return tablePanelIndex((TablePanel) panel);
+        }
+        else {
+            return tabsPanel.getTabCount();
+        }
+    }
+
+
+    private int tablePanelIndex(TablePanel panel) {
+        int order = order(panel);
+        for (int i = 1; i < tabsPanel.getTabCount(); ++i) {
+            java.awt.Component component = tabsPanel.getComponentAt(i);
+            if (component instanceof TablePanel) {
+                if (order < order((TablePanel) component))  {
+                    return i;
+                }
+            }
+            else {
+                return i;
+            }
+        }
+        return tabsPanel.getTabCount();
+    }
+
+
+    private int order(TablePanel panel) {
+        String tableName = panel.getTable().getName();
+        Resource resource = new Resource("randd/motormanagement/Tables.json");
+        try {
+            JSONObject tablesObject = new JSONObject(resource.loadText());
+            JSONArray orderArray = tablesObject.getJSONArray("order");
+            for (int i = 0; i < orderArray.length(); ++i) {
+                if (orderArray.getString(i).equals(tableName)) {
+                    return i;
+                }
+            }
+        }
+        catch (IOException | JSONException ex) {
+            Logger.getLogger(Monitor.class.getName()).log(Level.WARNING, "table order", ex);
+        }
+        return Integer.MAX_VALUE;
+    }
+
     
     private void activateSelectedTab() {
         if (remoteSystem != null) {
@@ -526,7 +582,6 @@ public class Monitor extends bka.swing.FrameApplication {
             for (String name : names) {
                 addTableTabPanel(name);
             }
-            
         }
         
     }
@@ -556,8 +611,12 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String SELECTED_TAB = "SelectedTab";
     private static final String SELECTED_CHANNEL = "SelectedChannel";
     private static final String SOCKET_HOSTS = "SocketChannels";
+    private static final String POLL_INTERVAL = "PollInterval";
     private static final String DEVELOPER_MODE = "DeveloperMode";
     private static final String LIVE_MODE = "LiveMode";
+
+    private static final int DEFAULT_POLL_INTERVAL = 500;
+
 
     private static final Logger logger = Logger.getLogger(Monitor.class.getName());
     
