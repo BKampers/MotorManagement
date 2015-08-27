@@ -50,12 +50,12 @@ public class RemoteSystem {
     }
 
     
-    public void startPolling() {
+    public void startPolling(int pollInterval) {
         if (pollTimer == null) {
             PollTask pollTask = new PollTask();
             pollEngine = true;
             pollTimer = new Timer();
-            pollTimer.schedule(pollTask, 500, 500);
+            pollTimer.schedule(pollTask, 0, pollInterval);
         }
     }
     
@@ -542,9 +542,8 @@ public class RemoteSystem {
     private final Collection<Table> tablesToPoll = new ArrayList<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 
-
     private Timer pollTimer;
-    
+
     private final Messenger messenger;
     
     
@@ -602,7 +601,6 @@ public class RemoteSystem {
     private static final String OFFSET = "Offset";
     private static final String DEAD_POINTS = "DeadPoints";
     private static final String CYLINDER_COUNT = "CylinderCount";
-    
     
     private static final int MAX_FLASH_SIZE_TO_SEND = 0x10;
     
