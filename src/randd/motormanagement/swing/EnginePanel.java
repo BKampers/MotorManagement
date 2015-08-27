@@ -5,17 +5,13 @@
 package randd.motormanagement.swing;
 
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JComboBox;
-import javax.swing.SpinnerNumberModel;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.util.logging.*;
+import javax.swing.*;
+import org.json.*;
 import randd.motormanagement.system.Engine;
 
 
-public class EnginePanel extends javax.swing.JPanel {
+public class EnginePanel extends JPanel {
 
 
     public interface Listener {
@@ -149,7 +145,7 @@ public class EnginePanel extends javax.swing.JPanel {
 
 
     private void initCogwheelComboBox(java.util.List<CogwheelType> types) {
-        cogwheelTypeComboBox = new javax.swing.JComboBox<>(new CogwheelTypeComboBoxModel(types));
+        cogwheelTypeComboBox = new JComboBox<>(new CogwheelTypeComboBoxModel(types));
         cogwheelTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -161,9 +157,9 @@ public class EnginePanel extends javax.swing.JPanel {
     
     
     private void initCogwheelSpinners() {
-        cogTotalSpinner = new javax.swing.JSpinner();
-        minusLabel = new javax.swing.JLabel();
-        gapSizeSpinner = new javax.swing.JSpinner();
+        cogTotalSpinner = new JSpinner();
+        minusLabel = new JLabel();
+        gapSizeSpinner = new JSpinner();
         cogTotalSpinner.setMinimumSize(new java.awt.Dimension(48, 28));
         cogTotalSpinner.setPreferredSize(new java.awt.Dimension(48, 28));
         cogTotalSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -333,7 +329,7 @@ public class EnginePanel extends javax.swing.JPanel {
     }
     
     
-    private class CogwheelTypeComboBoxModel extends javax.swing.DefaultComboBoxModel<CogwheelType> {
+    private class CogwheelTypeComboBoxModel extends DefaultComboBoxModel<CogwheelType> {
         
         CogwheelTypeComboBoxModel(java.util.List<CogwheelType> types) {
             this.types = types;
@@ -364,7 +360,7 @@ public class EnginePanel extends javax.swing.JPanel {
     }
     
     
-    private class CylinderComboBoxModel extends javax.swing.DefaultComboBoxModel<CylinderCount> {
+    private class CylinderComboBoxModel extends DefaultComboBoxModel<CylinderCount> {
 
         @Override
         public int getSize() {
@@ -456,14 +452,14 @@ public class EnginePanel extends javax.swing.JPanel {
 
     private JComboBox<CogwheelType> cogwheelTypeComboBox;
 
-    private javax.swing.JSpinner cogTotalSpinner;
-    private javax.swing.JSpinner gapSizeSpinner;
-    private javax.swing.JLabel minusLabel;
+    private JSpinner cogTotalSpinner;
+    private JSpinner gapSizeSpinner;
+    private JLabel minusLabel;
     
     private final CogwheelRenderer cogwheelRenderer = new CogwheelRenderer();
     
     private final SpinnerNumberModel totalCogSpinnerModel = new SpinnerNumberModel(60, 2, 200, 1);
-    private final SpinnerNumberModel gapLengthSpinnerModel = new javax.swing.SpinnerNumberModel(2, 1, 9, 1);
+    private final SpinnerNumberModel gapLengthSpinnerModel = new SpinnerNumberModel(2, 1, 9, 1);
     private final SpinnerNumberModel offsetSpinnerModel = new SpinnerNumberModel(20, 1, 100, 1);
     
     

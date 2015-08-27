@@ -25,7 +25,9 @@ public class Measurement {
     
     
     public static Measurement getInstance(String name) {
-        assert name != null;
+        if (name == null || name.isEmpty()) {
+            throw new IllegalArgumentException();
+        }
         Measurement instance = instances.get(name);
         if (instance == null) {
             instance = new Measurement(name);
@@ -119,7 +121,8 @@ public class Measurement {
         }
     }
     
-    
+
+    @Override
     public String toString() {
         return name + " = " + value;
     }

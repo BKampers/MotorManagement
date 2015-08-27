@@ -358,7 +358,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 source = resource.loadText();
             }
             catch (java.io.IOException ex) {
-                logger.log(Level.WARNING, null, ex);
+                logger.log(Level.WARNING, "loadTextFile", ex);
             }
         }
         return source;
