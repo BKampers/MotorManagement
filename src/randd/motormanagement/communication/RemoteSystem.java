@@ -160,11 +160,12 @@ public class RemoteSystem {
     public void modifyFlash(int reference, int[] values) throws JSONException, InterruptedException {
         int index = 0;
         int total = values.length;
+        int referenceToSend = reference;
         while (index < total) {
             int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
             int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
-            modify(FLASH, REFERENCE, reference, VALUE, valuesToSend);
-            reference += count;
+            modify(FLASH, REFERENCE, referenceToSend, VALUE, valuesToSend);
+            referenceToSend += count;
             index += count;
         }
     }
@@ -357,7 +358,7 @@ public class RemoteSystem {
             if (pollMessage == null) {
                 pollMessage = nextTableMessage();
                 if (pollMessage == null) {
-                    pollMessage = engineMessage(pollMessage);
+                    pollMessage = engineMessage();
                     measurmentIndex = 0;
                     tableIndex = 0;
                 }
@@ -389,11 +390,13 @@ public class RemoteSystem {
             return pollMessage;
         }
         
-        private JSONObject engineMessage(JSONObject pollMessage) throws JSONException {
+        private JSONObject engineMessage() throws JSONException {
             if (pollEngine) {
-                pollMessage = messageObject(REQUEST, ENGINE_IS_RUNNING);
+                return messageObject(REQUEST, ENGINE_IS_RUNNING);
             }
-            return pollMessage;
+            else {
+                return null;
+            }
         }
         
         private int measurmentIndex = 0;
