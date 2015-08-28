@@ -66,7 +66,7 @@ public class MessengerTest {
         messenger.setListener(listener);
         messenger.start();
         when(transporter.nextReceivedObject()).thenReturn(notification);
-        Thread.sleep(5);
+        Thread.sleep(10);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.stop();
         assertEquals(notification, listener.receivedNotification);
@@ -93,7 +93,7 @@ public class MessengerTest {
         messenger.start();
         messenger.send(message);
         when(transporter.nextReceivedObject()).thenReturn(response);
-        Thread.sleep(5);
+        Thread.sleep(10);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.stop();
         assertEquals(message, listener.receivedMessage);
@@ -114,7 +114,7 @@ public class MessengerTest {
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         messenger.setListener(listener);
         when(transporter.nextReceivedObject()).thenReturn(notification);
-        Thread.sleep(5);
+        Thread.sleep(10);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         assertNull(listener.receivedNotification);
     }
@@ -136,7 +136,7 @@ public class MessengerTest {
         messenger.start();
         messenger.stop();
         when(transporter.nextReceivedObject()).thenReturn(notification);
-        Thread.sleep(5);
+        Thread.sleep(10);
         when(transporter.nextReceivedObject()).thenReturn(EMPTY);
         assertNull(listener.receivedNotification);
     }
