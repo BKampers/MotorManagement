@@ -1,6 +1,8 @@
 {
     "CogwheelType" : [
         { "cogTotal" : 60, "gapSize" : 2 },
-        { "cogTotal" : 48, "gapSize" : 1 }
+        { "cogTotal" : 48, "gapSize" : 2 },
+        { "cogTotal" : 36, "gapSize" : 1 },
+        { "cogTotal" : 24, "gapSize" : 1 }
     ]
 }
