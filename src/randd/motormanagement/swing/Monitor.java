@@ -111,9 +111,9 @@ public class Monitor extends bka.swing.FrameApplication {
         addMeasurementPanel("Air", developerMode);
         addMeasurementPanel("Battery", developerMode);
         addMeasurementPanel("Map", developerMode);
-//        addMeasurementPanel("Lambda")));
-//        addMeasurementPanel("Aux1")));
-//        addMeasurementPanel("Aux2")));
+        addMeasurementPanel("Lambda", developerMode);
+        addMeasurementPanel("Aux1", developerMode);
+        addMeasurementPanel("Aux2", developerMode);
         addEngineTabPanel();
         if (developerMode) {
             addTabPanel(memoryPanel, "Flash");
@@ -180,6 +180,7 @@ public class Monitor extends bka.swing.FrameApplication {
     }// </editor-fold>                        
 
     
+    @SuppressWarnings("unchecked")
     private void channelComboBox_actionPerformed(java.awt.event.ActionEvent evt) {                                                 
         Object selectedItem = channelComboBox.getSelectedItem();
         if (selectedItem == NO_SELECTION) {
@@ -207,6 +208,7 @@ public class Monitor extends bka.swing.FrameApplication {
     }                                                
 
 
+    @SuppressWarnings("unchecked")
     private void populateChannelComboBox() {
         channelComboBox.removeAllItems();
         channelComboBox.addItem(NO_SELECTION);
@@ -307,6 +309,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private void addTableTabPanel(String name) {
         Table table = Table.getInstance(name);
+        table.addListener(tableListener);
         addTabPanel(new TablePanel(new TablePanelListener(), table), name);
     }
     
@@ -388,7 +391,13 @@ public class Monitor extends bka.swing.FrameApplication {
                     if (! table.hasFields()) {
                         remoteSystem.requestTable(table);
                     }
-                    remoteSystem.startIndexPoll(table);
+                    Boolean enabled = table.isEnabled();
+                    if (enabled == null) {
+                        remoteSystem.requestTableEnabled(table);
+                    }
+                    else if (enabled) {
+                        remoteSystem.startIndexPoll(table);
+                    }
                 }
                 else if (selectedTab instanceof EnginePanel) {
                     remoteSystem.requestEngine();
@@ -585,6 +594,26 @@ public class Monitor extends bka.swing.FrameApplication {
         }
         
     }
+    
+    
+    private class TableListener implements Table.Listener {
+
+        @Override
+        public void propertyChanged(Table table, Table.Property property, Object... attributes) {
+            if (property == Table.Property.ENABLED) {
+                java.awt.Component component = tabsPanel.getSelectedComponent();
+                if (component instanceof TablePanel && ((TablePanel) component).getTable() == table) {
+                    if (table.isEnabled()) {
+                        remoteSystem.startIndexPoll(table);
+                    }
+                    else {
+                        remoteSystem.stopIndexPoll(table);
+                    }
+                }
+            }
+        }
+        
+    }
 
 
     private final StatusPanel statusPanel = new StatusPanel();
@@ -605,6 +634,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private java.awt.Component selectedTab = null;
     
     private final MeasurementPanelListener measurementPanelListener = new MeasurementPanelListener();
+    private final TableListener tableListener = new TableListener();
     
     private static final String NO_SELECTION = "-";
 

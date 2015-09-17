@@ -170,33 +170,35 @@ public class Table {
     }
 
     
-    public int getColumnIndex() {
+    public Integer getColumnIndex() {
         return columnIndex;
     }
 
     
     public void setColumnIndex(int columnIndex) {
-        if (this.columnIndex != columnIndex) {
-            this.columnIndex = columnIndex;
+        Integer newIndex = columnIndex;
+        if (! newIndex.equals(this.columnIndex)) {
+            this.columnIndex = newIndex;
             notifyPropertyChanged(Property.INDEX);
         }
     }
 
     
-    public int getRowIndex() {
+    public Integer getRowIndex() {
         return rowIndex;
     }
 
     
     public void setRowIndex(int rowIndex) {
-        if (this.rowIndex != rowIndex) {
-            this.rowIndex = rowIndex;
+        Integer newIndex = rowIndex;
+        if (! newIndex.equals(this.rowIndex)) {
+            this.rowIndex = newIndex;
             notifyPropertyChanged(Property.INDEX);
         }
     }
 
     
-    public boolean isEnabled() {
+    public Boolean isEnabled() {
         return enabled;
     }
 
@@ -248,8 +250,8 @@ public class Table {
     private int columnCount = 0;
     private int rowCount = 0;
     
-    private int columnIndex = -1;
-    private int rowIndex = -1;
+    private Integer columnIndex;
+    private Integer rowIndex;
     
     private Measurement columnMeasurement;
     private Measurement rowMeasurement;

@@ -147,7 +147,6 @@ public class MeasurementPanel extends javax.swing.JPanel {
 
     
     private void showCorrectionEnabled(boolean enabled) {
-        Color b =  UIManager.getColor("Button.background");
         enableCorrectionToggleButton.setBackground(enabled ? LIME_GREEN : UIManager.getColor("Button.background"));
         enableCorrectionToggleButton.setSelected(enabled);
     }

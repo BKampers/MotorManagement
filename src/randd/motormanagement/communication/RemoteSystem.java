@@ -556,10 +556,10 @@ public class RemoteSystem {
         Measurement.getInstance("Water"),
         Measurement.getInstance("Air"),
         Measurement.getInstance("Battery"),
-        Measurement.getInstance("Map")/*,
-        Measurement.get("Lambda"),
-        Measurement.get("Aux1"),
-        Measurement.get("Aux2")*/
+        Measurement.getInstance("Map"),
+        Measurement.getInstance("Lambda"),
+        Measurement.getInstance("Aux1"),
+        Measurement.getInstance("Aux2")
     };
         
     

@@ -129,8 +129,8 @@ public class TablePanel extends JPanel {
             return row != modifyingRow || column != modifyingColumn;
         }
         
-        private int modifyingColumn = NONE;
-        private int modifyingRow = NONE;
+        int modifyingColumn = NONE;
+        int modifyingRow = NONE;
 
     }
     
@@ -205,8 +205,8 @@ public class TablePanel extends JPanel {
             }
         }
         
-        private static final char DOWN_POINTER = '\u261f';
-        private static final char RIGHT_POINTER = '\u261e';
+        private static final char DOWN_POINTER = '▼';
+        private static final char RIGHT_POINTER = '►';
 
     };
     
@@ -223,7 +223,7 @@ public class TablePanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable grid, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String valueString = numberFormat.format(value);
-            if (column == table.getColumnIndex() && row == table.getRowIndex()) {
+            if (Objects.equals(true, table.isEnabled()) && Objects.equals(column, table.getColumnIndex()) && Objects.equals(row, table.getRowIndex())) {
                 activeColumn = column;
                 activeRow = row;
                 activeRenderer.setText(valueString);
@@ -272,8 +272,8 @@ public class TablePanel extends JPanel {
         
         @Override
         public Component getTableCellEditorComponent(JTable grid, Object value, boolean isSelected, int row, int column) {
-            value = numberFormat.format(((Float) value).doubleValue());
-            return (JTextField) super.getTableCellEditorComponent(grid, value, isSelected, row, column);
+            String valueString = numberFormat.format(((Number) value).doubleValue());
+            return super.getTableCellEditorComponent(grid, valueString, isSelected, row, column);
         }
 
         @Override
@@ -382,6 +382,9 @@ public class TablePanel extends JPanel {
         public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
             if (table == TablePanel.this.table) {
                 switch (property) {
+                    case ENABLED:
+                        model.fireTableCellUpdated(activeRow, activeColumn);
+                        break;
                     case INDEX:
                         indexChanged();
                         break;
@@ -392,6 +395,27 @@ public class TablePanel extends JPanel {
                         initializationPropertyChanged(property);
                         break;
                 }
+            }
+        }
+
+        private void indexChanged() {
+            int rowIndex = (table.getRowIndex() != null) ? table.getRowIndex() : NONE;
+            int columnIndex = (table.getColumnIndex() != null) ? table.getColumnIndex() : NONE;
+            if (rowIndex != activeRow || columnIndex != activeColumn) {
+                valueChanged(activeRow, activeColumn);
+                valueChanged(rowIndex, columnIndex);
+            }
+            if (followActiveCell) {
+                Rectangle rectangle = grid.getCellRect(rowIndex, columnIndex, true);
+                grid.scrollRectToVisible(rectangle);
+            }
+        }
+
+        private void valueChanged(int row, int column) {
+            if (0 <= row && row < model.getRowCount() && 0 <= column && column < model.getColumnCount()) {
+                model.modifyingRow = NONE;
+                model.modifyingColumn = NONE;
+                model.fireTableCellUpdated(row, column);
             }
         }
         
@@ -417,27 +441,6 @@ public class TablePanel extends JPanel {
             }
             else {
                 Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, "Unexpected initialization property {0}", property);
-            }
-        }
-        
-        private void indexChanged() {
-            int rowIndex = table.getRowIndex();
-            int columnIndex = table.getColumnIndex();
-            if (rowIndex != activeRow || columnIndex != activeColumn) {
-                valueChanged(activeRow, activeColumn);
-                valueChanged(rowIndex, columnIndex);
-            }
-            if (followActiveCell) {
-                Rectangle rectangle = grid.getCellRect(table.getRowIndex(), table.getColumnIndex(), true);
-                grid.scrollRectToVisible(rectangle);
-            }
-        }
-
-        private void valueChanged(int row, int column) {
-            if (0 <= row && row < model.getRowCount() && 0 <= column && column < model.getColumnCount()) {
-                model.modifyingRow = NONE;
-                model.modifyingColumn = NONE;
-                model.fireTableCellUpdated(row, column);
             }
         }
         
