@@ -205,8 +205,8 @@ public class TablePanel extends JPanel {
             }
         }
         
-        private static final char DOWN_POINTER = '▼';
-        private static final char RIGHT_POINTER = '►';
+        private static final char DOWN_POINTER = '↓';
+        private static final char RIGHT_POINTER = '→';
 
     };
     
@@ -382,11 +382,11 @@ public class TablePanel extends JPanel {
         public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
             if (table == TablePanel.this.table) {
                 switch (property) {
-                    case ENABLED:
-                        model.fireTableCellUpdated(activeRow, activeColumn);
-                        break;
                     case INDEX:
                         indexChanged();
+                        break;
+                    case ENABLED:
+                        model.fireTableCellUpdated(activeRow, activeColumn);
                         break;
                     case VALUE:
                         valueChanged((Integer) attributes[1], (Integer) attributes[0]);
