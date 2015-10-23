@@ -18,7 +18,7 @@ public class MessagingTest {
     
     
     @BeforeClass
-    public static void openPort() throws ChannelException, javax.comm.NoSuchPortException {
+    public static void openPort() throws ChannelException, gnu.io.NoSuchPortException {
         /** 
          * Windows allows to open a serial port only once per application,
          * so it needs to be a static member to be used for all tests.
@@ -106,7 +106,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=100)
+    @Test(timeout=200)
     public void modifyRpmSimulation() throws JSONException, InterruptedException {
         // Activate simulation
         JSONObject message = createMessage("Modify", "RPM");
@@ -294,7 +294,7 @@ public class MessagingTest {
     }
     
     
-    private static Channel createChannel() throws javax.comm.NoSuchPortException {
+    private static Channel createChannel() throws gnu.io.NoSuchPortException {
         String channelName;
         try {
             java.util.Properties properties = new java.util.Properties();
