@@ -40,106 +40,128 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=50)
-    public void notAMessage() throws InterruptedException {
+    @Test(timeout=15)
+    public void noDirection() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject();
         JSONObject response = receiveResponse(message);
-        assertEquals("Notification", response.optString("Message"));
-        assertEquals("Not a message", response.optString("Error"));
+        assertEquals(NOTIFICATION, response.getString(DIRECTION));
+        assertEquals("NoDirection", response.getString(STATUS));
     }
     
     
     @Test(timeout=50)
-    public void emptyMessage() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("", "Flash");
+    public void invalidProcedure() throws JSONException, InterruptedException {
+        JSONObject message = createMessage("XXX", "Engine");
         JSONObject response = receiveResponse(message);
-        assertEquals("Notification", response.optString("Message"));
-        assertEquals("Unknown message", response.optString("Error"));
+        assertTrue(isResponse(message, response));
+        assertEquals("InvalidProcedure", response.getString(STATUS));
     }
     
 
     @Test(timeout=50)
-    public void unknownMessage() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Invalid", "Flash");
+    public void invalidDataType() throws JSONException, InterruptedException {
+        JSONObject message = createMessage(REQUEST, "XXX");
         JSONObject response = receiveResponse(message);
-        assertEquals("Notification", response.optString("Message"));
-        assertEquals("Unknown message", response.optString("Error"));
-    }
-    
-
-    @Test(timeout=50)
-    public void noSubject() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", null);
-        JSONObject response = receiveResponse(message);
-        assertEquals("Request", response.optString("Response"));
-        assertEquals("Invalid subject", response.optString("Error"));
+        assertTrue(isResponse(message, response));
+        assertEquals(REQUEST, response.optString("Response"));
+        assertEquals("InvalidDatatType", response.optString("Error"));
     }
     
     
-    @Test(timeout=50)
-    public void emptySubject() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "");
+    @Test
+    public void requestMeasurements() throws JSONException, InterruptedException {
+        final String dataType = "Measurement";
+        final String simulation = "Simulation";
+        final String value = "Value";
+        JSONArray instances = new JSONArray();
+        instances.put("RPM");
+        instances.put("Load");
+        JSONObject message = createMessage(REQUEST, dataType);
+        message.put(INSTANCES, instances);
+        JSONArray attributes = new JSONArray();
+        attributes.put(simulation);
+        attributes.put(value);
+        message.put(ATTRIBUTES, attributes);
         JSONObject response = receiveResponse(message);
-        assertEquals("Request", response.optString("Response"));
-        assertEquals("", response.optString("Subject"));
-        assertEquals("Unknown subject", response.optString("Error"));
-    }
+        assertTrue(isResponse(response, message));
+        JSONObject values = response.getJSONObject(VALUES);
+        assertEquals(instances.length(), values.length());
+        for (int i = 0; i < instances.length(); ++i) {
+            String instanceName = instances.getString(i);
+            JSONObject instanceValue = values.getJSONObject(instanceName);
+            assertTrue(instanceValue.has(value));
+            assertTrue(instanceValue.has(simulation));
+        }
+    } 
     
     
-    @Test(timeout=50)
-    public void unknownSubject() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "Invalid");
-        JSONObject response = receiveResponse(message);
-        assertEquals("Request", response.optString("Response"));
-        assertEquals("Invalid", response.optString("Subject"));
-        assertEquals("Unknown subject", response.optString("Error"));
-    }
-    
-
-    @Test(timeout=2000)
-    public void validMessage() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "Flash");
-        JSONObject response = receiveResponse(message);
-        assertEquals("OK", response.optString("Status"));
-        assertEquals("Request", response.optString("Response"));
-        assertEquals("Flash", response.optString("Subject"));
-    }
-    
-    
-    @Test(timeout=200)
+     @Test(timeout=200)
     public void modifyRpmSimulation() throws JSONException, InterruptedException {
+        final String dataType = "Measurement";
+        final String instance = "RPM";
+        final String simulation = "Simulation";
+        final String value = "Value";
         // Activate simulation
-        JSONObject message = createMessage("Modify", "RPM");
-        message.put("Simulation", true);
-        message.put("Value", 5000);
+        JSONObject message = createMessage(MODIFY, dataType);
+        JSONArray instances = new JSONArray();
+        instances.put(instance);
+        message.put(INSTANCES, instances);
+        JSONObject values = new JSONObject();
+        values.put(simulation, true);
+        values.put(value, 5000);
+        message.put(VALUES, values);
         JSONObject response = receiveResponse(message);
-        assertEquals("OK", response.optString("Status"));
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
         // Check value
-        message = createMessage("Request", "RPM");
+        message = createMessage(REQUEST, dataType);
+        message.put(INSTANCES, instances);
+        JSONArray attributes = new JSONArray();
+        attributes.put(simulation);
+        attributes.put(value);
+        message.put(ATTRIBUTES, attributes);
         response = receiveResponse(message);
-        assertEquals(5000, response.optInt("Value"));
-        message = createMessage("Modify", "RPM");
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
+        values = response.getJSONObject(VALUES).getJSONObject(instance);
+        assertTrue(values.getBoolean(simulation));
+        assertEquals(5000, values.getInt(value));
         // Deactivate simulation
-        message.put("Simulation", false);
+        message = createMessage(MODIFY, dataType);
+        message.put(INSTANCES, instances);
+        values = new JSONObject();
+        values.put(simulation, false);
+        message.put(VALUES, values);
         response = receiveResponse(message);
-        assertEquals("OK", response.optString("Status"));
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
     }
     
     
     @Test(timeout=1000)
     public void modifyTableField() throws JSONException, InterruptedException {
+        final String dataType = "MeasurementTable";
+        final String instance = "Ignition";
+        final String rowAttribute = "Row";
+        final String columnAttribute = "Column";
+        final String tableAttribute = "Table";
+        final String valueAttribute = "Value";
         // Get table
-        JSONObject message = createMessage("Request", "Ignition");
+        JSONObject message = createMessage(REQUEST, dataType);
+        JSONArray instances = new JSONArray();
+        instances.put(instance);
+        message.put(INSTANCES, instances);
+        JSONArray attributes = new JSONArray();
+        attributes.put(rowAttribute);
+        attributes.put(columnAttribute);
+        attributes.put(tableAttribute);
+        message.put(ATTRIBUTES, attributes);
         JSONObject response = receiveResponse(message);
-        Integer row = (Integer) response.opt("Row");
-        if (row == null) {
-            row = 0;
-        }
-        Integer column = (Integer) response.opt("Column");
-        if (column == null) {
-            column = 0; 
-        }
-        JSONArray rows = response.optJSONArray("Table");
+        assertTrue(isResponse(response, message));
+        JSONObject values = response.getJSONObject(VALUES);
+        int row = values.optInt(rowAttribute, 0);
+        int column = values.optInt(columnAttribute, 0);
+        JSONArray rows = response.optJSONArray(tableAttribute);
         assertNotNull(rows);
         assertTrue(row < rows.length());
         JSONArray columns = rows.optJSONArray(row);
@@ -147,90 +169,121 @@ public class MessagingTest {
         assertTrue(column < columns.length());
         int original = columns.optInt(column);
         // Modify  field
-        message = createMessage("Modify", "Ignition");     
-        message.put("Row", row);
-        message.put("Column", column);
-        message.put("Value", (original + 1) % 60);
+        message = createMessage(MODIFY, dataType);     
+        message.put(INSTANCES, instances);
+        values = new JSONObject();
+        values.put(rowAttribute, row);
+        values.put(columnAttribute, column);
+        values.put(valueAttribute, (original + 1) % 60);
+        message.put(VALUES, values);
         response = receiveResponse(message);
-        assertEquals("OK", response.optString("Status"));
-        message.put("Value", original);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
+        values.put(valueAttribute, original);
         response = receiveResponse(message);
-        assertEquals("OK", response.optString("Status"));
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
     }
     
     
     @Test(timeout=200)
     public void modifyTableEnabling() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Modify", "WaterCorrection");
-        message.put("Enabled", true);
+        final String dataType = "MeasurementTable";
+        final String instance = "WaterCorrection";
+        final String enabledAttribute = "Enabled";
+        // Modify enabling
+        JSONObject message = createMessage(MODIFY, dataType);
+        JSONArray instances = new JSONArray();
+        instances.put(instance);
+        message.put(INSTANCES, instances);
+        JSONObject values = new JSONObject();
+        values.put(enabledAttribute, true);
+        message.put(VALUES, values);
         JSONObject response = receiveResponse(message);
-        assertNotNull(response.get("Status"));
-        assertTrue("OK".equals(response.get("Status")));
-        message = createMessage("Request", "WaterCorrection");
-        JSONArray properties = new JSONArray();
-        properties.put("Enabled");
-        message.put("Properties", properties);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.opt(STATUS));
+        // Check enabling
+        message = createMessage(REQUEST, dataType);
+        message.put(INSTANCES, instances);
+        JSONArray attributes = new JSONArray();
+        attributes.put(enabledAttribute);
+        message.put(ATTRIBUTES, attributes);
         response = receiveResponse(message);
-        assertTrue("OK".equals(response.get("Status")));
-        assertTrue(response.getBoolean("Enabled"));
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        values = response.getJSONObject(VALUES);
+        assertEquals(1, values.length());
+        JSONObject waterCorrectionValues = values.getJSONObject(instance);
+        assertEquals(Boolean.TRUE, waterCorrectionValues.optBoolean(enabledAttribute));
     }
     
     
     @Test(timeout=50)
     public void requestMeasurementTables() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "MeasurementTables");
+        final String dataType = "MeasurementTable";
+        final String nameAttribute = "Name";
+        JSONObject message = createMessage(REQUEST, dataType);
+        JSONArray fields = new JSONArray();
+        fields.put(nameAttribute);
+        message.put(ATTRIBUTES, fields);
         JSONObject response = receiveResponse(message);
-        assertEquals("Request", response.opt("Response"));
-        assertEquals("MeasurementTables", response.opt("Subject"));
-        JSONArray names =  response.optJSONArray("Names");
-        assertNotNull(names);
-        assertTrue(names.length() > 0);
-        for (int i = 0; i < names.length(); ++i) {
-            assertNotNull(names.optString(i));
+        assertTrue(isResponse(response, message));
+        JSONArray values =  response.optJSONArray(VALUES);
+        assertNotNull(values);
+        assertTrue(values.length() > 0);
+        for (int i = 0; i < values.length(); ++i) {
+            JSONObject tableObject = values.optJSONObject(i);
+            assertNotNull(tableObject);
+            assertEquals(1, tableObject.length());
+            assertNotNull(tableObject.optString(nameAttribute));
         }
     }
     
     
     @Test(timeout=750)
     public void requestTable() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "Ignition");
-        JSONArray properties = new JSONArray();
-        properties.put("Table");
-        message.put("Properties", properties);
+        JSONObject message = createMessage(REQUEST, "MeasurementTable");
+        JSONArray instances = new JSONArray();
+        instances.put("Ignition");
+        message.put(INSTANCES, instances);
+        JSONArray fields = new JSONArray();
+        fields.put(ATTRIBUTES);
+        fields.put("Enabled");
+        fields.put("CurrentIndex");
+        message.put(ATTRIBUTES, fields);
         JSONObject response = receiveResponse(message);
-        assertNotNull(response.opt("Table"));
-        assertNull(response.opt("Row"));
-        assertNull(response.opt("Column"));
-        assertNull(response.opt("Enabled"));
-        properties.remove(0);
-        properties.put("Index");
-        response = receiveResponse(message);
-        assertNull(response.opt("Table"));
-        assertNotNull(response.opt("Row"));
-        assertNotNull(response.opt("Column"));
-        assertNull(response.opt("Enabled"));
-        properties.remove(0);
-        properties.put("Enabled");
-        response = receiveResponse(message);
-        assertNull(response.opt("Table"));
-        assertNull(response.opt("Row"));
-        assertNull(response.opt("Column"));
-        assertTrue(response.getBoolean("Enabled"));
+        assertTrue(isResponse(response, message));
+        JSONArray values =  response.getJSONArray("Values");
+        assertEquals(1, values.length());
+        JSONObject tableObject = values.optJSONObject(0);
+        assertTrue(tableObject.getBoolean("Enabled"));
+        assertNotNull(tableObject.get("CurrentIndex"));
+        JSONArray tableFields = tableObject.getJSONArray(ATTRIBUTES);
+        assertTrue(tableFields.length() > 0);
+        for (int i = 0; i < tableFields.length(); ++i) {
+            JSONArray tableRow = tableFields.getJSONArray(i);
+            assertTrue(tableRow.length() > 0);
+            assertNotNull(tableRow.optDouble(i));
+        }
     }
     
     
     @Test(timeout=50)
     public void getEngineProperties() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "Engine");
+        JSONObject message = createMessage(REQUEST, "Engine");
         JSONObject response = receiveResponse(message);
-        int cylinderCount = response.getInt("CylinderCount");
-        assertTrue(1 <= cylinderCount && cylinderCount <= 8);
-        JSONObject cogwheel = response.getJSONObject("Cogwheel");
+        assertTrue(isResponse(response, message));
+        JSONArray values =  response.getJSONArray(VALUES);
+        assertEquals(1, values.length());
+        JSONObject engine = values.getJSONObject(0);
+        int cylinderCount = engine.getInt("CylinderCount");
+        assertTrue(4 == cylinderCount || 6 == cylinderCount || 8 == cylinderCount);
+        JSONObject cogwheel = engine.getJSONObject("Cogwheel");
         assertNotNull(cogwheel);
         assertNotNull(cogwheel.getInt("CogTotal"));
         assertNotNull(cogwheel.getInt("GapSize"));
         assertNotNull(cogwheel.getInt("Offset"));
-        JSONArray deadPoints = response.getJSONArray("DeadPoints");
+        JSONArray deadPoints = engine.getJSONArray("DeadPoints");
         assertNotNull(deadPoints);
         assertTrue(deadPoints.length() > 0);
     }
@@ -238,57 +291,86 @@ public class MessagingTest {
     
     @Test(timeout=200)
     public void setCogwheel() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Modify", "Cogwheel");
-        message.put("CogTotal", 60);
-        message.put("GapSize", 2);
-        message.put("Offset", 20);
+        // Valid cog wheel
+        JSONObject message = createMessage(MODIFY, "Engine");
+        JSONObject cogWheel = new JSONObject();
+        cogWheel.put("CogTotal", 60);
+        cogWheel.put("GapSize", 2);
+        cogWheel.put("Offset", 20);
+        JSONObject values = new JSONObject();
+        values.put("CogWheel", cogWheel);
+        message.put(VALUES, values);
         JSONObject response = receiveResponse(message);
-        assertTrue("OK".equals(response.get("Status")) || "EngineIsRunning".equals(response.get("Status")));
-        
-        message = createMessage("Modify", "Cogwheel");
-        message.put("CogTotal", 300);
-        message.put("GapSize", 2500);
-        message.put("Offset", 2000);
+        assertTrue(isResponse(response, message));
+        String status = response.getString(STATUS);
+        assertTrue(OK_STATUS.equals(status) || ENGINE_RUNNING_STATUS.equals(status));
+        // Invalid cog wheel
+        cogWheel.put("CogTotal", 300);
+        cogWheel.put("GapSize", 2500);
+        cogWheel.put("Offset", 2000);
         response = receiveResponse(message);
-        assertFalse("OK".equals(response.get("Status")));
+        assertTrue(isResponse(response, message));
+        assertFalse(OK_STATUS.equals(response.get(STATUS)));
     }
     
     
     @Test(timeout=200)
     public void setCylinderCount() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Modify", "CylinderCount");
-        message.put("Value", 6);
+        // Valid cylinder count
+        JSONObject message = createMessage(MODIFY, "Engine");
+        JSONObject values = new JSONObject();
+        values.put("CylinderCount", 6);
+        message.put(VALUES, values);
         JSONObject response = receiveResponse(message);
-        assertTrue("OK".equals(response.get("Status")) || "EngineIsRunning".equals(response.get("Status")));
-        
-        message = createMessage("Modify", "CylinderCount");
-        message.put("Value", 0);
+        assertTrue(isResponse(response, message));
+        String status = response.getString(STATUS);
+        assertTrue(OK_STATUS.equals(status) || ENGINE_RUNNING_STATUS.equals(status));
+        // Invalid cylinder count
+        values.put("CylinderCount", 0);
         response = receiveResponse(message);
-        assertFalse("OK".equals(response.get("Status")));
+        assertTrue(isResponse(response, message));
+        assertFalse(OK_STATUS.equals(response.get(STATUS)));
     }
     
     
     @Test(timeout=400)
-    public void requestFlashElements() throws JSONException, InterruptedException {
-        JSONObject message = createMessage("Request", "FlashElements");
+    public void requestPersistentElements() throws JSONException, InterruptedException {
+        JSONObject message = createMessage(REQUEST, "MemoryElements");
         JSONObject response = receiveResponse(message);
-        assertEquals("OK", response.get("Status"));
-        JSONArray elements = response.getJSONArray("Elements");
-        assertNotNull(elements);
-        for (int i = 0; i < elements.length(); ++i) {
-            JSONObject element = elements.getJSONObject(i);
-            assertNotNull(element.getInt("TypeId"));
-            assertNotNull(element.getInt("Reference"));
-            assertNotNull(element.getInt("Size"));
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        JSONArray values =  response.getJSONArray(VALUES);
+        for (int v = 0; v < values.length(); ++v) {
+            JSONArray elements = values.getJSONArray(v);
+            for (int e = 0; e < elements.length(); ++e) {
+                JSONObject element = elements.getJSONObject(e);
+                assertNotNull(element.getInt("TypeId"));
+                assertNotNull(element.getInt("Reference"));
+                assertNotNull(element.getInt("Size"));
+            }
         }
     }
     
     
-    private JSONObject createMessage(String message, String subject) throws JSONException {
+    private JSONObject createMessage(String procedure, String dataType) throws JSONException {
         JSONObject messageObject = new JSONObject();
-        messageObject.put("Message", message);
-        messageObject.put("Subject", subject);
+        messageObject.put(DIRECTION, "Call");
+        messageObject.put(PROCEDURE, procedure);
+        messageObject.put(DATA_TYPE, dataType);
         return messageObject;
+    }
+    
+  
+    private boolean isResponse(JSONObject response, JSONObject message) {
+        return 
+            RETURN.equals(response.optString(DIRECTION)) &&
+            memberMatch(message, response, PROCEDURE) &&
+            memberMatch(message, response, DATA_TYPE);
+    }
+   
+
+    private static boolean memberMatch(JSONObject message, JSONObject response, String memberName) {
+        return message.optString(memberName, "").equals(response.optString(memberName));
     }
   
     
@@ -318,5 +400,19 @@ public class MessagingTest {
 
 
     private static Transporter transporter = null;
+
+    private static final String DATA_TYPE = "DataType";
+    private static final String PROCEDURE = "Procedure";
+    private static final String DIRECTION = "Direction";
+    private static final String NOTIFICATION = "Notification";
+    private static final String REQUEST = "Request";
+    private static final String MODIFY = "Modify";
+    private static final String INSTANCES = "Instances";
+    private static final String RETURN = "Return";
+    private static final String ATTRIBUTES = "Attributes";
+    private static final String VALUES = "Values";
+    private static final String STATUS = "Status";
+    private static final String OK_STATUS = "OK";
+    private static final String ENGINE_RUNNING_STATUS = "EngineIsRunning";
      
 }
