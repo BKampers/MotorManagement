@@ -92,7 +92,52 @@ public class MessagingTest {
             assertTrue(instanceValue.has(value));
             assertTrue(instanceValue.has(simulation));
         }
-    } 
+    }
+    
+    
+    @Test
+    public void requestMeasurementTable() throws JSONException, InterruptedException {
+        final String dataType = "MeasurementTable";
+        final String currentColumn = "CurrentColumn";
+        final String currentRow = "CurrentRow";
+        final String table = "Table";
+        JSONArray instances = new JSONArray();
+        instances.put("Injection");
+        JSONArray attributes = new JSONArray();
+        attributes.put(currentColumn);
+        attributes.put(currentRow);
+        attributes.put(table);
+        JSONObject message = createMessage(REQUEST, dataType);
+        message.put(INSTANCES, instances);
+        message.put(ATTRIBUTES, attributes);
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONObject values = response.getJSONObject(VALUES);
+        assertEquals(instances.length(), values.length());
+        for (int i = 0; i < instances.length(); ++i) {
+            String instanceName = instances.getString(i);
+            JSONObject instanceValue = values.getJSONObject(instanceName);
+            assertTrue(instanceValue.has(currentColumn));
+            assertTrue(instanceValue.has(currentRow));
+            assertTrue(instanceValue.has(table));
+        }
+    }
+    
+    
+    @Test
+    public void requestAllTables() throws JSONException, InterruptedException {
+        final String dataType = "MeasurementTable";
+        JSONObject message = createMessage(REQUEST, dataType);
+        message.put(ATTRIBUTES, new JSONArray());
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONObject values = response.getJSONObject(VALUES);
+        java.util.Iterator keys = values.keys();
+        while (keys.hasNext()) {
+            String tableName = keys.next().toString();
+            assertEquals(0, values.getJSONObject(tableName).length());
+        }
+    }
     
     
      @Test(timeout=200)
@@ -142,8 +187,8 @@ public class MessagingTest {
     public void modifyTableField() throws JSONException, InterruptedException {
         final String dataType = "MeasurementTable";
         final String instance = "Ignition";
-        final String rowAttribute = "Row";
-        final String columnAttribute = "Column";
+        final String rowAttribute = "CurrentRow";
+        final String columnAttribute = "CurrentColumn";
         final String tableAttribute = "Table";
         final String valueAttribute = "Value";
         // Get table
