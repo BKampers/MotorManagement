@@ -70,23 +70,23 @@ public class MessagingTest {
     
     @Test
     public void requestMeasurements() throws JSONException, InterruptedException {
-        final String dataType = "Measurement";
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Request\"," +
+                "\"DataType\"  : \"Measurement\","+
+                "\"Instances\" : [\"RPM\",\"Load\"]," +
+                "\"Attributes\": [\"Value\",\"Simulation\"]" +
+            "}");
         final String simulation = "Simulation";
         final String value = "Value";
-        JSONArray instances = new JSONArray();
-        instances.put("RPM");
-        instances.put("Load");
-        JSONObject message = createMessage(REQUEST, dataType);
-        message.put(INSTANCES, instances);
-        JSONArray attributes = new JSONArray();
-        attributes.put(simulation);
-        attributes.put(value);
-        message.put(ATTRIBUTES, attributes);
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         JSONObject values = response.getJSONObject(VALUES);
-        assertEquals(instances.length(), values.length());
-        for (int i = 0; i < instances.length(); ++i) {
+        JSONArray instances = message.getJSONArray(INSTANCES);
+        int instanceLength = instances.length();
+        assertEquals(instanceLength, values.length());
+        for (int i = 0; i < instanceLength; ++i) {
             String instanceName = instances.getString(i);
             JSONObject instanceValue = values.getJSONObject(instanceName);
             assertTrue(instanceValue.has(value));
