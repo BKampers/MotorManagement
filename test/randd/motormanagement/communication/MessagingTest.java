@@ -143,7 +143,7 @@ public class MessagingTest {
     
     
     @Test
-    public void requestAllTables() throws JSONException, InterruptedException {
+    public void requestAllMeasurementTables() throws JSONException, InterruptedException {
         final String dataType = "MeasurementTable";
         JSONObject message = createMessage(REQUEST, dataType);
         message.put(ATTRIBUTES, new JSONArray());
