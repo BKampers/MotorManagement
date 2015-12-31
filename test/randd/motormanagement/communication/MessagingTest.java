@@ -96,6 +96,24 @@ public class MessagingTest {
     
     
     @Test
+    public void requestAllMeasurements() throws JSONException, InterruptedException {
+        final String[] allMeasurementNames = { "RPM", "Load", "Water", "Air", "Battery", "Map", "Lambda", "Aux1", "Aux2" };
+        final String dataType = "Measurement";
+        JSONObject message = createMessage(REQUEST, dataType);
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONObject values = response.getJSONObject(VALUES);
+        assertEquals(allMeasurementNames.length, values.length());
+        for (String name : allMeasurementNames) {
+            JSONObject value = values.getJSONObject(name);
+            assertTrue(value.has("Value"));
+            assertTrue(value.has("Simulation"));
+            assertFalse(value.has("InvalidAttribute"));
+        }
+    }
+    
+    
+    @Test
     public void requestMeasurementTable() throws JSONException, InterruptedException {
         final String dataType = "MeasurementTable";
         final String currentColumn = "CurrentColumn";
