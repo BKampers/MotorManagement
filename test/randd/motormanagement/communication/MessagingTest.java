@@ -108,7 +108,6 @@ public class MessagingTest {
             JSONObject value = values.getJSONObject(name);
             assertTrue(value.has("Value"));
             assertTrue(value.has("Simulation"));
-            assertFalse(value.has("InvalidAttribute"));
         }
     }
     
@@ -331,14 +330,14 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=50)
+    @Test
     public void getEngineProperties() throws JSONException, InterruptedException {
         JSONObject message = createMessage(REQUEST, "Engine");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONArray values =  response.getJSONArray(VALUES);
+        JSONObject values =  response.getJSONObject(VALUES);
         assertEquals(1, values.length());
-        JSONObject engine = values.getJSONObject(0);
+        JSONObject engine = values.getJSONObject("");
         int cylinderCount = engine.getInt("CylinderCount");
         assertTrue(4 == cylinderCount || 6 == cylinderCount || 8 == cylinderCount);
         JSONObject cogwheel = engine.getJSONObject("Cogwheel");
@@ -396,21 +395,18 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=400)
+    @Test
     public void requestPersistentElements() throws JSONException, InterruptedException {
-        JSONObject message = createMessage(REQUEST, "MemoryElements");
+        JSONObject message = createMessage(REQUEST, "Elements");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals(OK_STATUS, response.get(STATUS));
-        JSONArray values =  response.getJSONArray(VALUES);
-        for (int v = 0; v < values.length(); ++v) {
-            JSONArray elements = values.getJSONArray(v);
-            for (int e = 0; e < elements.length(); ++e) {
-                JSONObject element = elements.getJSONObject(e);
-                assertNotNull(element.getInt("TypeId"));
-                assertNotNull(element.getInt("Reference"));
-                assertNotNull(element.getInt("Size"));
-            }
+        assertNull(response.opt(ERROR));
+        JSONArray elements =  response.getJSONObject(VALUES).getJSONArray("Persistent");
+        for (int e = 0; e < elements.length(); ++e) {
+            JSONObject element = elements.getJSONObject(e);
+            assertTrue(element.has("TypeId"));
+            assertTrue(element.has("Reference"));
+            assertTrue(element.has("Size"));
         }
     }
     
@@ -474,8 +470,10 @@ public class MessagingTest {
     private static final String RETURN = "Return";
     private static final String ATTRIBUTES = "Attributes";
     private static final String VALUES = "Values";
+    
     private static final String STATUS = "Status";
     private static final String OK_STATUS = "OK";
     private static final String ENGINE_RUNNING_STATUS = "EngineIsRunning";
+    private static final String ERROR = "Error";
      
 }
