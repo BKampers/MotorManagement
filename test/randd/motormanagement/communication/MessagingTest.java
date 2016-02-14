@@ -200,51 +200,36 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=1000)
+    @Test(timeout=300)
     public void modifyTableField() throws JSONException, InterruptedException {
-        final String dataType = "MeasurementTable";
-        final String instance = "Ignition";
-        final String rowAttribute = "CurrentRow";
-        final String columnAttribute = "CurrentColumn";
-        final String tableAttribute = "Table";
-        final String valueAttribute = "Value";
-        // Get table
-        JSONObject message = createMessage(REQUEST, dataType);
-        JSONArray instances = new JSONArray();
-        instances.put(instance);
-        message.put(INSTANCES, instances);
-        JSONArray attributes = new JSONArray();
-        attributes.put(rowAttribute);
-        attributes.put(columnAttribute);
-        attributes.put(tableAttribute);
-        message.put(ATTRIBUTES, attributes);
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Modify\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"Ignition\"]," +
+                "\"Values\": {\"Column\":0,\"Row\":0,\"Value\":0.0}" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONObject values = response.getJSONObject(VALUES);
-        int row = values.optInt(rowAttribute, 0);
-        int column = values.optInt(columnAttribute, 0);
-        JSONArray rows = response.optJSONArray(tableAttribute);
-        assertNotNull(rows);
-        assertTrue(row < rows.length());
-        JSONArray columns = rows.optJSONArray(row);
-        assertNotNull(columns);
-        assertTrue(column < columns.length());
-        int original = columns.optInt(column);
-        // Modify  field
-        message = createMessage(MODIFY, dataType);     
-        message.put(INSTANCES, instances);
-        values = new JSONObject();
-        values.put(rowAttribute, row);
-        values.put(columnAttribute, column);
-        values.put(valueAttribute, (original + 1) % 60);
-        message.put(VALUES, values);
-        response = receiveResponse(message);
-        assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
-        values.put(valueAttribute, original);
-        response = receiveResponse(message);
+    }
+    
+    
+    @Test
+    public void modifyMultipleTableField() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Modify\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"Ignition\",\"Injection\"]," +
+                "\"Values\": {\"Column\":0,\"Row\":0,\"Value\":0.0}" +
+            "}");
+        JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals(OK_STATUS, response.optString(STATUS));
+        String status = response.getString(ERROR);
+        assertFalse(OK_STATUS.equals(status));
     }
     
     
