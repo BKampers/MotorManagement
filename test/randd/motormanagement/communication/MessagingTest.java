@@ -290,14 +290,14 @@ public class MessagingTest {
         message.put(ATTRIBUTES, fields);
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONArray values =  response.optJSONArray(VALUES);
+        JSONObject values = response.optJSONObject(VALUES);
         assertNotNull(values);
         assertTrue(values.length() > 0);
-        for (int i = 0; i < values.length(); ++i) {
-            JSONObject tableObject = values.optJSONObject(i);
+        java.util.Iterator keys = values.keys();
+        while (keys.hasNext()) {
+            JSONObject tableObject = values.getJSONObject(keys.next().toString());
             assertNotNull(tableObject);
-            assertEquals(1, tableObject.length());
-            assertNotNull(tableObject.optString(nameAttribute));
+            assertEquals(0, tableObject.length());
         }
     }
     
@@ -311,22 +311,17 @@ public class MessagingTest {
         JSONArray fields = new JSONArray();
         fields.put(ATTRIBUTES);
         fields.put("Enabled");
-        fields.put("CurrentIndex");
+        fields.put("CurrentColum");
+        fields.put("CurrentRow");
         message.put(ATTRIBUTES, fields);
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONArray values =  response.getJSONArray("Values");
+        JSONObject values = response.getJSONObject("Values");
         assertEquals(1, values.length());
-        JSONObject tableObject = values.optJSONObject(0);
+        JSONObject tableObject = values.getJSONObject("Ignition");
         assertTrue(tableObject.getBoolean("Enabled"));
-        assertNotNull(tableObject.get("CurrentIndex"));
-        JSONArray tableFields = tableObject.getJSONArray(ATTRIBUTES);
-        assertTrue(tableFields.length() > 0);
-        for (int i = 0; i < tableFields.length(); ++i) {
-            JSONArray tableRow = tableFields.getJSONArray(i);
-            assertTrue(tableRow.length() > 0);
-            assertNotNull(tableRow.optDouble(i));
-        }
+        assertNotNull(tableObject.get("CurrentColumn"));
+        assertNotNull(tableObject.get("CurrentRow"));
     }
     
     
@@ -335,7 +330,7 @@ public class MessagingTest {
         JSONObject message = createMessage(REQUEST, "Engine");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONObject values =  response.getJSONObject(VALUES);
+        JSONObject values = response.getJSONObject(VALUES);
         assertEquals(1, values.length());
         JSONObject engine = values.getJSONObject("");
         int cylinderCount = engine.getInt("CylinderCount");
