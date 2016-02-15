@@ -71,7 +71,7 @@ public class MessagingTest {
     @Test
     public void requestMeasurements() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
-            "{"+
+            "{" +
                 "\"Direction\" : \"Call\"," +
                 "\"Procedure\" : \"Request\"," +
                 "\"DataType\"  : \"Measurement\","+
@@ -203,15 +203,19 @@ public class MessagingTest {
     @Test(timeout=300)
     public void modifyTableField() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
-            "{"+
+            "{" +
                 "\"Direction\" : \"Call\"," +
                 "\"Procedure\" : \"Modify\"," +
                 "\"DataType\"  : \"MeasurementTable\","+
                 "\"Instances\" : [\"Ignition\"]," +
-                "\"Values\": {\"Column\":0,\"Row\":0,\"Value\":0.0}" +
+                "\"Values\": {\"Fields\":[" +
+                    "{\"Column\":0,\"Row\":0,\"Value\":0.0}," + 
+                    "{\"Column\":0,\"Row\":1,\"Value\":0.1}" + 
+                "]}" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
+        assertNull(response.opt(ERROR));
         assertEquals(OK_STATUS, response.optString(STATUS));
     }
     
@@ -219,12 +223,14 @@ public class MessagingTest {
     @Test
     public void modifyMultipleTableField() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
-            "{"+
+            "{" +
                 "\"Direction\" : \"Call\"," +
                 "\"Procedure\" : \"Modify\"," +
                 "\"DataType\"  : \"MeasurementTable\","+
                 "\"Instances\" : [\"Ignition\",\"Injection\"]," +
-                "\"Values\": {\"Column\":0,\"Row\":0,\"Value\":0.0}" +
+                "\"Values\": {\"Fields\":[" +
+                    "{\"Column\":0,\"Row\":1,\"Value\":0.1}" + 
+                "]}" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
