@@ -200,7 +200,7 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=300)
+    @Test
     public void modifyTableField() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
             "{" +
@@ -209,14 +209,59 @@ public class MessagingTest {
                 "\"DataType\"  : \"MeasurementTable\","+
                 "\"Instances\" : [\"Ignition\"]," +
                 "\"Values\": {\"Fields\":[" +
-                    "{\"Column\":0,\"Row\":0,\"Value\":0.0}," + 
-                    "{\"Column\":0,\"Row\":1,\"Value\":0.1}" + 
+                    "{\"Column\":0,\"Row\":0,\"Value\":10}," + 
+                    "{\"Column\":0,\"Row\":1,\"Value\":20}" + 
                 "]}" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertNull(response.opt(ERROR));
         assertEquals(OK_STATUS, response.optString(STATUS));
+        message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Request\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"Ignition\"]," +
+                "\"Attributes\": [\"Table\"]" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONArray table = response.getJSONObject("Values").getJSONObject("Ignition").getJSONArray("Table");
+        JSONArray row = table.getJSONArray(0);
+        assertEquals(10, Math.round(row.getDouble(0)));
+        row = table.getJSONArray(1);
+        assertEquals(20, Math.round(row.getDouble(0)));
+        message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Modify\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"Ignition\"]," +
+                "\"Values\": {\"Fields\":[" +
+                    "{\"Column\":0,\"Row\":0,\"Value\":0}," + 
+                    "{\"Column\":0,\"Row\":1,\"Value\":0}" + 
+                "]}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertNull(response.opt(ERROR));
+        assertEquals(OK_STATUS, response.optString(STATUS));
+        message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Request\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"Ignition\"]," +
+                "\"Attributes\": [\"Table\"]" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        table = response.getJSONObject("Values").getJSONObject("Ignition").getJSONArray("Table");
+        row = table.getJSONArray(0);
+        assertEquals(0, Math.round(row.getDouble(0)));
+        row = table.getJSONArray(1);
+        assertEquals(0, Math.round(row.getDouble(0)));
     }
     
     
