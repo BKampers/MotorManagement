@@ -49,6 +49,80 @@ public class MessagingTest {
     }
     
     
+    @Test
+    public void invalidFunction() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"Xxx\"," +
+                "\"Parameters\": {}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("UnknownFunction", response.getString("Error"));
+    }
+    
+    
+    @Test
+    public void invalidTablename() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Xxx\"," +
+                    "\"Enabled\"   : false" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("Invalid id", response.getString("Error"));
+    }
+    
+    
+    @Test
+    public void invalidParameter() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"AirCorrection\"," +
+                    "\"Enabled\"   : 123" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("InvalidParameters", response.getString("Error"));
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"AirCorrection\"," +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("InvalidParameters", response.getString("Error"));
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"Enabled\"   : false" +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("InvalidParameters", response.getString("Error"));
+    }
+    
+    
     @Test(timeout=50)
     public void invalidProcedure() throws JSONException, InterruptedException {
         JSONObject message = createMessage("XXX", "Engine");
@@ -284,35 +358,60 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=200)
+    @Test
     public void modifyTableEnabling() throws JSONException, InterruptedException {
-        final String dataType = "MeasurementTable";
-        final String instance = "WaterCorrection";
-        final String enabledAttribute = "Enabled";
-        // Modify enabling
-        JSONObject message = createMessage(MODIFY, dataType);
-        JSONArray instances = new JSONArray();
-        instances.put(instance);
-        message.put(INSTANCES, instances);
-        JSONObject values = new JSONObject();
-        values.put(enabledAttribute, true);
-        message.put(VALUES, values);
+        // Enable WaterCorrection
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"WaterCorrection\"," +
+                    "\"Enabled\"   : true" +
+                "}" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.opt(STATUS));
-        // Check enabling
-        message = createMessage(REQUEST, dataType);
-        message.put(INSTANCES, instances);
-        JSONArray attributes = new JSONArray();
-        attributes.put(enabledAttribute);
-        message.put(ATTRIBUTES, attributes);
+        // Check enabled
+        message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Request\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"WaterCorrection\"]," +
+                "\"Attributes\": [\"Enabled\"]" +
+            "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals(OK_STATUS, response.get(STATUS));
-        values = response.getJSONObject(VALUES);
-        assertEquals(1, values.length());
-        JSONObject waterCorrectionValues = values.getJSONObject(instance);
-        assertEquals(Boolean.TRUE, waterCorrectionValues.optBoolean(enabledAttribute));
+        assertTrue(response.getJSONObject("Values").getJSONObject("WaterCorrection").getBoolean("Enabled"));
+        // Disable WaterCorrection
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementTableEnabled\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"WaterCorrection\"," +
+                    "\"Enabled\"   : false" +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.opt(STATUS));
+        // Check enabled
+        message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Procedure\" : \"Request\"," +
+                "\"DataType\"  : \"MeasurementTable\","+
+                "\"Instances\" : [\"WaterCorrection\"]," +
+                "\"Attributes\": [\"Enabled\"]" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertFalse(response.getJSONObject("Values").getJSONObject("WaterCorrection").getBoolean("Enabled"));
     }
     
     
@@ -454,13 +553,16 @@ public class MessagingTest {
     private boolean isResponse(JSONObject response, JSONObject message) {
         return 
             RETURN.equals(response.optString(DIRECTION)) &&
-            memberMatch(message, response, PROCEDURE) &&
-            memberMatch(message, response, DATA_TYPE);
+            (memberMatch(message, response, PROCEDURE) &&
+             memberMatch(message, response, DATA_TYPE) ||
+             memberMatch(message, response, "Function"));
     }
    
 
     private static boolean memberMatch(JSONObject message, JSONObject response, String memberName) {
-        return message.optString(memberName, "").equals(response.optString(memberName));
+        return 
+            message.has(memberName) && response.has(memberName) &&
+            message.opt(memberName).equals(response.opt(memberName));
     }
   
     
