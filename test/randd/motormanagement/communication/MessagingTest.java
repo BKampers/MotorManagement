@@ -40,12 +40,15 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=15)
-    public void noDirection() throws JSONException, InterruptedException {
+    @Test
+    public void inclompleteMessage() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject();
         JSONObject response = receiveResponse(message);
-        assertEquals(NOTIFICATION, response.getString(DIRECTION));
-        assertEquals("NoDirection", response.getString(STATUS));
+//        assertEquals(NOTIFICATION, response.getString(DIRECTION));
+        assertEquals("NoDirection", response.getString("Error"));
+        message = new JSONObject("{\"Direction\"=\"Call\"}");
+        response = receiveResponse(message);
+        assertEquals("NoFunction", response.get("Error"));
     }
     
     
@@ -217,16 +220,17 @@ public class MessagingTest {
     
     @Test
     public void requestAllMeasurementTables() throws JSONException, InterruptedException {
-        final String dataType = "MeasurementTable";
-        JSONObject message = createMessage(REQUEST, dataType);
-        message.put(ATTRIBUTES, new JSONArray());
+        JSONObject message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\" : \"GetMeasurementTableNames\"" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONObject values = response.getJSONObject(VALUES);
-        java.util.Iterator keys = values.keys();
-        while (keys.hasNext()) {
-            String tableName = keys.next().toString();
-            assertEquals(0, values.getJSONObject(tableName).length());
+        JSONArray names = response.getJSONArray("Names");
+        for (int i = 0; i < names.length(); ++i) {
+            String tableName = names.getString(i);
+            assertFalse(tableName.isEmpty());
         }
     }
     
