@@ -98,7 +98,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameters", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Error"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
@@ -110,19 +110,19 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameters", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Error"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
                 "\"Function\"   : \"SetMeasurementTableEnabled\"," +
                 "\"Parameters\" : " +
                 "{" +
-                    "\"Enabled\"   : false" +
+                    "\"Enabled\" : false" +
                 "}" +
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameters", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Error"));
     }
     
     
@@ -227,7 +227,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONArray names = response.getJSONArray("Names");
+        JSONArray names = response.getJSONArray("ReturnValue");
         for (int i = 0; i < names.length(); ++i) {
             String tableName = names.getString(i);
             assertFalse(tableName.isEmpty());
@@ -279,67 +279,51 @@ public class MessagingTest {
     
     
     @Test
-    public void modifyTableField() throws JSONException, InterruptedException {
+    public void setMeasurementTableField() throws JSONException, InterruptedException {
+        // Get values
         JSONObject message = new JSONObject(
-            "{" +
-                "\"Direction\" : \"Call\"," +
-                "\"Procedure\" : \"Modify\"," +
-                "\"DataType\"  : \"MeasurementTable\","+
-                "\"Instances\" : [\"Ignition\"]," +
-                "\"Values\": {\"Fields\":[" +
-                    "{\"Column\":0,\"Row\":0,\"Value\":10}," + 
-                    "{\"Column\":0,\"Row\":1,\"Value\":20}" + 
-                "]}" +
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableFields\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Ignition\"" +
+                "}" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertNull(response.opt(ERROR));
-        assertEquals(OK_STATUS, response.optString(STATUS));
+        double value = response.getJSONArray("ReturnValue").getJSONArray(0).getDouble(0);
+        // Modify value
+        double newValue = value + 1.0;
         message = new JSONObject(
             "{" +
                 "\"Direction\" : \"Call\"," +
-                "\"Procedure\" : \"Request\"," +
-                "\"DataType\"  : \"MeasurementTable\","+
-                "\"Instances\" : [\"Ignition\"]," +
-                "\"Attributes\": [\"Table\"]" +
-            "}");
-        response = receiveResponse(message);
-        assertTrue(isResponse(response, message));
-        JSONArray table = response.getJSONObject("Values").getJSONObject("Ignition").getJSONArray("Table");
-        JSONArray row = table.getJSONArray(0);
-        assertEquals(10, Math.round(row.getDouble(0)));
-        row = table.getJSONArray(1);
-        assertEquals(20, Math.round(row.getDouble(0)));
-        message = new JSONObject(
-            "{" +
-                "\"Direction\" : \"Call\"," +
-                "\"Procedure\" : \"Modify\"," +
-                "\"DataType\"  : \"MeasurementTable\","+
-                "\"Instances\" : [\"Ignition\"]," +
-                "\"Values\": {\"Fields\":[" +
-                    "{\"Column\":0,\"Row\":0,\"Value\":0}," + 
-                    "{\"Column\":0,\"Row\":1,\"Value\":0}" + 
-                "]}" +
+                "\"Function\"  : \"SetMeasurementTableField\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Ignition\"," +
+                    "\"Column\"    : 0," +
+                    "\"Row\"       : 0," +
+                    "\"Value\"     : " + Double.toString(newValue) +
+                "}" +
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertNull(response.opt(ERROR));
         assertEquals(OK_STATUS, response.optString(STATUS));
         message = new JSONObject(
-            "{" +
-                "\"Direction\" : \"Call\"," +
-                "\"Procedure\" : \"Request\"," +
-                "\"DataType\"  : \"MeasurementTable\","+
-                "\"Instances\" : [\"Ignition\"]," +
-                "\"Attributes\": [\"Table\"]" +
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableFields\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Ignition\"" +
+                "}" +
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        table = response.getJSONObject("Values").getJSONObject("Ignition").getJSONArray("Table");
-        row = table.getJSONArray(0);
-        assertEquals(0, Math.round(row.getDouble(0)));
-        row = table.getJSONArray(1);
-        assertEquals(0, Math.round(row.getDouble(0)));
+        value = response.getJSONArray("ReturnValue").getJSONArray(0).getDouble(0);
+        assertEquals(Math.round(newValue), Math.round(value));
     }
     
     
@@ -359,6 +343,79 @@ public class MessagingTest {
         assertTrue(isResponse(response, message));
         String status = response.getString(ERROR);
         assertFalse(OK_STATUS.equals(status));
+    }
+    
+    
+    @Test
+    public void getMeasurementTableProperties() throws JSONException, InterruptedException {
+        // Valid name
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Injection\"" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        JSONObject value = response.getJSONObject("ReturnValue");
+        assertNotNull(value.getBoolean("Enabled"));
+        assertNotNull(value.getInt("CurrentColumn"));        
+        assertNotNull(value.getInt("CurrentRow"));
+        // Invalid name
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Xxx\"" +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("NoSuchMeasurementTable", response.get("Error"));
+        // Invalid parameter
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"Xxx\" : \"Injection\"" +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("InvalidParameter", response.get("Error"));
+    }
+    
+    
+    @Test
+    public void getMeasurementTableFields() throws JSONException, InterruptedException {
+        // Valid name
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementTableFields\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Injection\"" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        JSONArray rows = response.getJSONArray("ReturnValue");
+        for (int row = 0; row < rows.length(); ++row) {
+            JSONArray columns = rows.getJSONArray(row);
+            for (int column = 0; column < columns.length(); ++column) {
+                assertNotNull(columns.optDouble(column));
+            }
+        }
     }
     
     
