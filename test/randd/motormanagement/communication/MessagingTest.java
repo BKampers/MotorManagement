@@ -219,7 +219,61 @@ public class MessagingTest {
     
     
     @Test
-    public void requestAllMeasurementTables() throws JSONException, InterruptedException {
+    public void getMeasurementNames() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\" : \"GetMeasurementNames\"" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONArray names = response.getJSONArray("ReturnValue");
+        for (int i = 0; i < names.length(); ++i) {
+            String tableName = names.getString(i);
+            assertFalse(tableName.isEmpty());
+        }
+    }
+    
+    
+    @Test
+    public void getMeasurementProperties() throws JSONException, InterruptedException {
+        // Valid name
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"MeasurmentName\" : \"Load\"" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        JSONObject value = response.getJSONObject("ReturnValue");
+        assertNotNull(value.getDouble("Minimum"));
+        assertNotNull(value.getDouble("Maximum"));
+        assertNotNull(value.getString("Format"));
+        Object simulationValue = value.get("SimulationValue");
+        assertTrue(simulationValue == JSONObject.NULL || simulationValue instanceof Double);
+        // Invalid name
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurementProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"MeasurmentName\" : \"Xxx\"" +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals("NoSuchMeasurement", response.get("Error"));
+    }
+    
+    
+    @Test
+    public void getMeasurementTableNames() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
             "{" +
                 "\"Direction\" : \"Call\"," +
