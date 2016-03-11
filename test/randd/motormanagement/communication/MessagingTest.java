@@ -5,6 +5,7 @@
 package randd.motormanagement.communication;
 
 import bka.communication.*;
+import java.util.Iterator;
 
 import org.json.*;
 
@@ -45,10 +46,10 @@ public class MessagingTest {
         JSONObject message = new JSONObject();
         JSONObject response = receiveResponse(message);
 //        assertEquals(NOTIFICATION, response.getString(DIRECTION));
-        assertEquals("NoDirection", response.getString("Error"));
+        assertEquals("NoDirection", response.getString("Status"));
         message = new JSONObject("{\"Direction\"=\"Call\"}");
         response = receiveResponse(message);
-        assertEquals("NoFunction", response.get("Error"));
+        assertEquals("NoFunction", response.get("Status"));
     }
     
     
@@ -62,7 +63,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("UnknownFunction", response.getString("Error"));
+        assertEquals("UnknownFunction", response.getString("Status"));
     }
     
     
@@ -80,7 +81,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("Invalid id", response.getString("Error"));
+        assertEquals("InvalidId", response.getString("Status"));
     }
     
     
@@ -98,7 +99,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameter", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Status"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
@@ -110,7 +111,7 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameter", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Status"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
@@ -122,7 +123,7 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameter", response.getString("Error"));
+        assertEquals("InvalidParameter", response.getString("Status"));
     }
     
     
@@ -219,18 +220,22 @@ public class MessagingTest {
     
     
     @Test
-    public void getMeasurementNames() throws JSONException, InterruptedException {
+    public void getMeasurements() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
             "{" +
                 "\"Direction\" : \"Call\"," +
-                "\"Function\" : \"GetMeasurementNames\"" +
+                "\"Function\" : \"GetMeasurements\"" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONArray names = response.getJSONArray("ReturnValue");
-        for (int i = 0; i < names.length(); ++i) {
-            String tableName = names.getString(i);
-            assertFalse(tableName.isEmpty());
+        JSONObject value = response.getJSONObject("ReturnValue");
+        Iterator names = value.keys();
+        while (names.hasNext()) {
+            String measurmentName = (String) names.next();
+            JSONObject measurement = value.getJSONObject(measurmentName);
+            Object measurementValue = measurement.opt("Value");
+            assertTrue(measurementValue == JSONObject.NULL || measurementValue instanceof Number);
+            assertNotNull(measurement.optBoolean("Simulation"));
         }
     }
     
@@ -255,7 +260,7 @@ public class MessagingTest {
         assertNotNull(value.getDouble("Maximum"));
         assertNotNull(value.getString("Format"));
         Object simulationValue = value.get("SimulationValue");
-        assertTrue(simulationValue == JSONObject.NULL || simulationValue instanceof Double);
+        assertTrue(simulationValue == JSONObject.NULL || simulationValue instanceof Number);
         // Invalid name
         message = new JSONObject(
             "{"+
@@ -268,7 +273,7 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("NoSuchMeasurement", response.get("Error"));
+        assertEquals("NoSuchMeasurement", response.get("Status"));
     }
     
     
@@ -289,46 +294,73 @@ public class MessagingTest {
     }
     
     
-     @Test(timeout=200)
+     @Test
     public void modifyRpmSimulation() throws JSONException, InterruptedException {
-        final String dataType = "Measurement";
-        final String instance = "RPM";
-        final String simulation = "Simulation";
-        final String value = "Value";
         // Activate simulation
-        JSONObject message = createMessage(MODIFY, dataType);
-        JSONArray instances = new JSONArray();
-        instances.put(instance);
-        message.put(INSTANCES, instances);
-        JSONObject values = new JSONObject();
-        values.put(simulation, true);
-        values.put(value, 5000);
-        message.put(VALUES, values);
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetMeasurementSimulation\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"MeasurmentName\" : \"RPM\"," +
+                    "\"SimulationValue\" : 2000" +
+                "}" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
         // Check value
-        message = createMessage(REQUEST, dataType);
-        message.put(INSTANCES, instances);
-        JSONArray attributes = new JSONArray();
-        attributes.put(simulation);
-        attributes.put(value);
-        message.put(ATTRIBUTES, attributes);
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurements\"" +
+            "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
-        values = response.getJSONObject(VALUES).getJSONObject(instance);
-        assertTrue(values.getBoolean(simulation));
-        assertEquals(5000, values.getInt(value));
+        JSONObject value = response.getJSONObject("ReturnValue");
+        Iterator names = value.keys();
+        while (names.hasNext()) {
+            String measurementName = (String) names.next();
+            if ("RPM".equals(measurementName)) {
+                JSONObject measurement = value.getJSONObject(measurementName);
+                Number measurementValue = (Number) measurement.opt("Value");
+                assertTrue(measurement.getBoolean("Simulation"));
+                assertEquals(2000, Math.round(measurementValue.floatValue()));
+            }
+        }
         // Deactivate simulation
-        message = createMessage(MODIFY, dataType);
-        message.put(INSTANCES, instances);
-        values = new JSONObject();
-        values.put(simulation, false);
-        message.put(VALUES, values);
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"ResetMeasurementSimulation\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"MeasurmentName\" : \"RPM\"" +
+                "}" +
+            "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
+        // Check value
+        message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetMeasurements\"" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.optString(STATUS));
+        value = response.getJSONObject("ReturnValue");
+        names = value.keys();
+        while (names.hasNext()) {
+            String measurementName = (String) names.next();
+            if ("RPM".equals(measurementName)) {
+                JSONObject measurement = value.getJSONObject(measurementName);
+                assertFalse(measurement.getBoolean("Simulation"));
+            }
+        }
     }
     
     
@@ -363,7 +395,6 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertNull(response.opt(ERROR));
         assertEquals(OK_STATUS, response.optString(STATUS));
         message = new JSONObject(
             "{"+
@@ -395,7 +426,7 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        String status = response.getString(ERROR);
+        String status = response.getString("Status");
         assertFalse(OK_STATUS.equals(status));
     }
     
@@ -431,7 +462,7 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("NoSuchMeasurementTable", response.get("Error"));
+        assertEquals("NoSuchMeasurementTable", response.get("Status"));
         // Invalid parameter
         message = new JSONObject(
             "{"+
@@ -444,7 +475,7 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertEquals("InvalidParameter", response.get("Error"));
+        assertEquals("InvalidParameter", response.get("Status"));
     }
     
     
@@ -577,22 +608,20 @@ public class MessagingTest {
     
     @Test
     public void getEngineProperties() throws JSONException, InterruptedException {
-        JSONObject message = createMessage(REQUEST, "Engine");
+        JSONObject message = new JSONObject(
+            "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetEngineProperties\"" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        JSONObject values = response.getJSONObject(VALUES);
-        assertEquals(1, values.length());
-        JSONObject engine = values.getJSONObject("");
-        int cylinderCount = engine.getInt("CylinderCount");
+        int cylinderCount = response.getJSONObject("ReturnValue").getInt("CylinderCount");
         assertTrue(4 == cylinderCount || 6 == cylinderCount || 8 == cylinderCount);
-        JSONObject cogwheel = engine.getJSONObject("Cogwheel");
-        assertNotNull(cogwheel);
-        assertNotNull(cogwheel.getInt("CogTotal"));
-        assertNotNull(cogwheel.getInt("GapSize"));
-        assertNotNull(cogwheel.getInt("Offset"));
-        JSONArray deadPoints = engine.getJSONArray("DeadPoints");
-        assertNotNull(deadPoints);
-        assertTrue(deadPoints.length() > 0);
+        assertNotNull(response.getJSONObject("ReturnValue").getJSONObject("Cogwheel").getInt("CogTotal"));
+        assertNotNull(response.getJSONObject("ReturnValue").getJSONObject("Cogwheel").getInt("GapSize"));
+        assertNotNull(response.getJSONObject("ReturnValue").getJSONObject("Cogwheel").getInt("Offset"));
+        JSONArray deadPoints = response.getJSONObject("ReturnValue").getJSONArray("DeadPoints");
+        assertEquals(cylinderCount / 2, deadPoints.length());
     }
     
     
@@ -621,19 +650,32 @@ public class MessagingTest {
     }
     
     
-    @Test(timeout=200)
+    @Test
     public void setCylinderCount() throws JSONException, InterruptedException {
         // Valid cylinder count
-        JSONObject message = createMessage(MODIFY, "Engine");
-        JSONObject values = new JSONObject();
-        values.put("CylinderCount", 6);
-        message.put(VALUES, values);
+        JSONObject message = new JSONObject(
+            "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetCylinderCount\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"CylinderCount\" : 6" +
+                "}" +
+            "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         String status = response.getString(STATUS);
         assertTrue(OK_STATUS.equals(status) || ENGINE_RUNNING_STATUS.equals(status));
         // Invalid cylinder count
-        values.put("CylinderCount", 0);
+        message = new JSONObject(
+            "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetCylinderCount\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"CylinderCount\" : 0" +
+                "}" +
+            "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertFalse(OK_STATUS.equals(response.get(STATUS)));
@@ -645,7 +687,6 @@ public class MessagingTest {
         JSONObject message = createMessage(REQUEST, "Elements");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        assertNull(response.opt(ERROR));
         JSONArray elements =  response.getJSONObject(VALUES).getJSONArray("Persistent");
         for (int e = 0; e < elements.length(); ++e) {
             JSONObject element = elements.getJSONObject(e);
@@ -722,6 +763,5 @@ public class MessagingTest {
     private static final String STATUS = "Status";
     private static final String OK_STATUS = "OK";
     private static final String ENGINE_RUNNING_STATUS = "EngineIsRunning";
-    private static final String ERROR = "Error";
      
 }
