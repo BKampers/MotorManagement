@@ -41,14 +41,19 @@ public class MessagingTest {
     }
     
     
-    @Test
-    public void inclompleteMessage() throws JSONException, InterruptedException {
+    //@Test
+    public void invalidMessages() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject();
         JSONObject response = receiveResponse(message);
-//        assertEquals(NOTIFICATION, response.getString(DIRECTION));
-        assertEquals("NoDirection", response.getString("Status"));
+        assertEquals("Fire", response.getString("Direction"));
+        assertEquals("InvalidMessageReceived", response.getString("Status"));
+        message = new JSONObject("{\"Direction\" : \"x\"}");
+        response = receiveResponse(message);
+        assertEquals("Fire", response.getString("Direction"));
+        assertEquals("InvalidDirection", response.getString("Status"));
         message = new JSONObject("{\"Direction\"=\"Call\"}");
         response = receiveResponse(message);
+        assertEquals("Return", response.getString("Direction"));
         assertEquals("NoFunction", response.get("Status"));
     }
     
