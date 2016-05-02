@@ -273,13 +273,13 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
-        Table correctionTable = getCorrectionTable(measurement);
+        Table correctionTable = remoteSystem.getCorrectionTable(measurement);
         MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
         valuesPanel.add(panel);
-        Table table = getCorrectionTable(measurement);
+        Table table = remoteSystem.getCorrectionTable(measurement);
         if (table != null) {
             try {
-                remoteSystem.requestTableEnabled(table);
+                remoteSystem.requestTableProperties(table);
             }
             catch (InterruptedException | org.json.JSONException ex) {
                 handle(ex);
@@ -288,18 +288,6 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
     
-    private Table getCorrectionTable(Measurement measurement) {
-        assert (measurement != null);
-        String measurementName = measurement.getName();
-        if (! "Load".equals(measurementName) && ! "RPM".equals(measurementName)) {
-            return Table.getInstance(measurementName + RemoteSystem.CORRECTION_SUFFIX);
-        }
-        else {
-            return null;
-        }
-    }
-    
-
     private void addTableTabPanel(String name) {
         Table table = Table.getInstance(name);
         table.addListener(tableListener);
@@ -405,11 +393,11 @@ public class Monitor extends bka.swing.FrameApplication {
                 if (selectedTab instanceof TablePanel) {
                     Table table = ((TablePanel) selectedTab).getTable();
                     if (! table.hasFields()) {
-                        remoteSystem.requestTable(table);
+                        remoteSystem.requestTableFields(table);
                     }
                     Boolean enabled = table.isEnabled();
                     if (enabled == null) {
-                        remoteSystem.requestTableEnabled(table);
+                        remoteSystem.requestTableProperties(table);
                     }
                     else if (enabled) {
                         remoteSystem.startIndexPoll(table);
@@ -462,7 +450,7 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void tableEnabled(MeasurementPanel panel, boolean enabled) {
             Measurement measurement = panel.getMeasurement();
-            Table table = getCorrectionTable(measurement);
+            Table table = remoteSystem.getCorrectionTable(measurement);
             try {
                 remoteSystem.enableTable(table, enabled);
             }
@@ -476,7 +464,12 @@ public class Monitor extends bka.swing.FrameApplication {
             Measurement measurement = panel.getMeasurement();
             try {
                 if (measurement.isSimulationEnabled() != enabled) {
-                    remoteSystem.enableMeasurementSimulation(measurement, enabled);
+                    if (enabled) { 
+                        remoteSystem.enableMeasurementSimulation(measurement, measurement.getValue());
+                    }
+                    else {
+                        remoteSystem.disableMeasurementSimulation(measurement);
+                    }
                 }
             }
             catch (org.json.JSONException | InterruptedException ex) {
@@ -486,8 +479,9 @@ public class Monitor extends bka.swing.FrameApplication {
 
         @Override
         public void simulationValueModified(MeasurementPanel panel, double value) {
+            Measurement measurement = panel.getMeasurement();
             try {
-                remoteSystem.setMeasurementSimulationValue(panel.getMeasurement(), value);
+                remoteSystem.enableMeasurementSimulation(measurement, (float) value);
             }
             catch (org.json.JSONException | InterruptedException ex) {
                 handle(ex);
@@ -576,8 +570,8 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 String source = loadTextFile();
                 JSONObject jsonObject = new JSONObject(source);
-                int reference = jsonObject.getInt(RemoteSystem.REFERENCE);
-                int[] values = getIntArray(jsonObject.getJSONArray(RemoteSystem.VALUE));
+                int reference = jsonObject.getInt("Reference");
+                int[] values = getIntArray(jsonObject.getJSONArray("Value"));
                 remoteSystem.modifyFlash(reference, values);
             }
             catch (JSONException | InterruptedException ex) {

@@ -13,10 +13,8 @@ import org.json.*;
 
 public class RemoteSystem {
     
-    public static final String OK = "OK";
-    public static final String REFERENCE = "Reference";
-    public static final String VALUE = "Value";
-    public static final String CORRECTION_SUFFIX = "Correction";
+//    public static final String OK = "OK";
+//    public static final String CORRECTION_SUFFIX = "Correction";
 
     
     public interface Listener {
@@ -86,74 +84,85 @@ public class RemoteSystem {
     
     
     public void requestTableNames() throws InterruptedException, JSONException {
-        request(MEASUREMENT_TABLES);
+        call(GET_TABLE_NAMES);
     }
     
     
-    public void requestTable(Table table) throws InterruptedException, JSONException {
-        final JSONArray TABLE_PROPERTY = new JSONArray(new String[] {TABLE});
-        request(table.getName(), PROPERTIES, TABLE_PROPERTY);
+    public void requestTableProperties(Table table) throws InterruptedException, JSONException {
+        JSONObject parameters = new JSONObject();
+        parameters.put(TABLE_NAME, table.getName());
+        call(GET_TABLE_PROPERTIES, parameters);
     }
     
+    
+    public void requestTableFields(Table table) throws InterruptedException, JSONException {
+        JSONObject parameters = new JSONObject();
+        parameters.put(TABLE_NAME, table.getName());
+        call(GET_TABLE_FIELDS, parameters);
+    }
+    
+    
+    public void enableTable(Table table, boolean enabled) throws JSONException, InterruptedException {
+        JSONObject parameters = new JSONObject();
+        parameters.put(ENABLED, enabled);
+        call("SetTableEnabled", parameters);
+    }
+
     
     public void modifyTable(Table table, int column, int row, float value) throws JSONException, InterruptedException {
-        modify(table.getName(), COLUMN, column, ROW, row, VALUE, value);
-    }
-    
-    
-    public void requestTableEnabled(Table table) throws InterruptedException, JSONException {
-        final JSONArray ENABLED_PROPERTY = new JSONArray(new String[] {ENABLED});
-        request(table.getName(), PROPERTIES, ENABLED_PROPERTY);
+        JSONObject parameters = new JSONObject();
+        parameters.put(TABLE_NAME, table.getName());
+        parameters.put(COLUMN, column);
+        parameters.put(ROW, row);
+        parameters.put(VALUE, value);
+        call(SET_TABLE_FIELD, parameters);
     }
     
     
     public void requestEngine() throws InterruptedException, JSONException {
-        request(ENGINE);
+        call(GET_ENGINE_PROPERTIES);
     }
     
     
     public void modifyCylinderCount(int count) throws InterruptedException, JSONException {
-        modify(CYLINDER_COUNT, VALUE, count);
+        JSONObject parameters = new JSONObject();
+        parameters.put(CYLINDER_COUNT, count);
+        call("SetCylinderCount", parameters);
     }
     
     
     public void modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException, JSONException {
-        modify(COGWHEEL, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
+        JSONObject parameters = new JSONObject();
+        parameters.put(COG_TOTAL, cogTotal);
+        parameters.put(GAP_SIZE, gapSize);
+        parameters.put(OFFSET, offset);
+        call("SetCogwheelProperties", parameters);
     }
     
 
-    public void enableTable(Table table, boolean enabled) throws JSONException, InterruptedException {
-        modify(table.getName(), ENABLED, enabled);
-    }
-
-    
-    public void enableMeasurementSimulation(Measurement measurement, boolean enable) throws JSONException, InterruptedException {
-        if (enable) {
-            Float value = measurement.getValue();
-            if (value == null) {
-                value = 0.0f;
-            }
-            modify(measurement.getName(), SIMULATION, true, VALUE, value);
-        }
-        else {
-            modify(measurement.getName(), SIMULATION, false);            
-        }
+    public void enableMeasurementSimulation(Measurement measurement, float simulationValue) throws JSONException, InterruptedException {
+        JSONObject parameters = new JSONObject();
+        parameters.put(MEASUREMENT_NAME, measurement.getName());
+        parameters.put(SIMULATION_VALUE, simulationValue);
+        call("SetMeasurementSimulation", parameters);
     }
     
     
-    public void setMeasurementSimulationValue(Measurement measurement, double value) throws JSONException, InterruptedException {
-        modify(measurement.getName(), SIMULATION, true, VALUE, value);
+    public void disableMeasurementSimulation(Measurement measurement) throws JSONException, InterruptedException {
+        JSONObject parameters = new JSONObject();
+        parameters.put(MEASUREMENT_NAME, measurement.getName());
+        call("ResetMeasurementSimulation", parameters);
     }
     
     
     public void requestFlash() throws InterruptedException, JSONException {
-        request(FLASH);
-        request(FLASH_ELEMENTS);
+//        request(FLASH);
+        call("GetPersistentElements");
     }
     
     
     public void modifyFlash(int reference, int count, int value) throws JSONException, InterruptedException {
-        modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
+        //modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
     }
     
     
@@ -164,13 +173,25 @@ public class RemoteSystem {
         while (index < total) {
             int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
             int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
-            modify(FLASH, REFERENCE, referenceToSend, VALUE, valuesToSend);
+//            modify(FLASH, REFERENCE, referenceToSend, VALUE, valuesToSend);
             referenceToSend += count;
             index += count;
         }
     }
     
     
+    public Table getCorrectionTable(Measurement measurement) {
+        assert (measurement != null);
+        String measurementName = measurement.getName();
+        if (! "Load".equals(measurementName) && ! "RPM".equals(measurementName)) {
+            return Table.getInstance(measurementName + "Correction");
+        }
+        else {
+            return null;
+        }
+    }
+    
+
     public void addListener(Listener listener) {
         synchronized (listeners) {
             if (! listeners.contains(listener)) {
@@ -197,27 +218,32 @@ public class RemoteSystem {
     }
     
     
-    private void request(String subject, Object ... options) throws JSONException, InterruptedException {
-        send(REQUEST, subject, options);
+    private void call(String function) throws JSONException {
+        call(function, null);
     }
     
     
-    private void modify(String subject, Object ... options) throws JSONException, InterruptedException {
-        send(MODIFY, subject, options);
+    private void call(String function, JSONObject parameters) throws JSONException {
+        JSONObject message = new JSONObject();
+        message.put(Messenger.DIRECTION, Messenger.CALL);
+        message.put(Messenger.FUNCTION, function);
+        if (parameters != null) {
+            message.put(Messenger.PARAMETERS, parameters);
+        }
+        messenger.send(message);
     }
     
+//    private void send(String message, String subject, Object ... options) throws JSONException {
+//        JSONObject messageObject = messageObject(message, subject, options);
+//        logger.log(Level.FINEST, ">> {0}", messageObject);
+//        messenger.send(messageObject);
+//    }
     
-    private void send(String message, String subject, Object ... options) throws JSONException {
-        JSONObject messageObject = messageObject(message, subject, options);
-        logger.log(Level.FINEST, ">> {0}", messageObject);
-        messenger.send(messageObject);
-    }
     
-    
-    private JSONObject messageObject(String message, String subject, Object ... options) throws JSONException {
+    private JSONObject messageObject(String function, Object ... options) throws JSONException {
         JSONObject object = new JSONObject();
-        object.put(Messenger.MESSAGE, message);
-        object.put(Messenger.SUBJECT, subject);
+        object.put(Messenger.DIRECTION, Messenger.CALL);
+        object.put(Messenger.FUNCTION, function);
         for (int i = 0; i < options.length - 1; i += 2) {
             object.put(options[i].toString(), options[i+1]);
         }
@@ -225,8 +251,25 @@ public class RemoteSystem {
     }
     
     
-    private void updateMeasurement(JSONObject measurementObject) throws JSONException {
-        Measurement measurement = Measurement.getInstance(measurementObject.optString(Messenger.SUBJECT));
+    private void updateMeasurements(JSONObject measurementsObject)throws JSONException {
+        Iterator names = measurementsObject.keys();
+        while (names.hasNext()) {
+            String measurementName = names.next().toString();
+            Measurement measurement = Measurement.getInstance(measurementName);
+            if (measurement != null) {
+                JSONObject measurementObject = measurementsObject.getJSONObject(measurementName);
+                double value = measurementObject.optDouble(VALUE);
+                if (value != Double.NaN) {
+                    measurement.setValue((float) value);
+                }
+                measurement.setSimulationEnabled(measurementObject.optBoolean(SIMULATION));
+            }
+        }
+    }
+    
+
+    private void updateMeasurementProperties(JSONObject measurementObject) throws JSONException {
+        Measurement measurement = Measurement.getInstance(measurementObject.optString(MEASUREMENT_NAME));
         if (measurement != null) {
             measurement.setFormat(measurementObject.getString(FORMAT));
             double minimum = measurementObject.optDouble(MINIMUM);
@@ -237,25 +280,23 @@ public class RemoteSystem {
             if (maximum != Double.NaN) {
                 measurement.setMaximum((float) maximum);
             }
-            double value = measurementObject.optDouble(VALUE);
-            if (value != Double.NaN) {
-                measurement.setValue((float) value);
+            double simulationValue = measurementObject.optDouble(SIMULATION_VALUE);
+            if (simulationValue != Double.NaN) {
+                measurement.setSimulationValue((float) simulationValue);
             }
-            boolean simulation = measurementObject.optBoolean(SIMULATION, false);
-            measurement.setSimulationEnabled(simulation);
         }
     }
     
 
     private void updateTableField(JSONObject object) throws JSONException {
-        Table table = Table.getInstance(object.getString(SUBJECT));
+        Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setField(object.getInt(COLUMN), object.getInt(ROW), (float) object.getDouble(VALUE));
     }
     
     
     private void updateTable(JSONObject object) throws JSONException {
-        Table table = Table.getInstance(object.getString(SUBJECT));
-        JSONArray tableArray = object.getJSONArray(TABLE);
+        Table table = Table.getInstance(object.getString(TABLE_NAME));
+        JSONArray tableArray = object.getJSONArray(Messenger.RETURN_VALUE);
         final int rowCount = tableArray.length();
         float[][] fields = new float[rowCount][];
         for (int row = 0; row < rowCount; ++row) {
@@ -267,19 +308,19 @@ public class RemoteSystem {
             }
         }
         table.setFields(fields);
-        table.setDecimals(object.optInt(DECIMALS, 0));
-        table.setMinimum((float) object.optDouble(MINIMUM, 0.0));
-        table.setMaximum((float) object.optDouble(MAXIMUM, 100.0));
-        if (object.has(COLUMN_MEASUREMENT_NAME)) {
-            String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
-            Measurement measurement = Measurement.getInstance(measurementName);
-            table.setColumnMeasurement(measurement);
-        }
-        if (object.has(ROW_MEASUREMENT_NAME)) {
-            String measurementName = object.getString(ROW_MEASUREMENT_NAME);
-            Measurement measurement = Measurement.getInstance(measurementName);
-            table.setRowMeasurement(measurement);
-        }
+//        table.setDecimals(object.optInt(DECIMALS, 0));
+//        table.setMinimum((float) object.optDouble(MINIMUM, 0.0));
+//        table.setMaximum((float) object.optDouble(MAXIMUM, 100.0));
+//        if (object.has(COLUMN_MEASUREMENT_NAME)) {
+//            String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
+//            Measurement measurement = Measurement.getInstance(measurementName);
+//            table.setColumnMeasurement(measurement);
+//        }
+//        if (object.has(ROW_MEASUREMENT_NAME)) {
+//            String measurementName = object.getString(ROW_MEASUREMENT_NAME);
+//            Measurement measurement = Measurement.getInstance(measurementName);
+//            table.setRowMeasurement(measurement);
+//        }
     }
     
     
@@ -298,19 +339,19 @@ public class RemoteSystem {
     
 
     private void updateFlash(JSONObject flashObject) throws JSONException {
-        int reference = flashObject.getInt(REFERENCE);
-        JSONArray memoryArray = flashObject.getJSONArray(VALUE);
-        int length = memoryArray.length();
-        byte[] bytes = new byte[length];
-        for (int i = 0; i < length; ++i) {
-            bytes[i] = (byte) memoryArray.getInt(i);
-        }
-        flash.setBytes(reference, bytes);
+//        int reference = flashObject.getInt(REFERENCE);
+//        JSONArray memoryArray = flashObject.getJSONArray(VALUE);
+//        int length = memoryArray.length();
+//        byte[] bytes = new byte[length];
+//        for (int i = 0; i < length; ++i) {
+//            bytes[i] = (byte) memoryArray.getInt(i);
+//        }
+//        flash.setBytes(reference, bytes);
     }
     
     
     private void updateFlashElements(JSONObject elementsObject) throws JSONException {
-        JSONArray elementsArray = elementsObject.getJSONArray(ELEMENTS);
+        JSONArray elementsArray = elementsObject.getJSONArray(Messenger.RETURN_VALUE);
         int length = elementsArray.length();
         Flash.Element[] elements = new Flash.Element[length];
         for (int i = 0; i < length; ++i) {
@@ -325,14 +366,14 @@ public class RemoteSystem {
 
     
     private void updateTableIndex(JSONObject object) throws JSONException {
-        Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
-        table.setColumnIndex(object.getInt(COLUMN));
-        table.setRowIndex(object.getInt(ROW));
+        Table table = Table.getInstance(object.getString(TABLE_NAME));
+        table.setColumnIndex(object.getInt(CURRENT_COLUMN));
+        table.setRowIndex(object.getInt(CURRENT_ROW));
     }
     
     
     private void updateTableEnabled(JSONObject object) throws JSONException {
-        Table table = Table.getInstance(object.getString(Messenger.SUBJECT));
+        Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setEnabled(object.getBoolean(ENABLED));
     }
     
@@ -344,12 +385,12 @@ public class RemoteSystem {
             try {
                 message = nextMessage();
                 if (message != null) {
-                    logger.log(Level.FINEST, ">> {0}", message);
+                    LOGGER.log(Level.FINEST, ">> {0}", message);
                     messenger.send(message);
                 }
             }
             catch (JSONException ex) {
-                logger.log(Level.WARNING, "PollTask", ex);
+                LOGGER.log(Level.WARNING, "PollTask", ex);
             }
         }
         
@@ -359,7 +400,7 @@ public class RemoteSystem {
                 pollMessage = nextTableMessage();
                 if (pollMessage == null) {
                     pollMessage = engineMessage();
-                    measurmentIndex = 0;
+//                    measurmentIndex = 0;
                     tableIndex = 0;
                 }
             }
@@ -367,12 +408,7 @@ public class RemoteSystem {
         }
 
         private JSONObject nextMeasurementMessage() throws JSONException {
-            JSONObject pollMessage = null;
-            if (measurmentIndex < MEASUREMENTS.length) {
-                pollMessage = messageObject(REQUEST, MEASUREMENTS[measurmentIndex].getName());
-                measurmentIndex++;
-            }
-            return pollMessage;
+            return messageObject(GET_MEASUREMENTS);
         }
 
         private JSONObject nextTableMessage() throws JSONException {
@@ -383,8 +419,7 @@ public class RemoteSystem {
             }
             if (tableIndex < tables.size()) {
                 Table table = tables.get(tableIndex);
-                final JSONArray INDEX_PROPERTY = new JSONArray(new String[] {INDEX});
-                pollMessage = messageObject(REQUEST, table.getName(), PROPERTIES, INDEX_PROPERTY);
+                pollMessage = messageObject(GET_TABLE_PROPERTIES, TABLE_NAME, table.getName());
                 tableIndex++;
             }
             return pollMessage;
@@ -392,14 +427,14 @@ public class RemoteSystem {
         
         private JSONObject engineMessage() throws JSONException {
             if (pollEngine) {
-                return messageObject(REQUEST, ENGINE_IS_RUNNING);
+                return messageObject(IS_ENGINE_RUNNING);
             }
             else {
                 return null;
             }
         }
         
-        private int measurmentIndex = 0;
+//        private int measurmentIndex = 0;
         private int tableIndex = 0;
         private JSONObject message = null;
     }
@@ -409,8 +444,8 @@ public class RemoteSystem {
 
         @Override
         public void notifyMessage(JSONObject message) {
-            logger.log(Level.FINEST, "<< {0}", message);
-            if (NOTIFICATION.equals(message.optString(Messenger.MESSAGE))) {
+            LOGGER.log(Level.FINEST, "<< {0}", message);
+            if (Messenger.FIRE.equals(message.optString(Messenger.DIRECTION))) {
                 handleNotifications(message);
             }
             //TODO: Handle system reboot
@@ -426,53 +461,51 @@ public class RemoteSystem {
 
         @Override
         public void notifyResponse(JSONObject message, JSONObject response) {
-            logger.log(Level.FINEST, "<< {0}", response);
+            LOGGER.log(Level.FINEST, "<< {0}", response);
             try {
-                String subject = response.getString(SUBJECT);
-                if (getMeasurement(subject) != null) {
-                    updateMeasurement(response);
+                String function = response.getString(Messenger.FUNCTION);
+                JSONObject returnValue = response.optJSONObject(Messenger.RETURN_VALUE);
+                if (function.equals(GET_MEASUREMENTS)) {
+                    updateMeasurements(returnValue);
                 }
-                else if (response.has(COLUMN) && response.has(ROW)) {
-                    updateActiveTable(response);
+                else if (function.equals(GET_MEASUREMENT_PROPERTIES)) {
+                    updateMeasurementProperties(response);
                 }
-                else if (response.has(TABLE)) {
-                    updateTable(response);
+                else if (function.equals(GET_TABLE_PROPERTIES)) {
+                    updateTableIndex(returnValue);
+//                    updateTable(response);
                 }
-                else if (subject.equals(ENGINE_IS_RUNNING)) {
+                else if (function.equals(SET_TABLE_FIELD)) {
+                    updateTableField(response);
+                }
+                else if (function.equals("IsEngineRunning")) {
                     engine.setRunning(response.getBoolean(VALUE));
                 }
-                else if (subject.equals(MEASUREMENT_TABLES)) {
+                else if (function.equals(GET_TABLE_NAMES)) {
                     notifyTableNames(response);
                 }
-                else if (subject.equals(ENGINE)) {
+                else if (function.equals(GET_ENGINE_PROPERTIES)) {
                     updateEngine(response);
                 }
-                else if (subject.equals(CYLINDER_COUNT)) {
-                    engine.setCylinderCount(response.getInt(VALUE));
-                    requestEngineUpdate();
-                }
-                else if (subject.equals(COGWHEEL)) {
-                    engine.setCogwheel(response.getInt(COG_TOTAL), response.getInt(GAP_SIZE), response.getInt(OFFSET));
-                    requestEngineUpdate();
-                }
-                else if (subject.equals(FLASH)) {
-                    updateFlash(response);
-                }
-                else if (subject.equals(FLASH_ELEMENTS)) {
+//                else if (function.equals(FLASH)) {
+//                    updateFlash(response);
+//                }
+                else if (function.equals(GET_PERSISTENT_ELEMENTS)) {
                     updateFlashElements(response);
                 }
                 else if (response.has(ENABLED)) {
                     updateTableEnabled(response);
                 }
                 else {
-                    logger.log(Level.WARNING, "Unhandled: {0}", response);
+                    LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
                 }
             }
             catch (JSONException ex) {
-                logger.log(Level.WARNING, response.toString(), ex);
+                LOGGER.log(Level.WARNING, response.toString(), ex);
             }       
         }
 
+        
         private void handleNotifications(JSONObject message) {
             for (Notification notification : createNotifications(message)) {
                 synchronized (listeners) {
@@ -488,7 +521,7 @@ public class RemoteSystem {
             Iterator keys = message.keys();
             while (keys.hasNext()) {
                 String key = keys.next().toString();
-                if (! Messenger.MESSAGE.equals(key)) {
+                if (! Messenger.DIRECTION.equals(key)) {
                     notifications.add(new Notification(key, message.optString(key)));
                 }
             }
@@ -516,7 +549,7 @@ public class RemoteSystem {
 
         private void notifyTableNames(JSONObject response) throws JSONException {
             Collection<String> names = new ArrayList<>();
-            JSONArray namesArray = response.getJSONArray(NAMES);
+            JSONArray namesArray = response.getJSONArray(Messenger.RETURN_VALUE);
             for (int i = 0; i < namesArray.length(); ++i) {
                 names.add(namesArray.getString(i));
             }
@@ -532,11 +565,12 @@ public class RemoteSystem {
                 requestEngine();
             }
             catch (InterruptedException | JSONException ex) {
-                logger.log(Level.WARNING, "requestEngineUpdate", ex);
+                LOGGER.log(Level.WARNING, "requestEngineUpdate", ex);
             }
         }
         
     }
+
     
     private final Engine engine = new Engine();
     private final Flash flash = new Flash();
@@ -562,42 +596,62 @@ public class RemoteSystem {
         Measurement.getInstance("Aux2")
     };
         
-    
-    private static final String NOTIFICATION = "Notification";
-    private static final String SUBJECT = "Subject";
-    
-    private static final String REQUEST = "Request";
-    private static final String MODIFY = "Modify";
-    
-    private static final String PROPERTIES = "Properties";
-    private static final String TABLE = "Table";
-    private static final String DECIMALS = "Decimals";
-    private static final String INDEX = "Index";
-    private static final String SIMULATION = "Simulation";
+
+    private static final String GET_TABLE_FIELDS = "GetTableFields";
+    private static final String GET_MEASUREMENT_PROPERTIES = "GetMeasurementProperties";
+    private static final String GET_MEASUREMENTS = "GetMeasurements";
+    private static final String SET_TABLE_FIELD = "SetTableField";
+    private static final String GET_TABLE_PROPERTIES = "GetTableProperties";
+    private static final String GET_TABLE_NAMES = "GetTableNames";
+    private static final String GET_ENGINE_PROPERTIES = "GetEngineProperties";
+    private static final String IS_ENGINE_RUNNING = "IsEngineRunning";
+    private static final String GET_PERSISTENT_ELEMENTS = "GetPersistentElements";
+
+    private static final String TABLE_NAME = "TableName";
+    private static final String MEASUREMENT_NAME = "MeasurementName";
+
+//    
+//    private static final String NOTIFICATION = "Notification";
+//    private static final String SUBJECT = "Subject";
+//    
+//    private static final String REQUEST = "Request";
+//    private static final String MODIFY = "Modify";
+//    
+//    private static final String PROPERTIES = "Properties";
+//    private static final String TABLE = "Table";
+//    private static final String DECIMALS = "Decimals";
+//    private static final String INDEX = "Index";
     private static final String ENABLED = "Enabled";
-    
-    private static final String MEASUREMENT_TABLES = "MeasurementTables";
-    private static final String FLASH = "Flash";
-    private static final String FLASH_ELEMENTS = "FlashElements";
-    private static final String ENGINE_IS_RUNNING = "EngineIsRunning";
-    
-    private static final String NAMES = "Names";
-    private static final String ELEMENTS = "Elements";
-    private static final String COUNT = "Count";
-    private static final String SIZE = "Size";
+    private static final String SIMULATION = "Simulation";
+    private static final String SIMULATION_VALUE = "SimulationValue";
+//    
+//    private static final String MEASUREMENT_TABLES = "MeasurementTables";
+//    private static final String FLASH = "Flash";
+//    private static final String FLASH_ELEMENTS = "FlashElements";
+//    private static final String ENGINE_IS_RUNNING = "EngineIsRunning";
+//    
+//    private static final String NAMES = "Names";
+//    private static final String ELEMENTS = "Elements";
+//    private static final String COUNT = "Count";
     private static final String TYPE_ID = "TypeId";
-    
+    private static final String REFERENCE = "Reference";
+    private static final String SIZE = "Size";
+//    
+    private static final String CURRENT_COLUMN = "CurrentColumn";
+    private static final String CURRENT_ROW = "CurrentRow";
+
     private static final String COLUMN = "Column";
     private static final String ROW = "Row";
-    
-    private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurement";
-    private static final String ROW_MEASUREMENT_NAME = "RowMeasurement";
-    
+    private static final String VALUE = "Value";
+//    
+//    private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurement";
+//    private static final String ROW_MEASUREMENT_NAME = "RowMeasurement";
+//    
     private static final String FORMAT = "Format";
     private static final String MINIMUM = "Minimum";
     private static final String MAXIMUM = "Maximum";
-
-    private static final String ENGINE = "Engine";
+//
+//    private static final String ENGINE = "Engine";
     private static final String COGWHEEL = "Cogwheel";
     private static final String COG_TOTAL = "CogTotal";
     private static final String GAP_SIZE = "GapSize";
@@ -607,6 +661,6 @@ public class RemoteSystem {
     
     private static final int MAX_FLASH_SIZE_TO_SEND = 0x10;
     
-    private static final Logger logger = Logger.getLogger(RemoteSystem.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(RemoteSystem.class.getName());
 
 }

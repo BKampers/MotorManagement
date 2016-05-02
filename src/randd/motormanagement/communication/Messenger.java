@@ -14,16 +14,20 @@ import org.json.JSONObject;
 class Messenger {
     
     
+    static final String DIRECTION = "Direction";
+    static final String FIRE = "Fire";
+    static final String CALL = "Call";
+    static final String FUNCTION = "Function";    
+    static final String RETURN = "Return";
+    static final String PARAMETERS = "Parameters";
+    static final String RETURN_VALUE = "ReturnValue";
+
+    
     interface Listener { 
         void notifyMessage(JSONObject message);
         void notifyResponse(JSONObject message, JSONObject response);
     }
     
-    
-    static final String MESSAGE  = "Message";
-    static final String RESPONSE = "Response";
-    static final String SUBJECT  = "Subject";
-
     
     Messenger(Transporter transporter) {
         if (transporter == null) {
@@ -85,7 +89,7 @@ class Messenger {
     
     
     private class ReceiveTask implements Runnable {
-        
+
         @Override
         public void run() {
             try {
@@ -119,9 +123,8 @@ class Messenger {
 
         private boolean handleTransaction(JSONObject receivedObject) {
             boolean handled = false;
-            String message = outstanding.transaction.message.optString(MESSAGE);
-            String subject = outstanding.transaction.message.optString(SUBJECT);
-            if (isResponse(receivedObject, message, subject)) {
+            String function = outstanding.transaction.message.optString(FUNCTION);
+            if (isResponse(receivedObject, function)) {
                 synchronized (outstanding) {
                     outstanding.transaction.response = receivedObject;
                     outstanding.notify();
@@ -131,17 +134,16 @@ class Messenger {
             return handled;
         }
         
-        private boolean isResponse(JSONObject object, String message, String subject) {
+        private boolean isResponse(JSONObject object, String function) {
             return 
                 object != null &&
-                message != null &&
-                subject != null &&
-                message.equals(object.opt(RESPONSE)) &&
-                subject.equals(object.opt(SUBJECT));
+                function != null &&
+                function.equals(object.opt(FUNCTION)) &&
+                RETURN.equals(object.opt(DIRECTION));
         }
 
         private volatile boolean running = true;
-        
+
     }
     
     
@@ -239,7 +241,7 @@ class Messenger {
     
     private final Outstanding outstanding = new Outstanding();
 
-    private static Logger logger;
+    private final Logger logger;
     
     private static final long MAXIMUM_RESPONSE_TIME = 5000; // ms
 
