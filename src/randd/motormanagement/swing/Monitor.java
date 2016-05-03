@@ -303,7 +303,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     
     private synchronized void addTabPanel(JPanel panel, String titleKey) {
-        logger.log(Level.FINE, "Add panel {0}", titleKey);
+        LOGGER.log(Level.FINE, "Add panel {0}", titleKey);
         int index = panelIndex(panel);
         tabsPanel.add(panel, index);
         String title = Bundle.getInstance().get(titleKey);
@@ -427,7 +427,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 source = resource.loadText();
             }
             catch (java.io.IOException ex) {
-                logger.log(Level.WARNING, "loadTextFile", ex);
+                LOGGER.log(Level.WARNING, "loadTextFile", ex);
             }
         }
         return source;
@@ -575,7 +575,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 remoteSystem.modifyFlash(reference, values);
             }
             catch (JSONException | InterruptedException ex) {
-                logger.log(Level.SEVERE, null, ex);
+                LOGGER.log(Level.SEVERE, null, ex);
             }
         }        
 
@@ -663,6 +663,6 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final int DEFAULT_POLL_INTERVAL = 50;
 
 
-    private static final Logger logger = Logger.getLogger(Monitor.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Monitor.class.getName());
     
 }

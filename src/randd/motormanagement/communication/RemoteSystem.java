@@ -372,6 +372,21 @@ public class RemoteSystem {
     }
     
     
+    private void updateTableFields(JSONObject object) throws JSONException {
+        Table table = Table.getInstance(object.getString(TABLE_NAME));
+        JSONArray rows = object.getJSONArray(FIELDS);
+        float[][] fields = new float[rows.length()][];
+        for (int r = 0; r < rows.length(); ++r) {
+            JSONArray columns = rows.getJSONArray(r);
+            fields[r] = new float[columns.length()];
+            for (int c = 0; c < columns.length(); ++c) {
+                fields[r][c] = (float) columns.getDouble(c);
+            }
+        }
+        table.setFields(fields);
+    }
+    
+    
     private void updateTableEnabled(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setEnabled(object.getBoolean(ENABLED));
@@ -474,6 +489,9 @@ public class RemoteSystem {
                 else if (function.equals(GET_TABLE_PROPERTIES)) {
                     updateTableIndex(returnValue);
 //                    updateTable(response);
+                }
+                else if (function.equals(GET_TABLE_FIELDS)) {
+                    updateTableFields(returnValue);
                 }
                 else if (function.equals(SET_TABLE_FIELD)) {
                     updateTableField(response);
@@ -639,7 +657,7 @@ public class RemoteSystem {
 //    
     private static final String CURRENT_COLUMN = "CurrentColumn";
     private static final String CURRENT_ROW = "CurrentRow";
-
+    private static final String FIELDS = "Fields";
     private static final String COLUMN = "Column";
     private static final String ROW = "Row";
     private static final String VALUE = "Value";

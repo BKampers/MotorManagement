@@ -211,7 +211,7 @@ public class MessagingTest {
             "{"+
                 "\"Direction\"  : \"Call\"," +
                 "\"Function\"   : \"GetMeasurements\"" +
-            "}");
+            "}");                   
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
@@ -364,7 +364,9 @@ public class MessagingTest {
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        double value = response.getJSONArray("ReturnValue").getJSONArray(0).getDouble(0);
+        JSONObject returnValue = response.getJSONObject("ReturnValue");
+        assertEquals("Ignition", returnValue.getString("TableName"));
+        double value = returnValue.getJSONArray("Fields").getJSONArray(0).getDouble(0);
         // Modify value
         double newValue = value + 1.0;
         message = new JSONObject(
@@ -393,7 +395,8 @@ public class MessagingTest {
             "}");
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
-        value = response.getJSONArray("ReturnValue").getJSONArray(0).getDouble(0);
+        returnValue = response.getJSONObject("ReturnValue");
+        value = returnValue.getJSONArray("Fields").getJSONArray(0).getDouble(0);
         assertEquals(Math.round(newValue), Math.round(value));
     }
     
