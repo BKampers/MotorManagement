@@ -5,7 +5,9 @@
 package randd.motormanagement.communication;
 
 import bka.communication.*;
+import java.io.*;
 import java.util.Iterator;
+import java.util.logging.*;
 
 import org.json.*;
 
@@ -278,12 +280,12 @@ public class MessagingTest {
     
     
     @Test
-    public void getTableProperties() throws JSONException, InterruptedException {
+    public void getTableActualValues() throws JSONException, InterruptedException {
         // Valid name
         JSONObject message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetTableProperties\"," +
+                "\"Function\"   : \"GetTableActualValues\"," +
                 "\"Parameters\" : " +
                 "{" +
                     "\"TableName\" : \"Injection\"" +
@@ -323,6 +325,30 @@ public class MessagingTest {
         assertTrue(isResponse(response, message));
         assertEquals("InvalidParameter", response.get("Status"));
     }
+
+
+    @Test
+    public void getTableProperties() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+            "{"+
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"GetTableProperties\"," +
+                "\"Parameters\" : " +
+                "{" +
+                    "\"TableName\" : \"Ignition\"" +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get(STATUS));
+        JSONObject value = response.getJSONObject("ReturnValue");
+        assertNotNull(value.getDouble("Minimum"));
+        assertNotNull(value.getDouble("Maximum"));
+        assertNotNull(value.getDouble("Precision"));
+        assertNotNull(value.getInt("Decimals"));
+        assertNotNull(value.getString("ColumnMeasurementName"));
+        assertNotNull(value.getString("RowMeasurementName"));
+    }
     
     
     @Test
@@ -340,7 +366,7 @@ public class MessagingTest {
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.get(STATUS));
-        JSONArray rows = response.getJSONArray("ReturnValue");
+        JSONArray rows = response.getJSONObject("ReturnValue").getJSONArray("Fields");
         for (int row = 0; row < rows.length(); ++row) {
             JSONArray columns = rows.getJSONArray(row);
             for (int column = 0; column < columns.length(); ++column) {
@@ -421,7 +447,7 @@ public class MessagingTest {
         message = new JSONObject(
             "{" +
                 "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetTableProperties\"," +
+                "\"Function\"   : \"GetTableActualValues\"," +
                 "\"Parameters\" : " +
                 "{" +
                     "\"TableName\" : \"WaterCorrection\"" +
@@ -448,7 +474,7 @@ public class MessagingTest {
         message = new JSONObject(
             "{" +
                 "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetTableProperties\"," +
+                "\"Function\"   : \"GetTableActualValues\"," +
                 "\"Parameters\" : " +
                 "{" +
                     "\"TableName\" : \"WaterCorrection\"" +
@@ -586,17 +612,32 @@ public class MessagingTest {
     
     
     private static Channel createChannel() throws gnu.io.NoSuchPortException {
+        final String CHANNEL = "Channel";
+        final java.io.File propertiesFile = new java.io.File("MessagingTest.properties");
+        final java.util.Properties properties = new java.util.Properties();
         String channelName;
         try {
-            java.util.Properties properties = new java.util.Properties();
-            properties.load(new java.io.FileInputStream(new java.io.File("MessagingTest.properties")));
-            channelName = properties.getProperty("Channel");
+            properties.load(new java.io.FileInputStream(propertiesFile));
+            channelName = properties.getProperty(CHANNEL);
         }
         catch (java.io.IOException ex) {
             channelName = "localhost";
+            properties.setProperty(CHANNEL, channelName);
+            try {
+                properties.store(new java.io.FileOutputStream(propertiesFile), "Messaging Test properties");
+            }
+            catch (IOException ioEx) {
+                Logger.getLogger(MessagingTest.class.getName()).log(Level.WARNING, "Store properties failed", ioEx);
+            }
         }
         if (channelName.startsWith("COM")) {
-            return SerialPortChannel.create(channelName);
+            try {
+                return SerialPortChannel.create(channelName);
+            }
+            catch (ChannelException ex) {
+                fail(ex.toString());
+                return null;
+            }
         }
         else {
             return SocketChannel.create(channelName, 44252);

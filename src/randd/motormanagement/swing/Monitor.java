@@ -60,6 +60,7 @@ public class Monitor extends bka.swing.FrameApplication {
     @Override
     protected void opened() {
         setupLogging();
+        channelComboBox.setEditable(getBooleanProperty(DEVELOPER_MODE, false));
         populateChannelComboBox();
         selectStoredChannel();
     }
@@ -181,8 +182,14 @@ public class Monitor extends bka.swing.FrameApplication {
     private void populateChannelComboBox() {
         channelComboBox.removeAllItems();
         channelComboBox.addItem(NO_SELECTION);
-        for (SerialPortChannel channel : SerialPortChannel.findAll()) {
-            channelComboBox.addItem(channel);
+        try {
+            for (SerialPortChannel channel : SerialPortChannel.findAll()) {
+                channelComboBox.addItem(channel);
+            }
+        }
+        catch (ChannelException ex) {
+            LOGGER.log(Level.INFO, "Serial communication not supported.");
+            LOGGER.log(Level.FINEST, "", ex);
         }
         Collection<String> socketHosts = (Collection<String>) getSetting(SOCKET_HOSTS);
         if (socketHosts != null) {
@@ -252,7 +259,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private void initializePanels() {
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
-        channelComboBox.setEditable(developerMode);
         addMeasurementPanel("RPM", developerMode);
         addMeasurementPanel("Load", developerMode);
         addMeasurementPanel("Water", developerMode);

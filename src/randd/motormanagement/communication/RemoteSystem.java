@@ -294,33 +294,21 @@ public class RemoteSystem {
     }
     
     
-    private void updateTable(JSONObject object) throws JSONException {
+    private void updateTableProperties(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
-        JSONArray tableArray = object.getJSONArray(Messenger.RETURN_VALUE);
-        final int rowCount = tableArray.length();
-        float[][] fields = new float[rowCount][];
-        for (int row = 0; row < rowCount; ++row) {
-            JSONArray rowArray = tableArray.getJSONArray(row);
-            final int columnCount = rowArray.length();
-            fields[row] = new float[columnCount];
-            for (int column = 0; column < columnCount; ++column) {
-                fields[row][column] = (float) rowArray.getDouble(column);
-            }
+        table.setDecimals(object.getInt(DECIMALS));
+        table.setMinimum((float) object.getDouble(MINIMUM));
+        table.setMaximum((float) object.getDouble(MAXIMUM));
+        if (object.has(COLUMN_MEASUREMENT_NAME)) {
+            String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
+            Measurement measurement = Measurement.getInstance(measurementName);
+            table.setColumnMeasurement(measurement);
         }
-        table.setFields(fields);
-//        table.setDecimals(object.optInt(DECIMALS, 0));
-//        table.setMinimum((float) object.optDouble(MINIMUM, 0.0));
-//        table.setMaximum((float) object.optDouble(MAXIMUM, 100.0));
-//        if (object.has(COLUMN_MEASUREMENT_NAME)) {
-//            String measurementName = object.getString(COLUMN_MEASUREMENT_NAME);
-//            Measurement measurement = Measurement.getInstance(measurementName);
-//            table.setColumnMeasurement(measurement);
-//        }
-//        if (object.has(ROW_MEASUREMENT_NAME)) {
-//            String measurementName = object.getString(ROW_MEASUREMENT_NAME);
-//            Measurement measurement = Measurement.getInstance(measurementName);
-//            table.setRowMeasurement(measurement);
-//        }
+        if (object.has(ROW_MEASUREMENT_NAME)) {
+            String measurementName = object.getString(ROW_MEASUREMENT_NAME);
+            Measurement measurement = Measurement.getInstance(measurementName);
+            table.setRowMeasurement(measurement);
+        }
     }
     
     
@@ -365,10 +353,11 @@ public class RemoteSystem {
     }
 
     
-    private void updateTableIndex(JSONObject object) throws JSONException {
+    private void updateTableActualValues(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setColumnIndex(object.getInt(CURRENT_COLUMN));
         table.setRowIndex(object.getInt(CURRENT_ROW));
+        table.setEnabled(object.getBoolean(ENABLED));
     }
     
     
@@ -434,7 +423,7 @@ public class RemoteSystem {
             }
             if (tableIndex < tables.size()) {
                 Table table = tables.get(tableIndex);
-                pollMessage = messageObject(GET_TABLE_PROPERTIES, TABLE_NAME, table.getName());
+                pollMessage = messageObject(GET_TABLE_ACTUAL_VALUES, TABLE_NAME, table.getName());
                 tableIndex++;
             }
             return pollMessage;
@@ -487,8 +476,10 @@ public class RemoteSystem {
                     updateMeasurementProperties(response);
                 }
                 else if (function.equals(GET_TABLE_PROPERTIES)) {
-                    updateTableIndex(returnValue);
-//                    updateTable(response);
+                    updateTableProperties(returnValue);
+                }
+                else if (function.equals(GET_TABLE_ACTUAL_VALUES)) {
+                    updateTableActualValues(returnValue);
                 }
                 else if (function.equals(GET_TABLE_FIELDS)) {
                     updateTableFields(returnValue);
@@ -561,7 +552,7 @@ public class RemoteSystem {
                 updateTableField(response);
             }
             else {
-                updateTableIndex(response);
+                updateTableActualValues(response);
             }
         }
 
@@ -619,6 +610,7 @@ public class RemoteSystem {
     private static final String GET_MEASUREMENT_PROPERTIES = "GetMeasurementProperties";
     private static final String GET_MEASUREMENTS = "GetMeasurements";
     private static final String SET_TABLE_FIELD = "SetTableField";
+    private static final String GET_TABLE_ACTUAL_VALUES = "GetTableActualValues";
     private static final String GET_TABLE_PROPERTIES = "GetTableProperties";
     private static final String GET_TABLE_NAMES = "GetTableNames";
     private static final String GET_ENGINE_PROPERTIES = "GetEngineProperties";
@@ -661,13 +653,14 @@ public class RemoteSystem {
     private static final String COLUMN = "Column";
     private static final String ROW = "Row";
     private static final String VALUE = "Value";
-//    
-//    private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurement";
-//    private static final String ROW_MEASUREMENT_NAME = "RowMeasurement";
-//    
+    
+    private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurementName";
+    private static final String ROW_MEASUREMENT_NAME = "RowMeasurementName";
     private static final String FORMAT = "Format";
     private static final String MINIMUM = "Minimum";
     private static final String MAXIMUM = "Maximum";
+    private static final String PRECISION = "Precision";
+    private static final String DECIMALS = "Decimals";
 //
 //    private static final String ENGINE = "Engine";
     private static final String COGWHEEL = "Cogwheel";
