@@ -382,7 +382,7 @@ public class RemoteSystem {
     }
     
     
-    private class PollTask extends TimerTask /*implements Runnable */{
+    private class PollTask extends TimerTask {
         
         @Override
         public void run() {
@@ -399,21 +399,27 @@ public class RemoteSystem {
         }
         
         private JSONObject nextMessage() throws JSONException {
-            JSONObject pollMessage = nextMeasurementMessage();
-            if (pollMessage == null) {
-                pollMessage = nextTableMessage();
-                if (pollMessage == null) {
-                    pollMessage = engineMessage();
-//                    measurmentIndex = 0;
-                    tableIndex = 0;
-                }
+            if (message != null && IS_ENGINE_RUNNING.equals(message.getString(Messenger.FUNCTION))) {
+                return messageObject(GET_MEASUREMENTS);
             }
-            return pollMessage;
+            else {
+                return messageObject(IS_ENGINE_RUNNING);
+            }
+//            JSONObject pollMessage = nextMeasurementMessage();
+//            if (pollMessage == null) {
+//                pollMessage = nextTableMessage();
+//                if (pollMessage == null) {
+//                    pollMessage = engineMessage();
+////                    measurmentIndex = 0;
+//                    tableIndex = 0;
+//                }
+//            }
+//            return pollMessage;
         }
 
-        private JSONObject nextMeasurementMessage() throws JSONException {
-            return messageObject(GET_MEASUREMENTS);
-        }
+//        private JSONObject nextMeasurementMessage() throws JSONException {
+//            return messageObject(GET_MEASUREMENTS);
+//        }
 
         private JSONObject nextTableMessage() throws JSONException {
             JSONObject pollMessage = null;
@@ -429,14 +435,14 @@ public class RemoteSystem {
             return pollMessage;
         }
         
-        private JSONObject engineMessage() throws JSONException {
-            if (pollEngine) {
-                return messageObject(IS_ENGINE_RUNNING);
-            }
-            else {
-                return null;
-            }
-        }
+//        private JSONObject engineMessage() throws JSONException {
+//            if (pollEngine) {
+//                return messageObject(IS_ENGINE_RUNNING);
+//            }
+//            else {
+//                return null;
+//            }
+//        }
         
 //        private int measurmentIndex = 0;
         private int tableIndex = 0;
@@ -485,16 +491,16 @@ public class RemoteSystem {
                     updateTableFields(returnValue);
                 }
                 else if (function.equals(SET_TABLE_FIELD)) {
-                    updateTableField(response);
+                    updateTableField(returnValue);
                 }
-                else if (function.equals("IsEngineRunning")) {
-                    engine.setRunning(response.getBoolean(VALUE));
+                else if (function.equals(IS_ENGINE_RUNNING)) {
+                    engine.setRunning(response.getBoolean(Messenger.RETURN_VALUE));
                 }
                 else if (function.equals(GET_TABLE_NAMES)) {
-                    notifyTableNames(response);
+                    notifyTableNames(response.getJSONArray(Messenger.RETURN_VALUE));
                 }
                 else if (function.equals(GET_ENGINE_PROPERTIES)) {
-                    updateEngine(response);
+                    updateEngine(returnValue);
                 }
 //                else if (function.equals(FLASH)) {
 //                    updateFlash(response);
@@ -513,7 +519,6 @@ public class RemoteSystem {
                 LOGGER.log(Level.WARNING, response.toString(), ex);
             }       
         }
-
         
         private void handleNotifications(JSONObject message) {
             for (Notification notification : createNotifications(message)) {
@@ -556,11 +561,10 @@ public class RemoteSystem {
             }
         }
 
-        private void notifyTableNames(JSONObject response) throws JSONException {
+        private void notifyTableNames(JSONArray array) throws JSONException {
             Collection<String> names = new ArrayList<>();
-            JSONArray namesArray = response.getJSONArray(Messenger.RETURN_VALUE);
-            for (int i = 0; i < namesArray.length(); ++i) {
-                names.add(namesArray.getString(i));
+            for (int i = 0; i < array.length(); ++i) {
+                names.add(array.getString(i));
             }
             synchronized (listeners) {
                 for (Listener listener : listeners) {
