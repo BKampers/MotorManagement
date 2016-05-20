@@ -242,7 +242,6 @@ public class Monitor extends bka.swing.FrameApplication {
             setProperty(SELECTED_CHANNEL, transporter.getName());
             initializePanels();
             memoryPanel.setMemory(remoteSystem.getFlash());
-            //activateSelectedTab();
             statusPanel.setRemoteSystem(remoteSystem);
             remoteSystem.addListener(new RemoteSystemListener());
             remoteSystem.requestTableNames();
@@ -251,7 +250,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 remoteSystem.startPolling(pollInterval);
             }
         }
-        catch (ChannelException | InterruptedException | JSONException ex) {
+        catch (ChannelException | InterruptedException ex) {
             handle(ex);
         }
     }
@@ -282,15 +281,21 @@ public class Monitor extends bka.swing.FrameApplication {
         Table correctionTable = remoteSystem.getCorrectionTable(measurement);
         MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
         valuesPanel.add(panel);
-        Table table = remoteSystem.getCorrectionTable(measurement);
-        if (table != null) {
-            try {
-                remoteSystem.requestTableProperties(table);
-            }
-            catch (InterruptedException | org.json.JSONException ex) {
-                handle(ex);
-            }
+        try {
+            remoteSystem.requestMeasurementProperties(measurement);
         }
+        catch (InterruptedException ex) {
+            handle(ex);
+        }
+//        Table table = remoteSystem.getCorrectionTable(measurement);
+//        if (table != null) {
+//            try {
+//                remoteSystem.requestTableProperties(table);
+//            }
+//            catch (InterruptedException | org.json.JSONException ex) {
+//                handle(ex);
+//            }
+//        }
     }
     
     
@@ -460,7 +465,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.enableTable(table, enabled);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -478,7 +483,7 @@ public class Monitor extends bka.swing.FrameApplication {
                     }
                 }
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -489,7 +494,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.enableMeasurementSimulation(measurement, (float) value);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -510,7 +515,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.modifyTable(table, column, row, value);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -525,7 +530,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.modifyCylinderCount(count);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -550,7 +555,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.modifyCogwheel(cogTotal, gapSize, offset);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -565,7 +570,7 @@ public class Monitor extends bka.swing.FrameApplication {
             try {
                 remoteSystem.modifyFlash(0, remoteSystem.getFlash().getSize(), 0xAA);
             }
-            catch (org.json.JSONException | InterruptedException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
             

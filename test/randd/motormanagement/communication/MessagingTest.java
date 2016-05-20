@@ -43,7 +43,7 @@ public class MessagingTest {
     }
     
     
-    //@Test
+    @Test
     public void invalidMessages() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject();
         JSONObject response = receiveResponse(message);
@@ -164,7 +164,7 @@ public class MessagingTest {
                 "\"Function\"   : \"GetMeasurementProperties\"," +
                 "\"Parameters\" : " +
                 "{" +
-                    "\"MeasurmentName\" : \"Load\"" +
+                    "\"MeasurementName\" : \"Load\"" +
                 "}" +
             "}");
         JSONObject response = receiveResponse(message);
@@ -183,7 +183,7 @@ public class MessagingTest {
                 "\"Function\"   : \"GetMeasurementProperties\"," +
                 "\"Parameters\" : " +
                 "{" +
-                    "\"MeasurmentName\" : \"Xxx\"" +
+                    "\"MeasurementName\" : \"Xxx\"" +
                 "}" +
             "}");
         response = receiveResponse(message);
@@ -201,7 +201,7 @@ public class MessagingTest {
                 "\"Function\"   : \"SetMeasurementSimulation\"," +
                 "\"Parameters\" : " +
                 "{" +
-                    "\"MeasurmentName\" : \"RPM\"," +
+                    "\"MeasurementName\" : \"RPM\"," +
                     "\"SimulationValue\" : 2000" +
                 "}" +
             "}");
@@ -235,7 +235,7 @@ public class MessagingTest {
                 "\"Function\"   : \"ResetMeasurementSimulation\"," +
                 "\"Parameters\" : " +
                 "{" +
-                    "\"MeasurmentName\" : \"RPM\"" +
+                    "\"MeasurementName\" : \"RPM\"" +
                 "}" +
             "}");
         response = receiveResponse(message);
