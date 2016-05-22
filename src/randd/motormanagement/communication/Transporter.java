@@ -60,27 +60,31 @@ public class Transporter {
 
         @Override
         public void receive(byte[] bytes) {
-            logger.log(Level.FINE, new String(bytes));
+            LOGGER.log(Level.FINE, new String(bytes));
             for (int i = 0; i < bytes.length; ++i) {
                 char character = (char) bytes[i];
                 if (character != TRANSMISSION_END) {
                     receivedCharacters.append(character);
                 }
                 else {
-                    try {
-                        receivedObjects.add(new JSONObject(receivedCharacters.toString()));
-                        receivedCharacters = new StringBuilder();
-                    }
-                    catch (org.json.JSONException ex) {
-                        handleException(ex);
-                    }
+                    processReceivedCharacters();
                 }
+            }
+        }
+
+        private void processReceivedCharacters() {
+            try {
+                receivedObjects.add(new JSONObject(receivedCharacters.toString()));
+                receivedCharacters = new StringBuilder();
+            }
+            catch (org.json.JSONException ex) {
+                handleException(ex);
             }
         }
 
         @Override
         public void handleException(Exception ex) {
-            logger.log(Level.WARNING, "ObjectReceiver", ex);
+            LOGGER.log(Level.WARNING, "ObjectReceiver", ex);
         }
         
         private StringBuilder receivedCharacters = new StringBuilder();
@@ -95,7 +99,7 @@ public class Transporter {
     
     private final BlockingQueue<JSONObject> receivedObjects = new LinkedBlockingQueue<>();
     
-    private static final Logger logger = Logger.getLogger(Transporter.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(Transporter.class.getName());
     
     private static final char TRANSMISSION_END = '\n';
    

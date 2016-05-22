@@ -5,11 +5,8 @@
 package randd.motormanagement.swing;
 
 import java.awt.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
-import org.json.JSONObject;
 import randd.motormanagement.system.Flash;
 
 
@@ -190,7 +187,7 @@ public class MemoryPanel extends javax.swing.JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable grid, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component renderer = super.getTableCellRendererComponent(grid, value, isSelected, hasFocus, row, column);
-            if (flash != null) {
+            if (flash != null && ! isSelected) {
                 int reference = row * COLUMN_COUNT + column;
                 renderer.setBackground(Color.WHITE);
                 int paletteIndex = 0;

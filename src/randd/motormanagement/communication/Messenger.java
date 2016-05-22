@@ -117,7 +117,12 @@ class Messenger {
                 tranactionHandled = handleTransaction(receivedObject);
             }
             if (! tranactionHandled && listener != null) {
-                listener.notifyMessage(receivedObject);
+                try {
+                    listener.notifyMessage(receivedObject);
+                }
+                catch (RuntimeException ex) {
+                    logger.log(Level.WARNING, "notifyMessage", ex);
+                }
             }
         }
 
@@ -180,7 +185,13 @@ class Messenger {
             logger.log(Level.FINEST, ">> {0}", transaction.message);
             transportAndWait(transaction);
             if (transaction.response != null) {
-                notifyResponse(transaction);
+                outstanding.transaction = null;
+                try {
+                    notifyResponse(transaction);
+                }
+                catch (RuntimeException ex) {
+                    logger.log(Level.WARNING, "notifyResponse", ex);
+                }
             }
             else {
                 logger.log(
@@ -204,7 +215,6 @@ class Messenger {
         }
         
         private void notifyResponse(Transaction transaction) {
-            outstanding.transaction = null;
             if (listener != null) {
                 listener.notifyResponse(transaction.message, transaction.response);
             }

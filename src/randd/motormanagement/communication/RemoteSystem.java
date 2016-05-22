@@ -136,8 +136,8 @@ public class RemoteSystem {
     
     
     public void requestFlash() throws InterruptedException, JSONException {
-//        request(FLASH);
-        call("GetPersistentElements");
+        call(GET_PERSISTENT_MEMORY_BYTES);
+        call(GET_PERSISTENT_ELEMENTS);
     }
     
     
@@ -303,20 +303,17 @@ public class RemoteSystem {
     }
     
 
-    private void updateFlash(JSONObject flashObject) throws JSONException {
-//        int reference = flashObject.getInt(REFERENCE);
-//        JSONArray memoryArray = flashObject.getJSONArray(VALUE);
-//        int length = memoryArray.length();
-//        byte[] bytes = new byte[length];
-//        for (int i = 0; i < length; ++i) {
-//            bytes[i] = (byte) memoryArray.getInt(i);
-//        }
-//        flash.setBytes(reference, bytes);
+    private void updatePersistentMemory(JSONArray memoryArray) throws JSONException {
+        int length = memoryArray.length();
+        byte[] bytes = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            bytes[i] = (byte) memoryArray.getInt(i);
+        }
+        flash.setBytes(0, bytes);
     }
     
     
-    private void updateFlashElements(JSONObject elementsObject) throws JSONException {
-        JSONArray elementsArray = elementsObject.getJSONArray(Messenger.RETURN_VALUE);
+    private void updatePersistentElements(JSONArray elementsArray) throws JSONException {
         int length = elementsArray.length();
         Flash.Element[] elements = new Flash.Element[length];
         for (int i = 0; i < length; ++i) {
@@ -482,11 +479,11 @@ public class RemoteSystem {
                 else if (function.equals(SET_MEASUREMENT_SIMULATION)) {
                     //updateMeasurementSimulation(returnValue);
                 }
-//                else if (function.equals(FLASH)) {
-//                    updateFlash(response);
-//                }
+                else if (function.equals(GET_PERSISTENT_MEMORY_BYTES)) {
+                    updatePersistentMemory(response.getJSONArray(Messenger.RETURN_VALUE));
+                }
                 else if (function.equals(GET_PERSISTENT_ELEMENTS)) {
-                    updateFlashElements(response);
+                    updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
                 }
                 else if (response.has(ENABLED)) {
                     updateTableEnabled(response);
@@ -602,6 +599,7 @@ public class RemoteSystem {
     private static final String IS_ENGINE_RUNNING = "IsEngineRunning";
     private static final String SET_COGWHEEL_PROPERTIES = "SetCogwheelProperties";
     private static final String GET_PERSISTENT_ELEMENTS = "GetPersistentElements";
+    private static final String GET_PERSISTENT_MEMORY_BYTES = "GetPersistentMemoryBytes";
 
     private static final String TABLE_NAME = "TableName";
     private static final String MEASUREMENT_NAME = "MeasurementName";
