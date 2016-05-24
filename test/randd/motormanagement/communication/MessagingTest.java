@@ -577,8 +577,8 @@ public class MessagingTest {
     public void getPersistentElements() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
            "{" +
-                "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetPersistentElements\"" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"GetPersistentElements\"" +
             "}");
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
@@ -590,8 +590,22 @@ public class MessagingTest {
             assertTrue(element.has("Size"));
         }
     }
-    
-    
+
+
+    @Test
+    public void getPersistentMeomryBytes() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+           "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"GetPersistentMemoryBytes\"" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONArray bytes = response.getJSONArray("ReturnValue");
+        assertTrue(bytes.length() > 0);
+    }
+
+
     private boolean isResponse(JSONObject response, JSONObject message) {
         return 
             "Return".equals(response.optString("Direction")) && memberMatch(message, response, "Function");

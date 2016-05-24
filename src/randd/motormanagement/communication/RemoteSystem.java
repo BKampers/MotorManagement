@@ -273,6 +273,7 @@ public class RemoteSystem {
     
     private void updateTableProperties(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
+        table.setEnabled(object.getBoolean(ENABLED));
         table.setDecimals(object.getInt(DECIMALS));
         table.setMinimum((float) object.getDouble(MINIMUM));
         table.setMaximum((float) object.getDouble(MAXIMUM));
@@ -331,7 +332,6 @@ public class RemoteSystem {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setColumnIndex(object.getInt(CURRENT_COLUMN));
         table.setRowIndex(object.getInt(CURRENT_ROW));
-        table.setEnabled(object.getBoolean(ENABLED));
     }
     
     
@@ -377,7 +377,13 @@ public class RemoteSystem {
                 return messageObject(GET_MEASUREMENTS);
             }
             else {
-                return messageObject(IS_ENGINE_RUNNING);
+                JSONObject tableMessage = nextTableMessage();
+                if (tableMessage != null) {
+                    return tableMessage;
+                }
+                else {
+                    return messageObject(IS_ENGINE_RUNNING);
+                }
             }
 //            JSONObject pollMessage = nextMeasurementMessage();
 //            if (pollMessage == null) {
@@ -395,19 +401,22 @@ public class RemoteSystem {
 //            return messageObject(GET_MEASUREMENTS);
 //        }
 
-//        private JSONObject nextTableMessage() throws JSONException {
-//            JSONObject pollMessage = null;
-//            List<Table> tables;
-//            synchronized (tablesToPoll) {
-//                tables = new ArrayList<>(tablesToPoll);
-//            }
-//            if (tableIndex < tables.size()) {
-//                Table table = tables.get(tableIndex);
-//                pollMessage = messageObject(GET_TABLE_ACTUAL_VALUES, TABLE_NAME, table.getName());
-//                tableIndex++;
-//            }
-//            return pollMessage;
-//        }
+        private JSONObject nextTableMessage() throws JSONException {
+            JSONObject pollMessage = null;
+            List<Table> tables;
+            synchronized (tablesToPoll) {
+                tables = new ArrayList<>(tablesToPoll);
+            }
+            if (tableIndex < tables.size()) {
+                Table table = tables.get(tableIndex);
+                pollMessage = messageObject(GET_TABLE_ACTUAL_VALUES, TABLE_NAME, table.getName());
+                tableIndex++;
+            }
+            else {
+                tableIndex = 0;
+            }
+            return pollMessage;
+        }
         
 //        private JSONObject engineMessage() throws JSONException {
 //            if (pollEngine) {
