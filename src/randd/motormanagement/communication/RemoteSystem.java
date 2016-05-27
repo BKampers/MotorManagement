@@ -96,7 +96,7 @@ public class RemoteSystem {
     
     
     public void enableTable(Table table, boolean enabled) throws InterruptedException {
-        call("SetTableEnabled", ENABLED, enabled);
+        call(SET_TABLE_ENABLED, TABLE_NAME, table.getName(), ENABLED, enabled);
     }
 
     
@@ -476,6 +476,9 @@ public class RemoteSystem {
                 else if (function.equals(SET_TABLE_FIELD)) {
                     updateTableField(returnValue);
                 }
+                else if (function.equals(SET_TABLE_ENABLED)) {
+                    updateTableEnabled(returnValue);
+                }
                 else if (function.equals(IS_ENGINE_RUNNING)) {
                     engine.setRunning(response.getBoolean(Messenger.RETURN_VALUE));
                 }
@@ -494,9 +497,9 @@ public class RemoteSystem {
                 else if (function.equals(GET_PERSISTENT_ELEMENTS)) {
                     updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
                 }
-                else if (response.has(ENABLED)) {
-                    updateTableEnabled(response);
-                }
+//                else if (response.has(ENABLED)) {
+//                    updateTableEnabled(response);
+//                }
                 else {
                     LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
                 }
@@ -601,6 +604,7 @@ public class RemoteSystem {
     private static final String GET_MEASUREMENTS = "GetMeasurements";
     private static final String SET_MEASUREMENT_SIMULATION = "SetMeasurementSimulation";
     private static final String SET_TABLE_FIELD = "SetTableField";
+    private static final String SET_TABLE_ENABLED = "SetTableEnabled";
     private static final String GET_TABLE_ACTUAL_VALUES = "GetTableActualValues";
     private static final String GET_TABLE_PROPERTIES = "GetTableProperties";
     private static final String GET_TABLE_NAMES = "GetTableNames";
