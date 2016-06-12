@@ -111,7 +111,7 @@ public class RemoteSystem {
     
     
     public void modifyCylinderCount(int count) throws InterruptedException {
-        call("SetCylinderCount", CYLINDER_COUNT, count);
+        call(SET_CYLINDER_COUNT, CYLINDER_COUNT, count);
     }
     
     
@@ -488,6 +488,9 @@ public class RemoteSystem {
                 else if (function.equals(GET_ENGINE_PROPERTIES)) {
                     updateEngine(returnValue);
                 }
+                else if (function.equals(SET_CYLINDER_COUNT)) {
+                    updateEngine(returnValue);
+                }
                 else if (function.equals(SET_MEASUREMENT_SIMULATION)) {
                     //updateMeasurementSimulation(returnValue);
                 }
@@ -610,6 +613,7 @@ public class RemoteSystem {
     private static final String GET_TABLE_NAMES = "GetTableNames";
     private static final String GET_ENGINE_PROPERTIES = "GetEngineProperties";
     private static final String IS_ENGINE_RUNNING = "IsEngineRunning";
+    private static final String SET_CYLINDER_COUNT = "SetCylinderCount";
     private static final String SET_COGWHEEL_PROPERTIES = "SetCogwheelProperties";
     private static final String GET_PERSISTENT_ELEMENTS = "GetPersistentElements";
     private static final String GET_PERSISTENT_MEMORY_BYTES = "GetPersistentMemoryBytes";
