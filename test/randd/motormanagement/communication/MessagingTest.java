@@ -295,7 +295,6 @@ public class MessagingTest {
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.get(STATUS));
         JSONObject value = response.getJSONObject("ReturnValue");
-        assertNotNull(value.getBoolean("Enabled"));
         assertNotNull(value.getInt("CurrentColumn"));        
         assertNotNull(value.getInt("CurrentRow"));
         // Invalid name
@@ -447,7 +446,7 @@ public class MessagingTest {
         message = new JSONObject(
             "{" +
                 "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetTableActualValues\"," +
+                "\"Function\"   : \"GetTableProperties\"," +
                 "\"Parameters\" : " +
                 "{" +
                     "\"TableName\" : \"WaterCorrection\"" +
@@ -474,7 +473,7 @@ public class MessagingTest {
         message = new JSONObject(
             "{" +
                 "\"Direction\"  : \"Call\"," +
-                "\"Function\"   : \"GetTableActualValues\"," +
+                "\"Function\"   : \"GetTableProperties\"," +
                 "\"Parameters\" : " +
                 "{" +
                     "\"TableName\" : \"WaterCorrection\"" +
