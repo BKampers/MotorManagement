@@ -233,18 +233,15 @@ public class Monitor extends bka.swing.FrameApplication {
     }
 
     
-    private void connect(Channel selectedItem) {
-        selectedChannel = selectedItem;
+    private void connect(Channel channel) {
+        selectedChannel = channel;
         try {
-            Transporter transporter = new Transporter(selectedItem, title());
+            Transporter transporter = new Transporter(channel, title());
             remoteSystem = new RemoteSystem(transporter);
             remoteSystem.connect();
             setProperty(SELECTED_CHANNEL, transporter.getName());
-            initializePanels();
-            memoryPanel.setMemory(remoteSystem.getFlash());
-            statusPanel.setRemoteSystem(remoteSystem);
-            remoteSystem.addListener(new RemoteSystemListener());
-            remoteSystem.requestTableNames();
+            initializePanels(channel);
+            populatePanels();
             if (getBooleanProperty(LIVE_MODE, true)) {
                 int pollInterval = getIntProperty(POLL_INTERVAL, DEFAULT_POLL_INTERVAL);
                 remoteSystem.startPolling(pollInterval);
@@ -254,9 +251,9 @@ public class Monitor extends bka.swing.FrameApplication {
             handle(ex);
         }
     }
-    
-    
-    private void initializePanels() {
+
+
+    private void initializePanels(Channel channel) {
         boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
         addMeasurementPanel("RPM", developerMode);
         addMeasurementPanel("Load", developerMode);
@@ -269,9 +266,17 @@ public class Monitor extends bka.swing.FrameApplication {
         addMeasurementPanel("Aux2", developerMode);
         addEngineTabPanel();
         if (developerMode) {
-            addTabPanel(memoryPanel, "Flash");
-            addTabPanel(statusPanel, "Status");
-            addTabPanel(new ControlPanel(), "Control");
+            initializeDeveloperPanels(channel);
+        }
+    }
+
+    
+    private void initializeDeveloperPanels(Channel channel) {
+        addTabPanel(memoryPanel, "Flash");
+        addTabPanel(statusPanel, "Status");
+        if (channel instanceof SocketChannel) {
+            String host = ((SocketChannel) channel).getHost();
+            addTabPanel(new ControlPanel(host), "Control");
         }
     }
     
@@ -320,6 +325,14 @@ public class Monitor extends bka.swing.FrameApplication {
         String title = Bundle.getInstance().get(titleKey);
         tabsPanel.setTitleAt(index, title);
         panel.setName(titleKey);
+    }
+
+
+    private void populatePanels() throws InterruptedException {
+        memoryPanel.setMemory(remoteSystem.getFlash());
+        statusPanel.setRemoteSystem(remoteSystem);
+        remoteSystem.addListener(new RemoteSystemListener());
+        remoteSystem.requestTableNames();
     }
 
 
@@ -644,8 +657,8 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private final StatusPanel statusPanel = new StatusPanel();
     
-    private RemoteSystem remoteSystem = null;
-    private Channel selectedChannel = null;
+    private RemoteSystem remoteSystem;
+    private Channel selectedChannel;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -656,7 +669,7 @@ public class Monitor extends bka.swing.FrameApplication {
     // End of variables declaration//GEN-END:variables
 
     
-    private java.awt.Component selectedTab = null;
+    private java.awt.Component selectedTab;
     
     private final ChangeListener tabChangeListener = new TabChangeListener();
     private final MeasurementPanelListener measurementPanelListener = new MeasurementPanelListener();

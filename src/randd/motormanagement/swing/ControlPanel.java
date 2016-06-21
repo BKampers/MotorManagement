@@ -11,7 +11,8 @@ public class ControlPanel extends javax.swing.JPanel {
     /**
      * Creates new form ControlPanel
      */
-    public ControlPanel() {
+    public ControlPanel(String host) {
+        this.host = host;
         initComponents();
     }
 
@@ -29,7 +30,7 @@ public class ControlPanel extends javax.swing.JPanel {
 
         pulseNanosLabel.setText("Pulse Nanos");
 
-        pulseNanosSpinner.setModel(new javax.swing.SpinnerNumberModel(1000000, 500, 20000000, 50000));
+        pulseNanosSpinner.setModel(new javax.swing.SpinnerNumberModel(1000000, 500, 30000000, 50000));
         pulseNanosSpinner.setEditor(new javax.swing.JSpinner.NumberEditor(pulseNanosSpinner, "#"));
         pulseNanosSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
@@ -70,7 +71,7 @@ public class ControlPanel extends javax.swing.JPanel {
     private void openConnection() {
         if (channel == null) {
             try {
-                channel = SocketChannel.create("localhost", Monitor.RANDD_CONTROL_PORT);
+                channel = SocketChannel.create(host, Monitor.RANDD_CONTROL_PORT);
                 channel.open(ControlPanel.class.getName());
             }
             catch (ChannelException ex) {
@@ -78,6 +79,9 @@ public class ControlPanel extends javax.swing.JPanel {
             }
         }
     }
+
+
+    private final String host;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel pulseNanosLabel;

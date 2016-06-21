@@ -491,6 +491,9 @@ public class RemoteSystem {
                 else if (function.equals(SET_CYLINDER_COUNT)) {
                     updateEngine(returnValue);
                 }
+                else if (function.equals(SET_COGWHEEL_PROPERTIES)) {
+                    updateEngine(returnValue);
+                }
                 else if (function.equals(SET_MEASUREMENT_SIMULATION)) {
                     //updateMeasurementSimulation(returnValue);
                 }

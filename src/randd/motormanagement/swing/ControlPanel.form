@@ -47,7 +47,7 @@
     <Component class="javax.swing.JSpinner" name="pulseNanosSpinner">
       <Properties>
         <Property name="model" type="javax.swing.SpinnerModel" editor="org.netbeans.modules.form.editors2.SpinnerModelEditor">
-          <SpinnerModel initial="1000000" maximum="20000000" minimum="500" numberType="java.lang.Integer" stepSize="50000" type="number"/>
+          <SpinnerModel initial="1000000" maximum="30000000" minimum="500" numberType="java.lang.Integer" stepSize="50000" type="number"/>
         </Property>
         <Property name="editor" type="javax.swing.JComponent" editor="org.netbeans.modules.form.editors.SpinnerEditorEditor">
           <SpinnerEditor format="#" type="3"/>

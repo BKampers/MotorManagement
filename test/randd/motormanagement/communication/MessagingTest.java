@@ -107,6 +107,7 @@ public class MessagingTest {
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals("InvalidParameter", response.getString("Status"));
+        assertTrue(response.isNull("ReturnValue"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
@@ -119,6 +120,7 @@ public class MessagingTest {
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals("InvalidParameter", response.getString("Status"));
+        assertTrue(response.isNull("ReturnValue"));
         message = new JSONObject(
             "{"+
                 "\"Direction\"  : \"Call\"," +
@@ -131,6 +133,7 @@ public class MessagingTest {
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals("InvalidParameter", response.getString("Status"));
+        assertTrue(response.isNull("ReturnValue"));
     }
     
     
@@ -208,6 +211,8 @@ public class MessagingTest {
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
+        assertTrue(response.getJSONObject("ReturnValue").getBoolean("Simulation"));
+        assertEquals(2000.0, response.getJSONObject("ReturnValue").getDouble("SimulationValue"), 0.1);
         // Check value
         message = new JSONObject(
             "{"+
@@ -241,6 +246,7 @@ public class MessagingTest {
         response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         assertEquals(OK_STATUS, response.optString(STATUS));
+        assertFalse(response.getJSONObject("ReturnValue").getBoolean("Simulation"));
         // Check value
         message = new JSONObject(
             "{"+
