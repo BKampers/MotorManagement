@@ -153,6 +153,11 @@ public class MemoryPanel extends javax.swing.JPanel {
             return String.format("%X", column);
         }
         
+       @Override
+       public boolean isCellEditable(int row, int column) {
+           return false;
+       }
+        
         @Override
         public Object getValueAt(int row, int column) {
             byte b = flash.getByteAt(row * COLUMN_COUNT + column);

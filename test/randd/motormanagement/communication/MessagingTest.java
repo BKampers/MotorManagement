@@ -598,7 +598,7 @@ public class MessagingTest {
 
 
     @Test
-    public void getPersistentMeomryBytes() throws JSONException, InterruptedException {
+    public void persistentMemoryBytes() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
            "{" +
                 "\"Direction\" : \"Call\"," +
@@ -607,7 +607,30 @@ public class MessagingTest {
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         JSONArray bytes = response.getJSONArray("ReturnValue");
-        assertTrue(bytes.length() > 0);
+        int lastAddress = bytes.length() - 1;
+        assertTrue(lastAddress >= 0);
+        int newValue = (bytes.getInt(lastAddress) + 1) % 0xFF;
+        message = new JSONObject(
+           "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetPersistentMemoryByte\"," +
+                "\"Parameters\" :" +
+                "{" +
+                    "\"Reference\" :" + lastAddress  + "," +
+                    "\"Value\"     : " + newValue +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get("Status"));
+        assertTrue(response.isNull("ReturnValue"));
+        message = new JSONObject(
+           "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"GetPersistentMemoryBytes\"" +
+            "}");
+        response = receiveResponse(message);
+        assertEquals(newValue, response.getJSONArray("ReturnValue").get(lastAddress));
     }
 
 
