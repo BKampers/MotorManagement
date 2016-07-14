@@ -598,7 +598,7 @@ public class MessagingTest {
 
 
     @Test
-    public void persistentMemoryBytes() throws JSONException, InterruptedException {
+    public void persistentMemoryByte() throws JSONException, InterruptedException {
         JSONObject message = new JSONObject(
            "{" +
                 "\"Direction\" : \"Call\"," +
@@ -607,16 +607,16 @@ public class MessagingTest {
         JSONObject response = receiveResponse(message);
         assertTrue(isResponse(response, message));
         JSONArray bytes = response.getJSONArray("ReturnValue");
-        int lastAddress = bytes.length() - 1;
-        assertTrue(lastAddress >= 0);
-        int newValue = (bytes.getInt(lastAddress) + 1) % 0xFF;
+        int lastReference = bytes.length() - 1;
+        assertTrue(lastReference >= 0);
+        int newValue = (bytes.getInt(lastReference) + 1) % 0xFF;
         message = new JSONObject(
            "{" +
                 "\"Direction\"  : \"Call\"," +
                 "\"Function\"   : \"SetPersistentMemoryByte\"," +
                 "\"Parameters\" :" +
                 "{" +
-                    "\"Reference\" :" + lastAddress  + "," +
+                    "\"Reference\" :" + lastReference  + "," +
                     "\"Value\"     : " + newValue +
                 "}" +
             "}");
@@ -630,7 +630,79 @@ public class MessagingTest {
                 "\"Function\"  : \"GetPersistentMemoryBytes\"" +
             "}");
         response = receiveResponse(message);
-        assertEquals(newValue, response.getJSONArray("ReturnValue").get(lastAddress));
+        assertEquals(newValue, response.getJSONArray("ReturnValue").get(lastReference));
+    }
+
+
+    @Test
+    public void persistentMemoryBytes() throws JSONException, InterruptedException {
+        JSONObject message = new JSONObject(
+           "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"GetPersistentMemoryBytes\"" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        JSONArray bytes = response.getJSONArray("ReturnValue");
+        int length = bytes.length();
+        assertTrue(length >= 8);
+        int reference = length - 8;
+        JSONArray newValues = new JSONArray();
+        for (int i = 0; i < 8; ++i) {
+            newValues.put((bytes.getInt(length - 8 + i) + 1) % 0x100);
+        }
+        message = new JSONObject(
+           "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetPersistentMemoryBytes\"," +
+                "\"Parameters\" :" +
+                "{" +
+                    "\"Reference\" :" + reference  + "," +
+                    "\"Value\"     : " + newValues +
+                "}" +
+            "}");
+        response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        assertEquals(OK_STATUS, response.get("Status"));
+        assertTrue(response.isNull("ReturnValue"));
+        message = new JSONObject(
+           "{" +
+                "\"Direction\" : \"Call\"," +
+                "\"Function\"  : \"GetPersistentMemoryBytes\"" +
+            "}");
+        response = receiveResponse(message);
+        bytes = response.getJSONArray("ReturnValue");
+        boolean changeSucceeded = true;
+        for (int i = 0; i < 8; ++i) {
+            changeSucceeded &= (bytes.getInt(length - 8 + i) == newValues.getInt(i));
+        }
+        assertTrue(changeSucceeded);
+    }
+
+
+    @Test
+    public void memorySizeTest() throws Exception {
+        String status = OK_STATUS;
+        int size = 32;
+        System.out.println(size);
+        JSONArray newValues = new JSONArray();
+        for (int i = 0; i < size; ++i) {
+            newValues.put(size % 0xFF);
+        }
+        JSONObject message = new JSONObject(
+           "{" +
+                "\"Direction\"  : \"Call\"," +
+                "\"Function\"   : \"SetPersistentMemoryBytes\"," +
+                "\"Parameters\" :" +
+                "{" +
+                    "\"Reference\" : 0," +
+                    "\"Value\"     : " + newValues +
+                "}" +
+            "}");
+        JSONObject response = receiveResponse(message);
+        assertTrue(isResponse(response, message));
+        status = response.getString("Status");
+        assertEquals(OK_STATUS, status);
     }
 
 

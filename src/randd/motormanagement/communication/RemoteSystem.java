@@ -135,17 +135,12 @@ public class RemoteSystem {
     }
     
     
-    public void requestFlash() throws InterruptedException, JSONException {
+    public void requestFlash() throws InterruptedException {
         call(GET_PERSISTENT_MEMORY_BYTES);
         call(GET_PERSISTENT_ELEMENTS);
     }
     
-    
-    public void modifyFlash(int reference, int count, int value) throws InterruptedException {
-        //modify(FLASH, REFERENCE, reference, COUNT, count, VALUE, value);
-    }
-    
-    
+       
     public void modifyFlash(int reference, int[] values) throws InterruptedException {
         int index = 0;
         int total = values.length;
@@ -153,7 +148,7 @@ public class RemoteSystem {
         while (index < total) {
             int count = Math.min(total - index, MAX_FLASH_SIZE_TO_SEND);
             int[] valuesToSend = Arrays.copyOfRange(values, index, index + count);
-//            modify(FLASH, REFERENCE, referenceToSend, VALUE, valuesToSend);
+            call(SET_PERSISTENT_MEMORY_BYTES, REFERENCE, referenceToSend, VALUE, valuesToSend);
             referenceToSend += count;
             index += count;
         }
@@ -168,6 +163,19 @@ public class RemoteSystem {
         }
         else {
             return null;
+        }
+    }
+
+
+    public void fire(String name, String value) {
+        try {
+            JSONObject message = new JSONObject();
+            message.put(Messenger.DIRECTION, Messenger.FIRE);
+            message.put(name, value);
+            messenger.send(message);
+        }
+        catch (JSONException ex) {
+            LOGGER.log(Level.SEVERE, Messenger.FIRE, ex);
         }
     }
     
@@ -199,25 +207,25 @@ public class RemoteSystem {
 
 
     private void call(String function, Object ... arguments) {
-        try {
-            JSONObject message = messageObject(function, arguments);
-            messenger.send(message);
-        }
-        catch (JSONException ex) {
-            LOGGER.log(Level.SEVERE, "call", ex);
-        }
+        JSONObject message = callObject(function, arguments);
+        messenger.send(message);
     }
 
 
-    private JSONObject messageObject(String function, Object ... arguments) throws JSONException {
-        JSONObject parameters = new JSONObject();
-        for (int i = 0; i < arguments.length - 1; i += 2) {
-            parameters.put(arguments[i].toString(), arguments[i + 1]);
-        }
+    private JSONObject callObject(String function, Object ... arguments) {
         JSONObject object = new JSONObject();
-        object.put(Messenger.DIRECTION, Messenger.CALL);
-        object.put(Messenger.FUNCTION, function);
-        object.put(Messenger.PARAMETERS, parameters);
+        try {
+            JSONObject parameters = new JSONObject();
+            for (int i = 0; i < arguments.length - 1; i += 2) {
+                parameters.put(arguments[i].toString(), arguments[i + 1]);
+            }
+            object.put(Messenger.DIRECTION, Messenger.CALL);
+            object.put(Messenger.FUNCTION, function);
+            object.put(Messenger.PARAMETERS, parameters);
+        }
+        catch (JSONException ex) {
+            LOGGER.log(Level.SEVERE, Messenger.CALL, ex);
+        }
         return object;
     }
     
@@ -360,21 +368,16 @@ public class RemoteSystem {
         
         @Override
         public void run() {
-            try {
-                message = nextMessage();
-                if (message != null) {
-                    LOGGER.log(Level.FINEST, ">> {0}", message);
-                    messenger.send(message);
-                }
-            }
-            catch (JSONException ex) {
-                LOGGER.log(Level.WARNING, "PollTask", ex);
+            message = nextMessage();
+            if (message != null) {
+                LOGGER.log(Level.FINEST, ">> {0}", message);
+                messenger.send(message);
             }
         }
         
-        private JSONObject nextMessage() throws JSONException {
-            if (message != null && IS_ENGINE_RUNNING.equals(message.getString(Messenger.FUNCTION))) {
-                return messageObject(GET_MEASUREMENTS);
+        private JSONObject nextMessage()  {
+            if (message != null && IS_ENGINE_RUNNING.equals(message.optString(Messenger.FUNCTION))) {
+                return callObject(GET_MEASUREMENTS);
             }
             else {
                 JSONObject tableMessage = nextTableMessage();
@@ -382,7 +385,7 @@ public class RemoteSystem {
                     return tableMessage;
                 }
                 else {
-                    return messageObject(IS_ENGINE_RUNNING);
+                    return callObject(IS_ENGINE_RUNNING);
                 }
             }
 //            JSONObject pollMessage = nextMeasurementMessage();
@@ -401,7 +404,7 @@ public class RemoteSystem {
 //            return messageObject(GET_MEASUREMENTS);
 //        }
 
-        private JSONObject nextTableMessage() throws JSONException {
+        private JSONObject nextTableMessage() {
             JSONObject pollMessage = null;
             List<Table> tables;
             synchronized (tablesToPoll) {
@@ -409,7 +412,7 @@ public class RemoteSystem {
             }
             if (tableIndex < tables.size()) {
                 Table table = tables.get(tableIndex);
-                pollMessage = messageObject(GET_TABLE_ACTUAL_VALUES, TABLE_NAME, table.getName());
+                pollMessage = callObject(GET_TABLE_ACTUAL_VALUES, TABLE_NAME, table.getName());
                 tableIndex++;
             }
             else {
@@ -620,6 +623,7 @@ public class RemoteSystem {
     private static final String SET_COGWHEEL_PROPERTIES = "SetCogwheelProperties";
     private static final String GET_PERSISTENT_ELEMENTS = "GetPersistentElements";
     private static final String GET_PERSISTENT_MEMORY_BYTES = "GetPersistentMemoryBytes";
+    private static final String SET_PERSISTENT_MEMORY_BYTES = "SetPersistentMemoryBytes";
 
     private static final String TABLE_NAME = "TableName";
     private static final String MEASUREMENT_NAME = "MeasurementName";
