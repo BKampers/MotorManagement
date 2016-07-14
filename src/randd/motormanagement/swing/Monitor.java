@@ -435,7 +435,7 @@ public class Monitor extends bka.swing.FrameApplication {
                     remoteSystem.requestFlash();
                 }
             }
-            catch (InterruptedException | org.json.JSONException ex) {
+            catch (InterruptedException ex) {
                 handle(ex);
             }
         }
@@ -574,14 +574,16 @@ public class Monitor extends bka.swing.FrameApplication {
         }
         
     }
-    
+
 
     private final MemoryPanel memoryPanel = new MemoryPanel(new MemoryPanel.Listener() {
 
         @Override
         public void clearButtonPressed() {
             try {
-                remoteSystem.modifyFlash(0, remoteSystem.getFlash().getSize(), 0xAA);
+                int[] clearMemory = new int[remoteSystem.getFlash().getSize()];
+                Arrays.fill(clearMemory, 0xAA);
+                remoteSystem.modifyFlash(0, clearMemory);
             }
             catch (InterruptedException ex) {
                 handle(ex);
@@ -674,6 +676,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private final ChangeListener tabChangeListener = new TabChangeListener();
     private final MeasurementPanelListener measurementPanelListener = new MeasurementPanelListener();
     private final TableListener tableListener = new TableListener();
+
     
     private static final String NO_SELECTION = "-";
 

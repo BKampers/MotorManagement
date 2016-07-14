@@ -48,7 +48,6 @@ public class RemoteSystem {
     public void startPolling(int pollInterval) {
         if (pollTimer == null) {
             PollTask pollTask = new PollTask();
-            pollEngine = true;
             pollTimer = new Timer();
             pollTimer.schedule(pollTask, 0, pollInterval);
         }
@@ -58,7 +57,6 @@ public class RemoteSystem {
     public void stopPolling() {
         if (pollTimer != null) {
             pollTimer.cancel();
-            pollEngine = false;
             pollTimer = null;
         }
     }
@@ -267,12 +265,6 @@ public class RemoteSystem {
     }
 
 
-    private static void updateMeasurementSimulation(JSONObject object) throws JSONException {
-        //Measurement measurement = Measurement.getInstance(object.getString(MEASUREMENT_NAME));
-
-    }
-    
-
     private void updateTableField(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setField(object.getInt(COLUMN), object.getInt(ROW), (float) object.getDouble(VALUE));
@@ -388,21 +380,7 @@ public class RemoteSystem {
                     return callObject(IS_ENGINE_RUNNING);
                 }
             }
-//            JSONObject pollMessage = nextMeasurementMessage();
-//            if (pollMessage == null) {
-//                pollMessage = nextTableMessage();
-//                if (pollMessage == null) {
-//                    pollMessage = engineMessage();
-////                    measurmentIndex = 0;
-//                    tableIndex = 0;
-//                }
-//            }
-//            return pollMessage;
         }
-
-//        private JSONObject nextMeasurementMessage() throws JSONException {
-//            return messageObject(GET_MEASUREMENTS);
-//        }
 
         private JSONObject nextTableMessage() {
             JSONObject pollMessage = null;
@@ -421,18 +399,8 @@ public class RemoteSystem {
             return pollMessage;
         }
         
-//        private JSONObject engineMessage() throws JSONException {
-//            if (pollEngine) {
-//                return messageObject(IS_ENGINE_RUNNING);
-//            }
-//            else {
-//                return null;
-//            }
-//        }
-        
-//        private int measurmentIndex = 0;
-        private int tableIndex = 0;
-        private JSONObject message = null;
+        private int tableIndex;
+        private JSONObject message;
     }
 
 
@@ -459,58 +427,55 @@ public class RemoteSystem {
         public void notifyResponse(JSONObject message, JSONObject response) {
             LOGGER.log(Level.FINEST, "<< {0}", response);
             try {
-                String function = response.getString(Messenger.FUNCTION);
-                JSONObject returnValue = response.optJSONObject(Messenger.RETURN_VALUE);
-                if (function.equals(GET_MEASUREMENTS)) {
-                    updateMeasurements(returnValue);
-                }
-                else if (function.equals(GET_MEASUREMENT_PROPERTIES)) {
-                    updateMeasurementProperties(returnValue);
-                }
-                else if (function.equals(GET_TABLE_PROPERTIES)) {
-                    updateTableProperties(returnValue);
-                }
-                else if (function.equals(GET_TABLE_ACTUAL_VALUES)) {
-                    updateTableActualValues(returnValue);
-                }
-                else if (function.equals(GET_TABLE_FIELDS)) {
-                    updateTableFields(returnValue);
-                }
-                else if (function.equals(SET_TABLE_FIELD)) {
-                    updateTableField(returnValue);
-                }
-                else if (function.equals(SET_TABLE_ENABLED)) {
-                    updateTableEnabled(returnValue);
-                }
-                else if (function.equals(IS_ENGINE_RUNNING)) {
-                    engine.setRunning(response.getBoolean(Messenger.RETURN_VALUE));
-                }
-                else if (function.equals(GET_TABLE_NAMES)) {
-                    notifyTableNames(response.getJSONArray(Messenger.RETURN_VALUE));
-                }
-                else if (function.equals(GET_ENGINE_PROPERTIES)) {
-                    updateEngine(returnValue);
-                }
-                else if (function.equals(SET_CYLINDER_COUNT)) {
-                    updateEngine(returnValue);
-                }
-                else if (function.equals(SET_COGWHEEL_PROPERTIES)) {
-                    updateEngine(returnValue);
-                }
-                else if (function.equals(SET_MEASUREMENT_SIMULATION)) {
-                    //updateMeasurementSimulation(returnValue);
-                }
-                else if (function.equals(GET_PERSISTENT_MEMORY_BYTES)) {
-                    updatePersistentMemory(response.getJSONArray(Messenger.RETURN_VALUE));
-                }
-                else if (function.equals(GET_PERSISTENT_ELEMENTS)) {
-                    updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
-                }
-//                else if (response.has(ENABLED)) {
-//                    updateTableEnabled(response);
-//                }
-                else {
-                    LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
+                switch (response.getString(Messenger.FUNCTION)) {
+                    case GET_MEASUREMENTS:
+                        updateMeasurements(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_MEASUREMENT_PROPERTIES:
+                        updateMeasurementProperties(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_TABLE_PROPERTIES:
+                        updateTableProperties(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_TABLE_ACTUAL_VALUES:
+                        updateTableActualValues(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_TABLE_FIELDS:
+                        updateTableFields(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case SET_TABLE_FIELD:
+                        updateTableField(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case SET_TABLE_ENABLED:
+                        updateTableEnabled(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case IS_ENGINE_RUNNING:
+                        engine.setRunning(response.getBoolean(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_TABLE_NAMES:
+                        notifyTableNames(response.getJSONArray(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_ENGINE_PROPERTIES:
+                        updateEngine(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case SET_CYLINDER_COUNT:
+                        updateEngine(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case SET_COGWHEEL_PROPERTIES:
+                        updateEngine(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_PERSISTENT_MEMORY_BYTES:
+                        updatePersistentMemory(response.getJSONArray(Messenger.RETURN_VALUE));
+                        break;
+                    case GET_PERSISTENT_ELEMENTS:
+                        updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
+                        break;
+                    case SET_MEASUREMENT_SIMULATION:
+                        // Do nothing
+                        break;
+                    default:
+                        LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
+                        break;
                 }
             }
             catch (JSONException ex) {
@@ -541,24 +506,6 @@ public class RemoteSystem {
         }
 
 
-        private Measurement getMeasurement(String name) {
-            for (Measurement measurement : MEASUREMENTS) {
-                if (name.equals(measurement.getName())) {
-                    return measurement;
-                }
-            }
-            return null;
-        }
-
-        private void updateActiveTable(JSONObject response) throws JSONException {
-            if (response.has(VALUE)) {
-                updateTableField(response);
-            }
-            else {
-                updateTableActualValues(response);
-            }
-        }
-
         private void notifyTableNames(JSONArray array) throws JSONException {
             Collection<String> names = new ArrayList<>();
             for (int i = 0; i < array.length(); ++i) {
@@ -570,15 +517,6 @@ public class RemoteSystem {
                 }
             }
         }
-
-        private void requestEngineUpdate() {
-            try {
-                requestEngine();
-            }
-            catch (InterruptedException ex) {
-                LOGGER.log(Level.WARNING, "requestEngineUpdate", ex);
-            }
-        }
         
     }
 
@@ -586,26 +524,12 @@ public class RemoteSystem {
     private final Engine engine = new Engine();
     private final Flash flash = new Flash();
     
-    private boolean pollEngine = false;
     private final Collection<Table> tablesToPoll = new ArrayList<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 
     private Timer pollTimer;
 
     private final Messenger messenger;
-    
-    
-    private static final Measurement[] MEASUREMENTS = new Measurement[] {
-        Measurement.getInstance("RPM"),
-        Measurement.getInstance("Load"),
-        Measurement.getInstance("Water"),
-        Measurement.getInstance("Air"),
-        Measurement.getInstance("Battery"),
-        Measurement.getInstance("Map"),
-        Measurement.getInstance("Lambda"),
-        Measurement.getInstance("Aux1"),
-        Measurement.getInstance("Aux2")
-    };
         
 
     private static final String GET_TABLE_FIELDS = "GetTableFields";
@@ -628,33 +552,12 @@ public class RemoteSystem {
     private static final String TABLE_NAME = "TableName";
     private static final String MEASUREMENT_NAME = "MeasurementName";
 
-//    
-//    private static final String NOTIFICATION = "Notification";
-//    private static final String SUBJECT = "Subject";
-//    
-//    private static final String REQUEST = "Request";
-//    private static final String MODIFY = "Modify";
-//    
-//    private static final String PROPERTIES = "Properties";
-//    private static final String TABLE = "Table";
-//    private static final String DECIMALS = "Decimals";
-//    private static final String INDEX = "Index";
     private static final String ENABLED = "Enabled";
     private static final String SIMULATION = "Simulation";
     private static final String SIMULATION_VALUE = "SimulationValue";
-//    
-//    private static final String MEASUREMENT_TABLES = "MeasurementTables";
-//    private static final String FLASH = "Flash";
-//    private static final String FLASH_ELEMENTS = "FlashElements";
-//    private static final String ENGINE_IS_RUNNING = "EngineIsRunning";
-//    
-//    private static final String NAMES = "Names";
-//    private static final String ELEMENTS = "Elements";
-//    private static final String COUNT = "Count";
     private static final String TYPE_ID = "TypeId";
     private static final String REFERENCE = "Reference";
     private static final String SIZE = "Size";
-//    
     private static final String CURRENT_COLUMN = "CurrentColumn";
     private static final String CURRENT_ROW = "CurrentRow";
     private static final String FIELDS = "Fields";
@@ -667,10 +570,7 @@ public class RemoteSystem {
     private static final String FORMAT = "Format";
     private static final String MINIMUM = "Minimum";
     private static final String MAXIMUM = "Maximum";
-    private static final String PRECISION = "Precision";
     private static final String DECIMALS = "Decimals";
-//
-//    private static final String ENGINE = "Engine";
     private static final String COGWHEEL = "Cogwheel";
     private static final String COG_TOTAL = "CogTotal";
     private static final String GAP_SIZE = "GapSize";
