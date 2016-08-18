@@ -129,7 +129,7 @@ public class RemoteSystem {
     
     
     public void disableMeasurementSimulation(Measurement measurement) throws InterruptedException {
-        call("ResetMeasurementSimulation", MEASUREMENT_NAME, measurement.getName());
+        call(RESET_MEASUREMENT_SIMULATION, MEASUREMENT_NAME, measurement.getName());
     }
     
     
@@ -471,6 +471,7 @@ public class RemoteSystem {
                         updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
                         break;
                     case SET_MEASUREMENT_SIMULATION:
+                    case RESET_MEASUREMENT_SIMULATION:
                         // Do nothing
                         break;
                     default:
@@ -536,6 +537,7 @@ public class RemoteSystem {
     private static final String GET_MEASUREMENT_PROPERTIES = "GetMeasurementProperties";
     private static final String GET_MEASUREMENTS = "GetMeasurements";
     private static final String SET_MEASUREMENT_SIMULATION = "SetMeasurementSimulation";
+    private static final String RESET_MEASUREMENT_SIMULATION = "ResetMeasurementSimulation";
     private static final String SET_TABLE_FIELD = "SetTableField";
     private static final String SET_TABLE_ENABLED = "SetTableEnabled";
     private static final String GET_TABLE_ACTUAL_VALUES = "GetTableActualValues";

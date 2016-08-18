@@ -292,15 +292,6 @@ public class Monitor extends bka.swing.FrameApplication {
         catch (InterruptedException ex) {
             handle(ex);
         }
-//        Table table = remoteSystem.getCorrectionTable(measurement);
-//        if (table != null) {
-//            try {
-//                remoteSystem.requestTableProperties(table);
-//            }
-//            catch (InterruptedException | org.json.JSONException ex) {
-//                handle(ex);
-//            }
-//        }
     }
     
     
@@ -687,7 +678,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
     private static final String LIVE_MODE = "LiveMode";
 
-    private static final int DEFAULT_POLL_INTERVAL = 50;
+    private static final int DEFAULT_POLL_INTERVAL = 500;
 
 
     private static final Logger LOGGER = Logger.getLogger(Monitor.class.getName());
