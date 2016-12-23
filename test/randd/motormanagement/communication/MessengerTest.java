@@ -4,6 +4,8 @@
 
 package randd.motormanagement.communication;
 
+import bka.communication.json.Messenger;
+import bka.communication.json.Transporter;
 import bka.communication.*;
 import org.json.*;
 import org.junit.After;

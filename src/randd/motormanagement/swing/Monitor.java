@@ -9,6 +9,7 @@
 package randd.motormanagement.swing;
 
 import bka.communication.*;
+import bka.communication.json.*;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -184,6 +185,7 @@ public class Monitor extends bka.swing.FrameApplication {
         channelComboBox.addItem(NO_SELECTION);
         try {
             for (SerialPortChannel channel : SerialPortChannel.findAll()) {
+                channel.setBaudrate(DEFAULT_BAUDRATE);
                 channelComboBox.addItem(channel);
             }
         }
@@ -678,6 +680,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
     private static final String LIVE_MODE = "LiveMode";
 
+    private static final int DEFAULT_BAUDRATE = 115200;
     private static final int DEFAULT_POLL_INTERVAL = 500;
 
 
