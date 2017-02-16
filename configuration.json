@@ -1,0 +1,10 @@
+{
+    "Loggers" : {
+        "randd.motormanagement.communication.Messenger" : {
+            "Level" : "CONFIG"
+        },
+        "randd.motormanagement.communication.RemoteSystem" : {
+            "Level" : "CONFIG"
+        }
+    }
+}

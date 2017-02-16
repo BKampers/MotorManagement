@@ -60,7 +60,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
     @Override
     protected void opened() {
-        setupLogging();
         channelComboBox.setEditable(getBooleanProperty(DEVELOPER_MODE, false));
         populateChannelComboBox();
         selectStoredChannel();
@@ -93,16 +92,6 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
 
-    private void setupLogging() {
-        try {
-            randd.motormanagement.logging.Manager.setup(getLogLevelMap());
-        }
-        catch (java.io.IOException ex) {
-            handle(ex);
-        }
-    }
-
-    
     private void handle(Throwable throwable) {
         JOptionPane.showMessageDialog(this, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
