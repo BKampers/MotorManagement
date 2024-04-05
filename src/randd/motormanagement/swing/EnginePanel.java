@@ -162,21 +162,11 @@ public class EnginePanel extends JPanel {
         gapSizeSpinner = new JSpinner();
         cogTotalSpinner.setMinimumSize(new java.awt.Dimension(48, 28));
         cogTotalSpinner.setPreferredSize(new java.awt.Dimension(48, 28));
-        cogTotalSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            @Override
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                cogTotalSpinner_stateChanged(evt);
-            }
-        });
+        cogTotalSpinner.addChangeListener(this::cogTotalSpinner_stateChanged);
         minusLabel.setText("-");
         gapSizeSpinner.setMinimumSize(new java.awt.Dimension(40, 28));
         gapSizeSpinner.setPreferredSize(new java.awt.Dimension(40, 28));
-        gapSizeSpinner.addChangeListener(new javax.swing.event.ChangeListener() {
-            @Override
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                gapSizeSpinner_stateChanged(evt);
-            }
-        });
+        gapSizeSpinner.addChangeListener(this::gapSizeSpinner_stateChanged);
         cogTotalSpinner.setModel(totalCogSpinnerModel);
         gapSizeSpinner.setModel(gapLengthSpinnerModel);
         cogwheelTypePanel.add(cogTotalSpinner);
@@ -273,7 +263,7 @@ public class EnginePanel extends JPanel {
             }
         }
         catch (java.io.IOException | JSONException ex) {
-            logger.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return types;
     }
@@ -283,8 +273,8 @@ public class EnginePanel extends JPanel {
 
         @Override
         public void propertyChanged(Engine engine, Engine.Property property) {
-            if (engine == EnginePanel.this.engine) {
-                logger.log(Level.FINE, "{0} changed", property);
+            if (engine.equals(EnginePanel.this.engine)) {
+                LOGGER.log(Level.FINE, "{0} changed", property);
                 switch (property) {
                     case IS_RUNNING:
                         enableControls();
@@ -463,6 +453,6 @@ public class EnginePanel extends JPanel {
     private final SpinnerNumberModel offsetSpinnerModel = new SpinnerNumberModel(20, 1, 100, 1);
     
     
-    private final Logger logger = Logger.getLogger(EnginePanel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(EnginePanel.class.getName());
         
 }

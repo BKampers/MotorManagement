@@ -2,7 +2,6 @@ package randd.motormanagement.swing;
 
 
 import java.awt.*;
-import java.util.ResourceBundle;
 
 
 class CogwheelRenderer extends javax.swing.JPanel {
@@ -60,7 +59,6 @@ class CogwheelRenderer extends javax.swing.JPanel {
                 for (int deadPoint : deadPoints) {
                     if (deadPoint == cog) {
                         atDeadPoint = true;
-                        //g2d.setColor(Color.BLUE);
                     }
                 }
             }

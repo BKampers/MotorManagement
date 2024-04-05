@@ -4,7 +4,6 @@
 
 package randd.motormanagement.communication;
 
-import bka.communication.json.Transporter;
 import bka.communication.*;
 import java.io.*;
 import java.util.Iterator;

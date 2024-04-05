@@ -4,12 +4,12 @@
 
 package randd.motormanagement.communication;
 
-import bka.communication.json.Messenger;
-import bka.communication.json.Transporter;
 import randd.motormanagement.system.*;
 
 import java.util.*;
 import java.util.logging.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.json.*;
 
 
@@ -19,6 +19,7 @@ public class RemoteSystem {
     public interface Listener {
         void notificationReceived(Notification notification);
         void tableNames(Collection<String> names);
+        void measurementNames(Collection<String> names);
     }
     
     
@@ -77,6 +78,11 @@ public class RemoteSystem {
         synchronized (tablesToPoll) {
             tablesToPoll.remove(table);
         }
+    }
+    
+    
+    public void requestMeasurementNames() throws InterruptedException {
+        call(GET_MEASUREMENTS);
     }
     
     
@@ -231,22 +237,26 @@ public class RemoteSystem {
     
     
     private void updateMeasurements(JSONObject measurementsObject)throws JSONException {
+        listeners.forEach(listener -> listener.measurementNames(keySet(measurementsObject)));
         Iterator names = measurementsObject.keys();
         while (names.hasNext()) {
             String measurementName = names.next().toString();
             Measurement measurement = Measurement.getInstance(measurementName);
-            if (measurement != null) {
-                JSONObject measurementObject = measurementsObject.getJSONObject(measurementName);
-                double value = measurementObject.optDouble(VALUE);
-                if (value != Double.NaN) {
-                    measurement.setValue((float) value);
-                }
-                measurement.setSimulationEnabled(measurementObject.optBoolean(SIMULATION));
+            JSONObject measurementObject = measurementsObject.getJSONObject(measurementName);
+            double value = measurementObject.optDouble(VALUE);
+            if (!Double.isNaN(value)) {
+                measurement.setValue((float) value);
             }
+            measurement.setSimulationEnabled(measurementObject.optBoolean(SIMULATION));
         }
     }
     
-
+    private static List<String> keySet(JSONObject object) {
+        return (List<String>) StreamSupport.stream(Spliterators.spliterator(object.keys(), object.length(), Spliterator.IMMUTABLE), false)
+            .map(key -> key.toString())
+            .collect(Collectors.toList());
+    }
+    
     private void updateMeasurementProperties(JSONObject measurementObject) throws JSONException {
         Measurement measurement = Measurement.getInstance(measurementObject.optString(MEASUREMENT_NAME));
         if (measurement != null) {

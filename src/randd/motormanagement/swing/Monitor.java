@@ -9,7 +9,6 @@
 package randd.motormanagement.swing;
 
 import bka.communication.*;
-import bka.communication.json.*;
 import java.io.*;
 import java.util.*;
 import java.util.logging.*;
@@ -29,19 +28,16 @@ public class Monitor extends bka.swing.FrameApplication {
     public static void main(final String arguments[]) {
         setLookAndFeel("Nimbus");
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Monitor monitor = new Monitor();
-                monitor.parseArguments(arguments);
-                if (monitor.loadedFromJar()) {
-                    /* Make comm libray find system's com ports */
-                    String classPath = System.getProperty("java.class.path");
-                    classPath += ";.\\lib\\comm.jar";
-                    System.setProperty("java.class.path", classPath);
-                }
-                monitor.setVisible(true);
+        java.awt.EventQueue.invokeLater(() -> {
+            Monitor monitor = new Monitor();
+            monitor.parseArguments(arguments);
+            if (monitor.loadedFromJar()) {
+                /* Make comm libray find system's com ports */
+                String classPath = System.getProperty("java.class.path");
+                classPath += ";.\\lib\\comm.jar";
+                System.setProperty("java.class.path", classPath);
             }
+            monitor.setVisible(true);
         });
     }
 
@@ -60,6 +56,7 @@ public class Monitor extends bka.swing.FrameApplication {
     
     @Override
     protected void opened() {
+        setupLogging();
         channelComboBox.setEditable(getBooleanProperty(DEVELOPER_MODE, false));
         populateChannelComboBox();
         selectStoredChannel();
@@ -68,12 +65,6 @@ public class Monitor extends bka.swing.FrameApplication {
     
     RemoteSystem getRemoteSystem() {
         return remoteSystem;
-    }
-    
-    
-    private Collection<String> getLogPaths(Level level) {
-        String property = getProperty(level.getName());
-        return (property != null) ? Arrays.asList(property.split(";")) : null;
     }
     
     
@@ -92,6 +83,22 @@ public class Monitor extends bka.swing.FrameApplication {
     }
     
 
+    private Collection<String> getLogPaths(Level level) {
+        String property = getProperty(level.getName());
+        return (property != null) ? Arrays.asList(property.split(";")) : Collections.emptyList();
+    }
+    
+    
+    private void setupLogging() {
+        try {
+            randd.motormanagement.logging.Manager.setup(getLogLevelMap());
+        }
+        catch (java.io.IOException ex) {
+            handle(ex);
+        }
+    }
+
+    
     private void handle(Throwable throwable) {
         JOptionPane.showMessageDialog(this, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -142,8 +149,8 @@ public class Monitor extends bka.swing.FrameApplication {
     
     @SuppressWarnings("unchecked")
     private void channelComboBox_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_channelComboBox_actionPerformed
-        Object selectedItem = channelComboBox.getSelectedItem();
-        if (selectedItem == NO_SELECTION) {
+        Object selectedItem = Objects.requireNonNull(channelComboBox.getSelectedItem());
+        if (NO_SELECTION.equals(selectedItem)) {
             disconnect();
         }
         else {
@@ -160,7 +167,7 @@ public class Monitor extends bka.swing.FrameApplication {
                 }            
                 selectedItem = SocketChannel.create(selectedItem.toString(), RANDD_MM_PORT);
             }
-            if (selectedItem != selectedChannel) {
+            if (!selectedItem.equals(selectedChannel)) {
                 disconnect();
                 connect((Channel) selectedItem);
             }
@@ -174,7 +181,6 @@ public class Monitor extends bka.swing.FrameApplication {
         channelComboBox.addItem(NO_SELECTION);
         try {
             for (SerialPortChannel channel : SerialPortChannel.findAll()) {
-                channel.setBaudrate(DEFAULT_BAUDRATE);
                 channelComboBox.addItem(channel);
             }
         }
@@ -182,14 +188,12 @@ public class Monitor extends bka.swing.FrameApplication {
             LOGGER.log(Level.INFO, "Serial communication not supported.");
             LOGGER.log(Level.FINEST, "", ex);
         }
-        Collection<String> socketHosts = (Collection<String>) getSetting(SOCKET_HOSTS);
-        if (socketHosts != null) {
-            for (String host : socketHosts) {
-                channelComboBox.addItem(SocketChannel.create(host, RANDD_MM_PORT));
-            }
-        }
+        socketHosts().forEach(host -> channelComboBox.addItem(SocketChannel.create(host, RANDD_MM_PORT)));
     }
     
+    private Collection<String> socketHosts() {
+        return (Collection<String>) getSetting(SOCKET_HOSTS, Collections.emptyList());
+    }
     
     private void selectStoredChannel() {
         String channelName = getProperty(SELECTED_CHANNEL);
@@ -243,24 +247,12 @@ public class Monitor extends bka.swing.FrameApplication {
         }
     }
 
-
     private void initializePanels(Channel channel) {
-        boolean developerMode = getBooleanProperty(DEVELOPER_MODE, false);
-        addMeasurementPanel("RPM", developerMode);
-        addMeasurementPanel("Load", developerMode);
-        addMeasurementPanel("Water", developerMode);
-        addMeasurementPanel("Air", developerMode);
-        addMeasurementPanel("Battery", developerMode);
-        addMeasurementPanel("Map", developerMode);
-        addMeasurementPanel("Lambda", developerMode);
-        addMeasurementPanel("Aux1", developerMode);
-        addMeasurementPanel("Aux2", developerMode);
         addEngineTabPanel();
-        if (developerMode) {
+        if (getBooleanProperty(DEVELOPER_MODE, false)) {
             initializeDeveloperPanels(channel);
         }
     }
-
     
     private void initializeDeveloperPanels(Channel channel) {
         addTabPanel(memoryPanel, "Flash");
@@ -270,12 +262,12 @@ public class Monitor extends bka.swing.FrameApplication {
             addTabPanel(new ControlPanel(host), "Control");
         }
     }
-    
 
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
         Table correctionTable = remoteSystem.getCorrectionTable(measurement);
         MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
+        measurements.put(measurementName, panel);
         valuesPanel.add(panel);
         try {
             remoteSystem.requestMeasurementProperties(measurement);
@@ -284,7 +276,6 @@ public class Monitor extends bka.swing.FrameApplication {
             handle(ex);
         }
     }
-    
     
     private void addTableTabPanel(String name) {
         Table table = Table.getInstance(name);
@@ -314,6 +305,7 @@ public class Monitor extends bka.swing.FrameApplication {
         memoryPanel.setMemory(remoteSystem.getFlash());
         statusPanel.setRemoteSystem(remoteSystem);
         remoteSystem.addListener(new RemoteSystemListener());
+//        remoteSystem.requestMeasurementNames();
         remoteSystem.requestTableNames();
     }
 
@@ -607,16 +599,36 @@ public class Monitor extends bka.swing.FrameApplication {
         
         @Override
         public void tableNames(Collection<String> names) {
-            for (String name : names) {
-                addTableTabPanel(name);
-            }
+            names.forEach(name -> addTableTabPanel(name));
             tabsPanel.setSelectedIndex(-1); // Deselect tab panel to ensure tabChangeListener to fire
             tabsPanel.addChangeListener(tabChangeListener);
             selectTab(Monitor.this.getProperty(SELECTED_TAB));
         }
+
+        @Override
+        public void measurementNames(Collection<String> names) {
+            names.stream()
+                .filter(name -> !measurements.containsKey(name))
+                .sorted(this::compareMeasurementNames)
+                .forEach(name -> addMeasurementPanel(name, getBooleanProperty(DEVELOPER_MODE, false)));
+        }
+
+        private int compareMeasurementNames(String name1, String name2) {
+            int index1 = MEASUREMENT_ORDER.indexOf(name1);
+            int index2 = MEASUREMENT_ORDER.indexOf(name2);
+            if (index1 < 0) {
+                if (index2 < 0) {
+                    return name1.compareTo(name2);
+                }
+                return 1;
+            }
+            if (index2 < 0) {
+                return -1;
+            }
+            return Integer.compare(index1, index2);
+        }
         
-    }
-    
+    }    
     
     private class TableListener implements Table.Listener {
 
@@ -658,6 +670,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private final ChangeListener tabChangeListener = new TabChangeListener();
     private final MeasurementPanelListener measurementPanelListener = new MeasurementPanelListener();
     private final TableListener tableListener = new TableListener();
+    private final Map<String, JPanel> measurements = new HashMap<>();
 
     
     private static final String NO_SELECTION = "-";
@@ -669,9 +682,9 @@ public class Monitor extends bka.swing.FrameApplication {
     private static final String DEVELOPER_MODE = "DeveloperMode";
     private static final String LIVE_MODE = "LiveMode";
 
-    private static final int DEFAULT_BAUDRATE = 115200;
     private static final int DEFAULT_POLL_INTERVAL = 500;
 
+    private static final List<String> MEASUREMENT_ORDER = Arrays.asList("RPM", "Load", "Water", "Air", "Battery", "Map", "Lambda", "Spare", "Aux1", "Aux2");
 
     private static final Logger LOGGER = Logger.getLogger(Monitor.class.getName());
     

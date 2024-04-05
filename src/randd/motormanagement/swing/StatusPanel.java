@@ -67,6 +67,10 @@ public class StatusPanel extends javax.swing.JPanel {
         @Override
         public void tableNames(Collection<String> names) {           
         }
+
+        @Override
+        public void measurementNames(Collection<String> names) {
+        }
         
     }
 
