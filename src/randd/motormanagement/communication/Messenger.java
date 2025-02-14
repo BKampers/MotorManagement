@@ -32,7 +32,6 @@ class Messenger {
     
     Messenger(Transporter transporter) {
         this.transporter = Objects.requireNonNull(transporter);
-        logger = Logger.getLogger(Messenger.class.getName());
      }
     
     
@@ -240,7 +239,7 @@ class Messenger {
     
     private final Outstanding outstanding = new Outstanding();
 
-    private final Logger logger;
+    private static final Logger logger = Logger.getLogger(Messenger.class.getName());
     
     private static final long MAXIMUM_RESPONSE_TIME = 5000; // ms
 

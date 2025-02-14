@@ -24,7 +24,6 @@ public class Monitor extends bka.swing.FrameApplication {
     public static final int RANDD_MM_PORT = 44252;
     public static final int RANDD_CONTROL_PORT = RANDD_MM_PORT - 1;
     
-    
     public static void main(final String arguments[]) {
         setLookAndFeel("Nimbus");
         /* Create and display the form */
@@ -41,18 +40,15 @@ public class Monitor extends bka.swing.FrameApplication {
         });
     }
 
-    
     @Override
     public String manufacturerName() {
         return "Randd";
     }
     
-    
     @Override
     public String applicationName() {
         return "Motor Management";
     }
-    
     
     @Override
     protected void opened() {
@@ -61,12 +57,10 @@ public class Monitor extends bka.swing.FrameApplication {
         populateChannelComboBox();
         selectStoredChannel();
     }
-
     
     RemoteSystem getRemoteSystem() {
         return remoteSystem;
     }
-    
     
     private Map<Level, Collection<String>> getLogLevelMap() {
         Map<Level, Collection<String>> map = new HashMap<>();
@@ -81,13 +75,11 @@ public class Monitor extends bka.swing.FrameApplication {
         map.put(Level.ALL, getLogPaths(Level.ALL));
         return map;
     }
-    
 
     private Collection<String> getLogPaths(Level level) {
         String property = getProperty(level.getName());
         return (property != null) ? Arrays.asList(property.split(";")) : Collections.emptyList();
     }
-    
     
     private void setupLogging() {
         try {
@@ -97,22 +89,18 @@ public class Monitor extends bka.swing.FrameApplication {
             handle(ex);
         }
     }
-
     
     private void handle(Throwable throwable) {
         JOptionPane.showMessageDialog(this, throwable.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
     }
     
-    
     private String title() {
         return manufacturerName() + " " + applicationName();
     }
     
-    
     private Monitor() {
         initComponents();
     }
-    
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -146,7 +134,6 @@ public class Monitor extends bka.swing.FrameApplication {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    
     @SuppressWarnings("unchecked")
     private void channelComboBox_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_channelComboBox_actionPerformed
         Object selectedItem = Objects.requireNonNull(channelComboBox.getSelectedItem());
@@ -173,7 +160,6 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
     }//GEN-LAST:event_channelComboBox_actionPerformed
-
 
     @SuppressWarnings("unchecked")
     private void populateChannelComboBox() {
@@ -209,7 +195,6 @@ public class Monitor extends bka.swing.FrameApplication {
         }
     }
 
-
     private void disconnect() {
         try {
             if (remoteSystem != null) {
@@ -227,7 +212,6 @@ public class Monitor extends bka.swing.FrameApplication {
         }
     }
 
-    
     private void connect(Channel channel) {
         selectedChannel = channel;
         try {
@@ -248,7 +232,9 @@ public class Monitor extends bka.swing.FrameApplication {
     }
 
     private void initializePanels(Channel channel) {
-        addEngineTabPanel();
+        if (getBooleanProperty(ENGINE_TAB_AVAILABLE, true)) {
+            addEngineTabPanel();
+        }
         if (getBooleanProperty(DEVELOPER_MODE, false)) {
             initializeDeveloperPanels(channel);
         }
@@ -283,13 +269,11 @@ public class Monitor extends bka.swing.FrameApplication {
         addTabPanel(new TablePanel(new TablePanelListener(), table), name);
     }
     
-    
     private void addEngineTabPanel() {
         EnginePanel panel = new EnginePanel(remoteSystem.getEngine());
         panel.setListener(new EnginePanelListener());
         addTabPanel(panel, "Engine");
     }
-    
     
     private synchronized void addTabPanel(JPanel panel, String titleKey) {
         LOGGER.log(Level.FINE, "Add panel {0}", titleKey);
@@ -300,7 +284,6 @@ public class Monitor extends bka.swing.FrameApplication {
         panel.setName(titleKey);
     }
 
-
     private void populatePanels() throws InterruptedException {
         memoryPanel.setMemory(remoteSystem.getFlash());
         statusPanel.setRemoteSystem(remoteSystem);
@@ -308,7 +291,6 @@ public class Monitor extends bka.swing.FrameApplication {
 //        remoteSystem.requestMeasurementNames();
         remoteSystem.requestTableNames();
     }
-
 
     private int panelIndex(JPanel panel) {
         if (panel instanceof EnginePanel) {
@@ -321,7 +303,6 @@ public class Monitor extends bka.swing.FrameApplication {
             return tabsPanel.getTabCount();
         }
     }
-
 
     private int tablePanelIndex(TablePanel panel) {
         int order = order(panel);
@@ -338,7 +319,6 @@ public class Monitor extends bka.swing.FrameApplication {
         }
         return tabsPanel.getTabCount();
     }
-
 
     private int order(TablePanel panel) {
         String tableName = panel.getTable().getName();
@@ -358,14 +338,12 @@ public class Monitor extends bka.swing.FrameApplication {
         return Integer.MAX_VALUE;
     }
     
-    
     private void selectTab(String titleKey) {
         java.awt.Component tabPanel = findTabPanel(titleKey);
         if (tabPanel != null) {
             tabsPanel.setSelectedComponent(tabPanel);
         }
     }
-    
     
     private java.awt.Component findTabPanel(String name) {
         if (name != null) {
@@ -378,7 +356,6 @@ public class Monitor extends bka.swing.FrameApplication {
         }
         return null;
     }
-    
     
     private void activateSelectedTab() {
         if (remoteSystem != null) {
@@ -414,7 +391,6 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
     }
-    
     
     private String loadTextFile() {
         String source = null;
@@ -675,14 +651,15 @@ public class Monitor extends bka.swing.FrameApplication {
     
     private static final String NO_SELECTION = "-";
 
-    private static final String SELECTED_TAB = "SelectedTab";
-    private static final String SELECTED_CHANNEL = "SelectedChannel";
-    private static final String SOCKET_HOSTS = "SocketChannels";
-    private static final String POLL_INTERVAL = "PollInterval";
     private static final String DEVELOPER_MODE = "DeveloperMode";
+    private static final String ENGINE_TAB_AVAILABLE = "EngineTabAvailable";
     private static final String LIVE_MODE = "LiveMode";
+    private static final String POLL_INTERVAL = "PollInterval";
+    private static final String SELECTED_CHANNEL = "SelectedChannel";
+    private static final String SELECTED_TAB = "SelectedTab";
+    private static final String SOCKET_HOSTS = "SocketChannels";
 
-    private static final int DEFAULT_POLL_INTERVAL = 500;
+    private static final int DEFAULT_POLL_INTERVAL = 100;
 
     private static final List<String> MEASUREMENT_ORDER = Arrays.asList("RPM", "Load", "Water", "Air", "Battery", "Map", "Lambda", "Spare", "Aux1", "Aux2");
 

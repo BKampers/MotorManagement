@@ -5,11 +5,12 @@
 package randd.motormanagement.swing;
 
 import java.awt.*;
+import java.text.*;
 import java.util.*;
+import java.util.function.*;
 import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.event.*;
 import javax.swing.table.*;
 import javax.swing.text.*;
 
@@ -24,20 +25,17 @@ public class TablePanel extends JPanel {
         void setValue(Table table, int column, int row, float value);
     }
     
-
+    
     public TablePanel(Listener listener, Table table) {
-        if (listener == null || table == null) {
-            throw new IllegalArgumentException();
-        }
-        this.tablePanelListener = listener;
-        this.table = table;
+        this.tablePanelListener = Objects.requireNonNull(listener);
+        this.table = Objects.requireNonNull(table);
         model = new GridModel();
-        tableListener = new TableListener();
+        tableListener = new TableListener(initalizationProperties(table));
         table.addListener(tableListener);
         initComponents();
         grid.setDefaultRenderer(Object.class, new CellRenderer());
         grid.setDefaultEditor(Object.class, new NumberCellEditor());
-        grid.getSelectionModel().addListSelectionListener(new GridSelectionListener());
+        grid.getSelectionModel().addListSelectionListener(evt -> followActiveCell = false);
         JTableHeader columnHeader = grid.getTableHeader();
         columnHeader.setDefaultRenderer(new ColumnHeaderRenderer(grid));
         columnHeader.setResizingAllowed(false);
@@ -45,13 +43,26 @@ public class TablePanel extends JPanel {
         rowHeaders.initialize(model, scrollPane, grid.getRowHeight());
         rowHeaders.setAlignment(JLabel.RIGHT, JLabel.TOP);
         numberFormat.setGroupingUsed(false);
+        horizontalInterpolationButton.setVisible(false);
+        verticalInterpolationButton.setVisible(false);
     }
     
+    private static Set<Table.Property> initalizationProperties(Table table) {
+        if ("RpmIndication".equals(table.getName())) {
+            return EnumSet.of(Table.Property.FIELDS);
+        }
+        return EnumSet.of(
+            Table.Property.FIELDS,
+            Table.Property.MINIMUM,
+            Table.Property.MAXIMUM,
+            Table.Property.DECIMALS,
+            Table.Property.COLUMN_MEASUREMENT,
+            Table.Property.ROW_MEASUREMENT);
+    } 
     
     Table getTable() {
         return table;
     }
-    
     
     /** This method is called from within the constructor to
      * initialize the form.
@@ -64,6 +75,9 @@ public class TablePanel extends JPanel {
 
         scrollPane = new javax.swing.JScrollPane();
         grid = new javax.swing.JTable();
+        toolPanel = new javax.swing.JPanel();
+        horizontalInterpolationButton = new javax.swing.JButton();
+        verticalInterpolationButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -72,11 +86,86 @@ public class TablePanel extends JPanel {
         grid.setCellSelectionEnabled(true);
         grid.setRowHeight(30);
         grid.getTableHeader().setReorderingAllowed(false);
+        grid.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                grid_mouseClicked(evt);
+            }
+        });
+        grid.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                grid_keyReleased(evt);
+            }
+        });
         scrollPane.setViewportView(grid);
 
         add(scrollPane, java.awt.BorderLayout.CENTER);
+
+        horizontalInterpolationButton.setText(Bundle.getInstance().get("HorizontalInterpolation")
+        );
+        horizontalInterpolationButton.setEnabled(false);
+        horizontalInterpolationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                horizontalInterpolationButton_actionPerformed(evt);
+            }
+        });
+        toolPanel.add(horizontalInterpolationButton);
+
+        verticalInterpolationButton.setText(Bundle.getInstance().get("VerticalInterpolation"));
+        verticalInterpolationButton.setEnabled(false);
+        verticalInterpolationButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                verticalInterpolationButton_actionPerformed(evt);
+            }
+        });
+        toolPanel.add(verticalInterpolationButton);
+
+        add(toolPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void horizontalInterpolationButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horizontalInterpolationButton_actionPerformed
+        int[] rows = grid.getSelectedRows();
+        int[] columns = grid.getSelectedColumns();
+        interpolate(
+            (index) -> (Float) grid.getValueAt(rows[0], columns[index]),  
+            (index, value) -> grid.setValueAt(value, rows[0], columns[index]),
+            columns.length - 1);
+    }//GEN-LAST:event_horizontalInterpolationButton_actionPerformed
+
+    private void verticalInterpolationButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalInterpolationButton_actionPerformed
+        int[] rows = grid.getSelectedRows();
+        int[] columns = grid.getSelectedColumns();
+        interpolate(
+            (index) -> (Float) grid.getValueAt(rows[index], columns[0]),  
+            (index, value) -> grid.setValueAt(value, rows[index], columns[0]),
+            rows.length - 1);
+    }//GEN-LAST:event_verticalInterpolationButton_actionPerformed
+
+    private static void interpolate(Function<Integer, Float> valueAt, BiConsumer<Integer, Float> setter, int range) {
+        float value = valueAt.apply(0);
+        float step = (valueAt.apply(range) - value) / range;
+        for (int i = 1; i < range; ++i) {
+            value += step;
+            setter.accept(i, value);
+        }
+    }    
+    
+    private void grid_keyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_grid_keyReleased
+        setInterpolationEnabled();
+    }//GEN-LAST:event_grid_keyReleased
+
+    private void grid_mouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_grid_mouseClicked
+        setInterpolationEnabled();
+    }//GEN-LAST:event_grid_mouseClicked
+
+    private void setInterpolationEnabled() {
+        horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() == 1);
+        verticalInterpolationButton.setEnabled(grid.getSelectedRowCount() > 2 && grid.getSelectedColumnCount() == 1);
+    }
+    
+    private boolean isMeasurementTable() {
+        return table.getColumnMeasurement() != null || table.getRowMeasurement() != null;
+    }
+        
 
     private class GridModel extends DefaultTableModel {
         
@@ -122,6 +211,9 @@ public class TablePanel extends JPanel {
                     "Invalid input",
                     JOptionPane.ERROR_MESSAGE);
             }
+            catch (NullPointerException ex) {
+                Logger.getLogger(TablePanel.class.getName()).log(Level.WARNING, "GridModel", ex);
+            }
         }
         
         @Override
@@ -134,16 +226,6 @@ public class TablePanel extends JPanel {
 
     }
     
-    
-    private class GridSelectionListener implements ListSelectionListener {
-        
-        @Override
-        public void valueChanged(ListSelectionEvent e) {
-            followActiveCell = false;
-        }
-
-    }
-
     
     private class ColumnHeaderRenderer implements TableCellRenderer {
 
@@ -168,21 +250,19 @@ public class TablePanel extends JPanel {
         
         @Override
         public String cornerName() {
-            StringBuilder name = new StringBuilder();
+            StringBuilder name = new StringBuilder("<html>");
             String columnName = measurementName(table.getColumnMeasurement());
             String rowName = measurementName(table.getRowMeasurement());
-            name .append("<html>");
             if (columnName != null) {
                 name.append(columnName);
                 name.append(RIGHT_POINTER);
             }
-            name .append("<br/>");
+            name.append("<br/>");
             if (rowName != null) {
                 name.append (rowName);
                 name.append(DOWN_POINTER);
             }
-            name .append("</html>");
-            return name.toString();
+            return name.append("</html>").toString();
         }
 
         private String measurementName(Measurement measurement) {
@@ -200,9 +280,10 @@ public class TablePanel extends JPanel {
                 float stepSize = (rowMeasurement.getMaximum() - rowMeasurement.getMinimum()) / table.getRowCount();
                 return Integer.toString((int) (rowMeasurement.getMinimum() + row * stepSize));
             }
-            else {
-                return null;
+            if (!isMeasurementTable()) {
+                return Integer.toString(row + 1);
             }
+            return null;
         }
         
         private static final char DOWN_POINTER = '↓';
@@ -272,18 +353,15 @@ public class TablePanel extends JPanel {
         
         @Override
         public Component getTableCellEditorComponent(JTable grid, Object value, boolean isSelected, int row, int column) {
-            String valueString = numberFormat.format(((Number) value).doubleValue());
-            return super.getTableCellEditorComponent(grid, valueString, isSelected, row, column);
+            return super.getTableCellEditorComponent(grid, "", isSelected, row, column);
         }
 
         @Override
         public boolean stopCellEditing() {
-            if (filter.isValid()) {
-                return super.stopCellEditing();
-            }
-            else {
+            if (!filter.isValid()) {
                 return false;
             }
+            return super.stopCellEditing();
         }
 
         @Override
@@ -292,7 +370,7 @@ public class TablePanel extends JPanel {
                 Object value = super.getCellEditorValue();
                 return numberFormat.parse(value.toString()).floatValue(); 
             }
-            catch (java.text.ParseException ex) {
+            catch (ParseException ex) {
                 return null;
             }
         }
@@ -345,18 +423,16 @@ public class TablePanel extends JPanel {
         
         private StringBuilder createBuilder(FilterBypass bypass) throws BadLocationException {
             Document document = bypass.getDocument();
-            StringBuilder builder = new StringBuilder();
-            builder.append(document.getText(0, document.getLength()));
-            return builder;
+            return new StringBuilder(document.getText(0, document.getLength()));
         }
 
         private boolean allowed(String text) {
             boolean allowed = true;
-            if (text.isEmpty()) {
+            if (text.isEmpty() || text.equals(numberFormat.getNegativePrefix())) {
                 valid = false;
             }
             else {
-                java.text.ParsePosition position = new java.text.ParsePosition(0);
+                ParsePosition position = new ParsePosition(0);
                 Number number = numberFormat.parse(text, position);
                 if (position.getErrorIndex() < 0 && position.getIndex() == text.length() && number != null) {
                     float value = number.floatValue();
@@ -366,7 +442,7 @@ public class TablePanel extends JPanel {
                     allowed = false;
                 }
             }
-            component.setBackground((valid) ? DEFAULT_BACKGROUND : INVALID_BACKGROUND);                
+            component.setForeground((valid) ? DEFAULT_FOREGROUND : INVALID_FOREGROUND);                
             return allowed;
         }
 
@@ -378,6 +454,10 @@ public class TablePanel extends JPanel {
     
     private class TableListener implements Table.Listener {
 
+        public TableListener(Set<Table.Property> initalizationProperties) {
+            uninitializedProperties = EnumSet.copyOf(initalizationProperties);
+        }
+        
         @Override
         public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
             if (table == TablePanel.this.table) {
@@ -399,8 +479,8 @@ public class TablePanel extends JPanel {
         }
 
         private void indexChanged() {
-            int rowIndex = (table.getRowIndex() != null) ? table.getRowIndex() : NONE;
-            int columnIndex = (table.getColumnIndex() != null) ? table.getColumnIndex() : NONE;
+            int rowIndex = indexValueOf(table.getRowIndex());
+            int columnIndex = indexValueOf(table.getColumnIndex());
             if (rowIndex != activeRow || columnIndex != activeColumn) {
                 valueChanged(activeRow, activeColumn);
                 valueChanged(rowIndex, columnIndex);
@@ -409,6 +489,13 @@ public class TablePanel extends JPanel {
                 Rectangle rectangle = grid.getCellRect(rowIndex, columnIndex, true);
                 grid.scrollRectToVisible(rectangle);
             }
+        }
+        
+        private int indexValueOf(Integer index) {
+            if (index == null) {
+                return NONE;
+            }
+            return index;
         }
 
         private void valueChanged(int row, int column) {
@@ -436,6 +523,8 @@ public class TablePanel extends JPanel {
                     numberFormat.setParseIntegerOnly(table.getDecimals() == 0);
                     model.fireTableStructureChanged();
                     rowHeaders.repaintCorner();
+                    horizontalInterpolationButton.setVisible(isMeasurementTable() && grid.getColumnCount() > 2);
+                    verticalInterpolationButton.setVisible(isMeasurementTable() && grid.getRowCount() > 2);
                     uninitializedProperties = null;
                 }
             }
@@ -445,23 +534,17 @@ public class TablePanel extends JPanel {
         }
         
         /** 
-         * Set of properties that must be initalized before this TablePanel can
-         * work properly. Initialized properties need to be removed, so this
-         * TablePanel is ready for use as soon as the set is empty.
+         * Set of properties that must be initialized before this TablePanel can
+         * work properly. Initialized properties need to be removed from this set.
+         * This TablePanel is ready for use as soon as the set is empty.
          */
-        private Set<Table.Property> uninitializedProperties = EnumSet.of(
-            Table.Property.FIELDS,
-            Table.Property.MINIMUM,
-            Table.Property.MAXIMUM,
-            Table.Property.DECIMALS,
-            Table.Property.COLUMN_MEASUREMENT,
-            Table.Property.ROW_MEASUREMENT);
+        private Set<Table.Property> uninitializedProperties;
         
     }
 
     
     private final Table table;   
-    private final java.text.NumberFormat numberFormat = java.text.NumberFormat.getNumberInstance();
+    private final DecimalFormat numberFormat = new DecimalFormat();
     
     private int activeColumn = NONE;
     private int activeRow = NONE;
@@ -469,7 +552,10 @@ public class TablePanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable grid;
+    private javax.swing.JButton horizontalInterpolationButton;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JPanel toolPanel;
+    private javax.swing.JButton verticalInterpolationButton;
     // End of variables declaration//GEN-END:variables
 
     private final RowHeaders rowHeaders = new RowHeaders();
@@ -479,10 +565,9 @@ public class TablePanel extends JPanel {
     private final GridModel model;
     private final TableListener tableListener;
     
-    private static final Color DEFAULT_BACKGROUND = UIManager.getColor("Textfield.Background");
-    private static final Color INVALID_BACKGROUND = UIManager.getColor("errorBackground");
+    private static final Color DEFAULT_FOREGROUND = UIManager.getColor("TextField.textForeground");
+    private static final Color INVALID_FOREGROUND = UIManager.getColor("TextField[Disabled].textForeground");
     
     private static final int NONE = -1;
 
-    
 }

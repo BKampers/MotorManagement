@@ -35,7 +35,6 @@ public class EnginePanel extends JPanel {
         engine.addListener(new EngineListener());
     }
     
-    
     void activate() {
         cogwheelEditable = false;
         cylinderCountEditable = false;
@@ -45,7 +44,6 @@ public class EnginePanel extends JPanel {
     void setListener(Listener listener) {
         this.listener = listener;
     }
-
 
  /** This method is called from within the constructor to
      * initialize the form.
@@ -143,18 +141,11 @@ public class EnginePanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-
     private void initCogwheelComboBox(java.util.List<CogwheelType> types) {
         cogwheelTypeComboBox = new JComboBox<>(new CogwheelTypeComboBoxModel(types));
-        cogwheelTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cogwheelTypeComboBox_actionPerformed(evt);
-            }
-        });
+        cogwheelTypeComboBox.addActionListener(evt -> cogwheelTypeComboBox_actionPerformed(evt));
         cogwheelTypePanel.add(cogwheelTypeComboBox);
     }
-    
     
     private void initCogwheelSpinners() {
         cogTotalSpinner = new JSpinner();
@@ -173,8 +164,7 @@ public class EnginePanel extends JPanel {
         cogwheelTypePanel.add(minusLabel);
         cogwheelTypePanel.add(gapSizeSpinner);
     }
-    
-    
+     
     private void cogwheelTypeComboBox_actionPerformed(java.awt.event.ActionEvent evt) {
         if (listener != null && cogwheelTypeComboBox.isPopupVisible()) {
             cogwheelEditable = false;
@@ -184,7 +174,6 @@ public class EnginePanel extends JPanel {
         }
     }
     
-    
     private void cogTotalSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                              
         if (listener != null && cogTotalSpinner.isEnabled()) {
             cogwheelEditable = false;
@@ -193,7 +182,6 @@ public class EnginePanel extends JPanel {
         }
     }                                             
 
-    
     private void gapSizeSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {                                             
         if (listener != null && gapSizeSpinner.isEnabled()) {
             cogwheelEditable = false;
@@ -201,8 +189,7 @@ public class EnginePanel extends JPanel {
             listener.cogwheelTypeModified((Integer) cogTotalSpinner.getValue(), (Integer) gapSizeSpinner.getValue());
         }
     }                                            
-    
-
+   
     private void offsetSpinner_stateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_offsetSpinner_stateChanged
         if (listener != null && offsetSpinner.isEnabled()) {
             cogwheelEditable = true;
@@ -210,7 +197,6 @@ public class EnginePanel extends JPanel {
             listener.offsetModified((Integer) offsetSpinner.getValue());
         }
     }//GEN-LAST:event_offsetSpinner_stateChanged
-
     
     private void cylinderComboBox_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cylinderComboBox_actionPerformed
         if (listener != null && cylinderComboBox.isPopupVisible()) {
@@ -220,7 +206,6 @@ public class EnginePanel extends JPanel {
         }
     }//GEN-LAST:event_cylinderComboBox_actionPerformed
 
-    
     private void enableControls() {
         Boolean engineRunning = engine.isRunning();
         boolean cogwheelModifyable = engineRunning != null && !engineRunning && cogwheelEditable;
@@ -238,7 +223,6 @@ public class EnginePanel extends JPanel {
         cylinderComboBox.setEnabled(cylinderCountModifyable);
     }
 
-
     private void updateCogwheelRenderer() {
         Engine.Cogwheel cogwheel = engine.getCogwheel();
         if (cogwheel != null) {
@@ -248,7 +232,6 @@ public class EnginePanel extends JPanel {
             cogwheelRenderer.repaint();
         }
     }
-    
     
     private java.util.List<CogwheelType> loadCogwheelTypes() {
         java.util.List<CogwheelType> types = new java.util.ArrayList<>();
@@ -425,10 +408,8 @@ public class EnginePanel extends JPanel {
     private final Engine engine;
     private Listener listener;
     
-    
     private boolean cogwheelEditable = false;
     private boolean cylinderCountEditable = false;
-    
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel cogwheelTypeLabel;
@@ -451,7 +432,6 @@ public class EnginePanel extends JPanel {
     private final SpinnerNumberModel totalCogSpinnerModel = new SpinnerNumberModel(60, 2, 200, 1);
     private final SpinnerNumberModel gapLengthSpinnerModel = new SpinnerNumberModel(2, 1, 9, 1);
     private final SpinnerNumberModel offsetSpinnerModel = new SpinnerNumberModel(20, 1, 100, 1);
-    
     
     private static final Logger LOGGER = Logger.getLogger(EnginePanel.class.getName());
         

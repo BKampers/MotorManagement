@@ -26,17 +26,14 @@ public class Table {
     public interface Listener {
         public void propertyChanged(Table table, Property property, Object ... attributes);
     }
-    
-    
-    public static Table getInstance(String name) {
-        Table instance = instances.get(name);
-        if (instance == null) {
-            instance = new Table(name);
-            instances.put(name, instance);
-        }
-        return instance;
+        
+    private Table(String name) {
+        this.name = name;
     }
-    
+
+    public static Table getInstance(String name) {
+        return instances.computeIfAbsent(name, Table::new);
+    }
     
     public void setFields(float[][] fields) {
         columnCount = 0;
@@ -68,11 +65,9 @@ public class Table {
         notifyPropertyChanged(Property.FIELDS);
     }
     
-    
     public boolean hasFields() {
         return fields != null;
     }
-    
     
     public void setField(int column, int row, float value) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
@@ -83,97 +78,78 @@ public class Table {
             throw new java.lang.IndexOutOfBoundsException();
         }
     }
-    
-    
+        
     public float getField(int column, int row) {
         if (0 <= column && column < columnCount && 0 <= row && row < rowCount) {
             return fields[row][column];
         }
-        else {
-            throw new java.lang.IndexOutOfBoundsException();
-        }
+        throw new java.lang.IndexOutOfBoundsException();
     }
 
-    
     public String getName() {
         return name;
     }
 
-    
     public void setName(String name) {
         this.name = name;
     }
-
     
     public float getMinimum() {
         return minimum;
-    }
-    
+    }    
     
     public void setMinimum(float minimum) {
         this.minimum = minimum;
         notifyPropertyChanged(Property.MINIMUM);
     }
     
-    
     public float getMaximum() {
         return maximum;
     }
-
-        
+    
     public void setMaximum(float maximum) {
         this.maximum = maximum;
         notifyPropertyChanged(Property.MAXIMUM);
     }
     
-    
     public int getDecimals() {
         return decimals;
     }
-
     
     public void setDecimals(int decimals) {
         this.decimals = decimals;
         notifyPropertyChanged(Property.DECIMALS);
     }
-    
-    
+        
     public Measurement getColumnMeasurement() {
         return columnMeasurement;
     }
-
     
     public void setColumnMeasurement(Measurement columnMeasurement) {
         this.columnMeasurement = columnMeasurement;
         notifyPropertyChanged(Property.COLUMN_MEASUREMENT);
     }
-
     
     public Measurement getRowMeasurement() {
         return rowMeasurement;
     }
 
-
     public void setRowMeasurement(Measurement rowMeasurement) {
         this.rowMeasurement = rowMeasurement;
         notifyPropertyChanged(Property.ROW_MEASUREMENT);
     }
-
     
     public int getColumnCount() {
         return columnCount;
     }
-
     
     public int getRowCount() {
         return rowCount;
     }
-
     
     public Integer getColumnIndex() {
         return columnIndex;
     }
-
     
     public void setColumnIndex(int columnIndex) {
         Integer newIndex = columnIndex;
@@ -183,11 +159,9 @@ public class Table {
         }
     }
 
-    
     public Integer getRowIndex() {
         return rowIndex;
     }
-
     
     public void setRowIndex(int rowIndex) {
         Integer newIndex = rowIndex;
@@ -196,13 +170,11 @@ public class Table {
             notifyPropertyChanged(Property.INDEX);
         }
     }
-
     
     public Boolean isEnabled() {
         return enabled;
     }
 
-    
     public void setEnabled(boolean enabled) {
         Boolean newValue = enabled;
         if (! newValue.equals(this.enabled)) {
@@ -210,8 +182,7 @@ public class Table {
             notifyPropertyChanged(Property.ENABLED);
         }
     }
-    
-    
+        
     public void addListener(Listener listener) {
         synchronized (listeners) {
             if (! listeners.contains(listener)) {
@@ -220,13 +191,11 @@ public class Table {
         }
     }
 
-    
     public void removeListener(Listener listener) {
         synchronized (listeners) {
             listeners.remove(listener);
         }
     }
-    
     
     private void notifyPropertyChanged(Property property, Object ... attributes) {
         synchronized (listeners) {
@@ -235,15 +204,8 @@ public class Table {
             }        
         }
     }
-    
-    
-    private Table(String name) {
-        this.name = name;
-    }
-    
-    
+        
     private static final java.util.Map<String, Table> instances = new java.util.HashMap<>();
-    
     
     private String name;
     

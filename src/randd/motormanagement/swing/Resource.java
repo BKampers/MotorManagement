@@ -2,29 +2,17 @@ package randd.motormanagement.swing;
 
 
 import java.io.*;
-import java.net.URISyntaxException;
 
 
 class Resource {
-    
 
     Resource(File file) {
         this.file = file;
     }
     
-    
     Resource(String path) {
-        File pathFile;
-        java.net.URL url = getUrl(path);
-        try {
-            pathFile = new File(url.toURI());
-        }
-        catch (URISyntaxException ex) {
-            pathFile = new File(url.getFile());
-        }
-        file = pathFile;
+        file = new File(loader.getResource(path).getFile());
     }
-    
     
     String loadText() throws IOException {
         try (Reader reader = new FileReader(file)) {
@@ -33,12 +21,6 @@ class Resource {
             return new String(chars);
         }
     }
-    
-    
-    private static java.net.URL getUrl(String resourceName) {
-        return loader.getResource(resourceName);
-    }
-
 
     private final File file;
     
