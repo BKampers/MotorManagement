@@ -5,6 +5,7 @@
 package randd.motormanagement.swing;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.text.*;
 import java.util.*;
 import java.util.function.*;
@@ -23,6 +24,7 @@ public class TablePanel extends JPanel {
     public interface Listener {
         void startIndexPoll(Table table);
         void setValue(Table table, int column, int row, float value);
+        void setProgrammerActivated(Table table, boolean activated);
     }
     
     
@@ -45,6 +47,7 @@ public class TablePanel extends JPanel {
         numberFormat.setGroupingUsed(false);
         horizontalInterpolationButton.setVisible(false);
         verticalInterpolationButton.setVisible(false);
+        programmerToggleButton.setVisible(false);
     }
     
     private static Set<Table.Property> initalizationProperties(Table table) {
@@ -78,6 +81,7 @@ public class TablePanel extends JPanel {
         toolPanel = new javax.swing.JPanel();
         horizontalInterpolationButton = new javax.swing.JButton();
         verticalInterpolationButton = new javax.swing.JButton();
+        programmerToggleButton = new javax.swing.JToggleButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -119,25 +123,38 @@ public class TablePanel extends JPanel {
         });
         toolPanel.add(verticalInterpolationButton);
 
+        programmerToggleButton.setText(Bundle.getInstance().get("Program"));
+        programmerToggleButton.setActionCommand(Bundle.getInstance().get("program"));
+        programmerToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                programmerToggleButton_actionPerformed(evt);
+            }
+        });
+        toolPanel.add(programmerToggleButton);
+
         add(toolPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void horizontalInterpolationButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horizontalInterpolationButton_actionPerformed
         int[] rows = grid.getSelectedRows();
         int[] columns = grid.getSelectedColumns();
-        interpolate(
-            (index) -> (Float) grid.getValueAt(rows[0], columns[index]),  
-            (index, value) -> grid.setValueAt(value, rows[0], columns[index]),
-            columns.length - 1);
+        for (int row : rows) {
+            interpolate(
+                (index) -> (Float) grid.getValueAt(row, columns[index]),  
+                (index, value) -> grid.setValueAt(value, row, columns[index]),
+                columns.length - 1);
+        }
     }//GEN-LAST:event_horizontalInterpolationButton_actionPerformed
 
     private void verticalInterpolationButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_verticalInterpolationButton_actionPerformed
         int[] rows = grid.getSelectedRows();
         int[] columns = grid.getSelectedColumns();
-        interpolate(
-            (index) -> (Float) grid.getValueAt(rows[index], columns[0]),  
-            (index, value) -> grid.setValueAt(value, rows[index], columns[0]),
-            rows.length - 1);
+        for (int column : columns) {
+            interpolate(
+                (index) -> (Float) grid.getValueAt(rows[index], column),  
+                (index, value) -> grid.setValueAt(value, rows[index], column),
+                rows.length - 1);
+        }
     }//GEN-LAST:event_verticalInterpolationButton_actionPerformed
 
     private static void interpolate(Function<Integer, Float> valueAt, BiConsumer<Integer, Float> setter, int range) {
@@ -150,16 +167,29 @@ public class TablePanel extends JPanel {
     }    
     
     private void grid_keyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_grid_keyReleased
-        setInterpolationEnabled();
+        switch (evt.getKeyCode()) {
+            case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_LEFT:
+            case KeyEvent.VK_RIGHT:
+            case KeyEvent.VK_UP:
+                setInterpolationEnabled();
+                break;
+            default:
+                break;
+        }
     }//GEN-LAST:event_grid_keyReleased
 
     private void grid_mouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_grid_mouseClicked
         setInterpolationEnabled();
     }//GEN-LAST:event_grid_mouseClicked
 
+    private void programmerToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerToggleButton_actionPerformed
+        tablePanelListener.setProgrammerActivated(table, programmerToggleButton.isSelected());
+    }//GEN-LAST:event_programmerToggleButton_actionPerformed
+
     private void setInterpolationEnabled() {
-        horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() == 1);
-        verticalInterpolationButton.setEnabled(grid.getSelectedRowCount() > 2 && grid.getSelectedColumnCount() == 1);
+        horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() >= 1);
+        verticalInterpolationButton.setEnabled(grid.getSelectedRowCount() > 2 && grid.getSelectedColumnCount() >= 1);
     }
     
     private boolean isMeasurementTable() {
@@ -553,6 +583,7 @@ public class TablePanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable grid;
     private javax.swing.JButton horizontalInterpolationButton;
+    private javax.swing.JToggleButton programmerToggleButton;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel toolPanel;
     private javax.swing.JButton verticalInterpolationButton;

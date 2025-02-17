@@ -146,7 +146,12 @@ public class RemoteSystem {
         call(GET_PERSISTENT_ELEMENTS);
     }
     
-       
+    
+    public void setProgrammerActivated(Table table, boolean activated) {
+        call(SET_PROGRAMMER_ACTIVATED, TABLE_NAME, table.getName(), ACTIVATED, activated);
+    }
+
+    
     public void modifyFlash(int reference, int[] values) throws InterruptedException {
         int index = 0;
         int total = values.length;
@@ -482,9 +487,12 @@ public class RemoteSystem {
                     case GET_PERSISTENT_ELEMENTS:
                         updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
                         break;
+                    case SET_PROGRAMMER_ACTIVATED:
+//                        setAdjustmentActivated();
+                        break;
                     case SET_MEASUREMENT_SIMULATION:
                     case RESET_MEASUREMENT_SIMULATION:
-                        // Do nothing
+                        // Not supported
                         break;
                     default:
                         LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
@@ -562,10 +570,12 @@ public class RemoteSystem {
     private static final String GET_PERSISTENT_ELEMENTS = "GetPersistentElements";
     private static final String GET_PERSISTENT_MEMORY_BYTES = "GetPersistentMemoryBytes";
     private static final String SET_PERSISTENT_MEMORY_BYTES = "SetPersistentMemoryBytes";
-
+    private static final String SET_PROGRAMMER_ACTIVATED = "SetProgrammerActivated";
+    
     private static final String TABLE_NAME = "TableName";
     private static final String MEASUREMENT_NAME = "MeasurementName";
 
+    private static final String ACTIVATED = "Activated";
     private static final String ENABLED = "Enabled";
     private static final String SIMULATION = "Simulation";
     private static final String SIMULATION_VALUE = "SimulationValue";

@@ -483,6 +483,11 @@ public class Monitor extends bka.swing.FrameApplication {
             }
         }
         
+        @Override
+        public void setProgrammerActivated(Table table, boolean activated) {
+            remoteSystem.setProgrammerActivated(table, activated);
+        }
+        
     }
     
     
