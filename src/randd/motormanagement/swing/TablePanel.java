@@ -25,6 +25,7 @@ public class TablePanel extends JPanel {
         void startIndexPoll(Table table);
         void setValue(Table table, int column, int row, float value);
         void setProgrammerActivated(Table table, boolean activated);
+        void applyProgrammerValue(Table table);
     }
     
     
@@ -82,6 +83,7 @@ public class TablePanel extends JPanel {
         horizontalInterpolationButton = new javax.swing.JButton();
         verticalInterpolationButton = new javax.swing.JButton();
         programmerToggleButton = new javax.swing.JToggleButton();
+        programmerApplyButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -131,6 +133,15 @@ public class TablePanel extends JPanel {
             }
         });
         toolPanel.add(programmerToggleButton);
+
+        programmerApplyButton.setText(Bundle.getInstance().get("ProgrammerApply"));
+        programmerApplyButton.setEnabled(false);
+        programmerApplyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                programmerApplyButton_actionPerformed(evt);
+            }
+        });
+        toolPanel.add(programmerApplyButton);
 
         add(toolPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
@@ -186,6 +197,10 @@ public class TablePanel extends JPanel {
     private void programmerToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerToggleButton_actionPerformed
         tablePanelListener.setProgrammerActivated(table, programmerToggleButton.isSelected());
     }//GEN-LAST:event_programmerToggleButton_actionPerformed
+
+    private void programmerApplyButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerApplyButton_actionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_programmerApplyButton_actionPerformed
 
     private void setInterpolationEnabled() {
         horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() >= 1);
@@ -489,8 +504,8 @@ public class TablePanel extends JPanel {
         }
         
         @Override
-        public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
-            if (table == TablePanel.this.table) {
+        public void propertyChanged(Table table, Table.Property property, Object... attributes) {
+            if (table.equals(TablePanel.this.table)) {
                 switch (property) {
                     case INDEX:
                         indexChanged();
@@ -498,8 +513,11 @@ public class TablePanel extends JPanel {
                     case ENABLED:
                         model.fireTableCellUpdated(activeRow, activeColumn);
                         break;
+                    case PROGRAMMABLE:
+                        programmerToggleButton.setVisible((boolean) attributes[0]);
+                        break;
                     case VALUE:
-                        valueChanged((Integer) attributes[1], (Integer) attributes[0]);
+                        valueChanged((int) attributes[1], (int) attributes[0]);
                         break;
                     default:
                         initializationPropertyChanged(property);
@@ -583,6 +601,7 @@ public class TablePanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable grid;
     private javax.swing.JButton horizontalInterpolationButton;
+    private javax.swing.JButton programmerApplyButton;
     private javax.swing.JToggleButton programmerToggleButton;
     private javax.swing.JScrollPane scrollPane;
     private javax.swing.JPanel toolPanel;

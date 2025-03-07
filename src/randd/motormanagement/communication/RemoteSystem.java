@@ -15,7 +15,7 @@ import org.json.*;
 
 public class RemoteSystem {
     
-    
+ 
     public interface Listener {
         void notificationReceived(Notification notification);
         void tableNames(Collection<String> names);
@@ -36,17 +36,14 @@ public class RemoteSystem {
         this(new Messenger(transporter));
     }
 
-
     public void connect() throws bka.communication.ChannelException  {
         messenger.start();
     }
-    
     
     public void disconnect() throws bka.communication.ChannelException {
         stopPolling();
         messenger.stop();
     }
-
     
     public void startPolling(int pollInterval) {
         if (pollTimer == null) {
@@ -56,14 +53,12 @@ public class RemoteSystem {
         }
     }
     
-    
     public void stopPolling() {
         if (pollTimer != null) {
             pollTimer.cancel();
             pollTimer = null;
         }
     }
-    
     
     public void startIndexPoll(Table table) {
         synchronized (tablesToPoll) {
@@ -73,85 +68,73 @@ public class RemoteSystem {
         }
     }
     
-    
     public void stopIndexPoll(Table table) {
         synchronized (tablesToPoll) {
             tablesToPoll.remove(table);
         }
     }
     
-    
     public void requestMeasurementNames() throws InterruptedException {
         call(GET_MEASUREMENTS);
     }
-    
     
     public void requestTableNames() throws InterruptedException {
         call(GET_TABLE_NAMES);
     }
     
-    
     public void requestTableProperties(Table table) throws InterruptedException {
         call(GET_TABLE_PROPERTIES, TABLE_NAME, table.getName());
     }
-    
     
     public void requestTableFields(Table table) throws InterruptedException {
         call(GET_TABLE_FIELDS, TABLE_NAME, table.getName());
     }
     
-    
     public void enableTable(Table table, boolean enabled) throws InterruptedException {
         call(SET_TABLE_ENABLED, TABLE_NAME, table.getName(), ENABLED, enabled);
     }
-
-    
+  
     public void modifyTable(Table table, int column, int row, float value) throws InterruptedException {
         call(SET_TABLE_FIELD, TABLE_NAME, table.getName(), COLUMN, column, ROW, row, VALUE, value);
     }
-    
     
     public void requestEngine() throws InterruptedException {
         call(GET_ENGINE_PROPERTIES);
     }
     
-    
     public void modifyCylinderCount(int count) throws InterruptedException {
         call(SET_CYLINDER_COUNT, CYLINDER_COUNT, count);
     }
-    
     
     public void modifyCogwheel(int cogTotal, int gapSize, int offset) throws InterruptedException {
         call(SET_COGWHEEL_PROPERTIES, COG_TOTAL, cogTotal, GAP_SIZE, gapSize, OFFSET, offset);
     }
 
-
     public void requestMeasurementProperties(Measurement measurement) throws InterruptedException {
         call(GET_MEASUREMENT_PROPERTIES, MEASUREMENT_NAME, measurement.getName());
     }
-    
 
     public void enableMeasurementSimulation(Measurement measurement, float simulationValue) throws InterruptedException {
         call(SET_MEASUREMENT_SIMULATION, MEASUREMENT_NAME, measurement.getName(), SIMULATION_VALUE, simulationValue);
     }
     
-    
     public void disableMeasurementSimulation(Measurement measurement) throws InterruptedException {
         call(RESET_MEASUREMENT_SIMULATION, MEASUREMENT_NAME, measurement.getName());
     }
-    
     
     public void requestFlash() throws InterruptedException {
         call(GET_PERSISTENT_MEMORY_BYTES);
         call(GET_PERSISTENT_ELEMENTS);
     }
     
-    
     public void setProgrammerActivated(Table table, boolean activated) {
         call(SET_PROGRAMMER_ACTIVATED, TABLE_NAME, table.getName(), ACTIVATED, activated);
     }
-
     
+    public void applyProgrammerValue(Table table) {
+        call(APPLY_PROGRAMMER_VALUE, TABLE_NAME, table.getName());
+    }
+
     public void modifyFlash(int reference, int[] values) throws InterruptedException {
         int index = 0;
         int total = values.length;
@@ -165,18 +148,14 @@ public class RemoteSystem {
         }
     }
     
-    
-    public Table getCorrectionTable(Measurement measurement) {
+    public Optional<Table> getCorrectionTable(Measurement measurement) {
         assert (measurement != null);
         String measurementName = measurement.getName();
-        if (! "Load".equals(measurementName) && ! "RPM".equals(measurementName)) {
-            return Table.getInstance(measurementName + "Correction");
+        if ("Load".equals(measurementName) || "RPM".equals(measurementName)) {
+            return Optional.empty();
         }
-        else {
-            return null;
-        }
+        return Optional.of(Table.getInstance(measurementName + "Correction"));
     }
-
 
     public void fire(String name, String value) {
         try {
@@ -281,12 +260,10 @@ public class RemoteSystem {
         }
     }
 
-
     private void updateTableField(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setField(object.getInt(COLUMN), object.getInt(ROW), (float) object.getDouble(VALUE));
     }
-    
     
     private void updateTableProperties(JSONObject object) throws JSONException {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
@@ -304,8 +281,8 @@ public class RemoteSystem {
             Measurement measurement = Measurement.getInstance(measurementName);
             table.setRowMeasurement(measurement);
         }
-    }
-    
+        table.setProgrammable(object.getBoolean(PROGRAMMABLE));
+    }    
     
     private void updateEngine(JSONObject engineObject) throws JSONException {
         engine.setCylinderCount(engineObject.getInt(CYLINDER_COUNT));
@@ -488,7 +465,7 @@ public class RemoteSystem {
                         updatePersistentElements(response.getJSONArray(Messenger.RETURN_VALUE));
                         break;
                     case SET_PROGRAMMER_ACTIVATED:
-//                        setAdjustmentActivated();
+                        // No operation required
                         break;
                     case SET_MEASUREMENT_SIMULATION:
                     case RESET_MEASUREMENT_SIMULATION:
@@ -507,9 +484,7 @@ public class RemoteSystem {
         private void handleNotifications(JSONObject message) {
             for (Notification notification : createNotifications(message)) {
                 synchronized (listeners) {
-                    for (Listener listener : listeners) {
-                        listener.notificationReceived(notification);
-                    }
+                    listeners.forEach(listener -> listener.notificationReceived(notification));
                 }
             }
         }
@@ -526,16 +501,13 @@ public class RemoteSystem {
             return notifications;
         }
 
-
         private void notifyTableNames(JSONArray array) throws JSONException {
             Collection<String> names = new ArrayList<>();
             for (int i = 0; i < array.length(); ++i) {
                 names.add(array.getString(i));
             }
             synchronized (listeners) {
-                for (Listener listener : listeners) {
-                    listener.tableNames(names);
-                }
+                listeners.forEach(listener -> listener.tableNames(names));
             }
         }
         
@@ -571,12 +543,12 @@ public class RemoteSystem {
     private static final String GET_PERSISTENT_MEMORY_BYTES = "GetPersistentMemoryBytes";
     private static final String SET_PERSISTENT_MEMORY_BYTES = "SetPersistentMemoryBytes";
     private static final String SET_PROGRAMMER_ACTIVATED = "SetProgrammerActivated";
-    
+    private static final String APPLY_PROGRAMMER_VALUE = "ApplyProgrammerValue";
     private static final String TABLE_NAME = "TableName";
     private static final String MEASUREMENT_NAME = "MeasurementName";
-
     private static final String ACTIVATED = "Activated";
     private static final String ENABLED = "Enabled";
+    private static final String PROGRAMMABLE = "Programmable";
     private static final String SIMULATION = "Simulation";
     private static final String SIMULATION_VALUE = "SimulationValue";
     private static final String TYPE_ID = "TypeId";
@@ -588,7 +560,6 @@ public class RemoteSystem {
     private static final String COLUMN = "Column";
     private static final String ROW = "Row";
     private static final String VALUE = "Value";
-    
     private static final String COLUMN_MEASUREMENT_NAME = "ColumnMeasurementName";
     private static final String ROW_MEASUREMENT_NAME = "RowMeasurementName";
     private static final String FORMAT = "Format";

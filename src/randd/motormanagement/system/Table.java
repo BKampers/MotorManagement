@@ -19,7 +19,8 @@ public class Table {
         ROW_MEASUREMENT,
         INDEX,
         VALUE,
-        ENABLED
+        ENABLED,
+        PROGRAMMABLE
     }
 
 
@@ -177,15 +178,27 @@ public class Table {
 
     public void setEnabled(boolean enabled) {
         Boolean newValue = enabled;
-        if (! newValue.equals(this.enabled)) {
+        if (!newValue.equals(this.enabled)) {
             this.enabled = newValue;
             notifyPropertyChanged(Property.ENABLED);
+        }
+    }
+    
+    public boolean isProgrammable() {
+        return programmable;
+    }
+        
+    public void setProgrammable(boolean programmable) {
+        Boolean newValue = programmable;
+        if (!newValue.equals(this.programmable)) {
+            this.programmable = newValue;
+            notifyPropertyChanged(Property.PROGRAMMABLE, newValue);
         }
     }
         
     public void addListener(Listener listener) {
         synchronized (listeners) {
-            if (! listeners.contains(listener)) {
+            if (!listeners.contains(listener)) {
                 listeners.add(listener);
             }
         }
@@ -199,13 +212,11 @@ public class Table {
     
     private void notifyPropertyChanged(Property property, Object ... attributes) {
         synchronized (listeners) {
-            for (Listener listener : listeners) {
-                listener.propertyChanged(this, property, attributes);
-            }        
+            listeners.forEach(listener -> listener.propertyChanged(this, property, attributes));        
         }
     }
         
-    private static final java.util.Map<String, Table> instances = new java.util.HashMap<>();
+    private static final Map<String, Table> instances = new HashMap<>();
     
     private String name;
     
@@ -223,6 +234,7 @@ public class Table {
     private int decimals = 0;
     
     private Boolean enabled;
+    private Boolean programmable;
     
     private float[][] fields = null;
     

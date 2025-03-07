@@ -251,8 +251,8 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
-        Table correctionTable = remoteSystem.getCorrectionTable(measurement);
-        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
+        Optional<Table> correctionTable = remoteSystem.getCorrectionTable(measurement);
+        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable.get(), measurementPanelListener, developerMode);
         measurements.put(measurementName, panel);
         valuesPanel.add(panel);
         try {
@@ -424,9 +424,9 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void tableEnabled(MeasurementPanel panel, boolean enabled) {
             Measurement measurement = panel.getMeasurement();
-            Table table = remoteSystem.getCorrectionTable(measurement);
+            Optional<Table> table = remoteSystem.getCorrectionTable(measurement);
             try {
-                remoteSystem.enableTable(table, enabled);
+                remoteSystem.enableTable(table.get(), enabled);
             }
             catch (InterruptedException ex) {
                 handle(ex);
@@ -486,6 +486,11 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void setProgrammerActivated(Table table, boolean activated) {
             remoteSystem.setProgrammerActivated(table, activated);
+        }
+        
+        @Override
+        public void applyProgrammerValue(Table table) {
+            remoteSystem.applyProgrammerValue(table);
         }
         
     }

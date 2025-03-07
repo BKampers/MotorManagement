@@ -75,7 +75,7 @@ public class Transporter {
         private void processReceivedCharacters() {
             try {
                 receivedObjects.add(new JSONObject(receivedCharacters.toString()));
-                receivedCharacters = new StringBuilder();
+                receivedCharacters.setLength(0);
             }
             catch (org.json.JSONException ex) {
                 handleException(ex);
@@ -87,7 +87,7 @@ public class Transporter {
             LOGGER.log(Level.WARNING, "ObjectReceiver", ex);
         }
         
-        private StringBuilder receivedCharacters = new StringBuilder();
+        private final StringBuilder receivedCharacters = new StringBuilder();
         
     }
     
