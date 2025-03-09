@@ -149,7 +149,6 @@ public class RemoteSystem {
     }
     
     public Optional<Table> getCorrectionTable(Measurement measurement) {
-        assert (measurement != null);
         String measurementName = measurement.getName();
         if ("Load".equals(measurementName) || "RPM".equals(measurementName)) {
             return Optional.empty();
@@ -237,7 +236,7 @@ public class RemoteSystem {
     
     private static List<String> keySet(JSONObject object) {
         return (List<String>) StreamSupport.stream(Spliterators.spliterator(object.keys(), object.length(), Spliterator.IMMUTABLE), false)
-            .map(key -> key.toString())
+            .map(Object::toString)
             .collect(Collectors.toList());
     }
     
@@ -326,6 +325,7 @@ public class RemoteSystem {
         Table table = Table.getInstance(object.getString(TABLE_NAME));
         table.setColumnIndex(object.getInt(CURRENT_COLUMN));
         table.setRowIndex(object.getInt(CURRENT_ROW));
+        table.setProgrammerActivated(object.getBoolean(PROGRAMMER_ACTIVATED));
     }
     
     
@@ -467,9 +467,12 @@ public class RemoteSystem {
                     case SET_PROGRAMMER_ACTIVATED:
                         // No operation required
                         break;
+                    case APPLY_PROGRAMMER_VALUE:
+                        updateTableField(response.getJSONObject(Messenger.RETURN_VALUE));
+                        break;
                     case SET_MEASUREMENT_SIMULATION:
                     case RESET_MEASUREMENT_SIMULATION:
-                        // Not supported
+                        LOGGER.log(Level.WARNING, "Unsupported function: '{0}'", response.getString(Messenger.FUNCTION));
                         break;
                     default:
                         LOGGER.log(Level.WARNING, "Unhandled: {0}", response);
@@ -549,6 +552,7 @@ public class RemoteSystem {
     private static final String ACTIVATED = "Activated";
     private static final String ENABLED = "Enabled";
     private static final String PROGRAMMABLE = "Programmable";
+    private static final String PROGRAMMER_ACTIVATED = "ProgrammerActivated";
     private static final String SIMULATION = "Simulation";
     private static final String SIMULATION_VALUE = "SimulationValue";
     private static final String TYPE_ID = "TypeId";

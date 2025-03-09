@@ -6,6 +6,7 @@ package randd.motormanagement.swing;
 
 
 import java.awt.Color;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
@@ -23,35 +24,31 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    public MeasurementPanel(Measurement measurement, Table correctionTable, Listener listener, boolean simulationEnabled) {
+    public MeasurementPanel(Measurement measurement, Optional<Table> correctionTable, Listener listener, boolean simulationEnabled) {
         logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
         this.listener = listener;
         initComponents();
-        boolean isCorrection = correctionTable != null;
-        enableCorrectionToggleButton.setVisible(isCorrection);
-        enableCorrectionToggleButton.setEnabled(isCorrection);
+        enableCorrectionToggleButton.setVisible(correctionTable.isPresent());
+        enableCorrectionToggleButton.setEnabled(correctionTable.isPresent());
         simulationToggleButton.setVisible(simulationEnabled);
         setMeasurement(measurement, correctionTable);
     }
-    
     
     Measurement getMeasurement() {
         return measurement;
     }
     
-    
-    private void setMeasurement(Measurement measurement, Table correctionTable) {
+    private void setMeasurement(Measurement measurement, Optional<Table> correctionTable) {
         this.measurement = measurement;
         measurement.addListener(measurementListener);
-        if (correctionTable != null) {
-            correctionTable.addListener(tableListener);
+        if (correctionTable.isPresent()) {
+            correctionTable.get().addListener(tableListener);
         }
         if (measurement.getName() != null) {
             nameLabel.setText(Bundle.getInstance().get(measurement.getName()));
         }
         updateValueText();
     }
-    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -85,7 +82,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
         valueTextField.setMaximumSize(new java.awt.Dimension(60, 25));
         valueTextField.setMinimumSize(new java.awt.Dimension(60, 25));
         valueTextField.setPreferredSize(new java.awt.Dimension(60, 25));
-        valueTextField.setDisabledTextColor(LIME_GREEN);
+        valueTextField.setDisabledTextColor(UIManager.getColor("measurementValueColor"));
         valueTextField.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 valueTextField_actionPerformed(evt);
@@ -117,13 +114,11 @@ public class MeasurementPanel extends javax.swing.JPanel {
         });
         add(simulationToggleButton);
     }// </editor-fold>//GEN-END:initComponents
-
     
     private void simulationToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_simulationToggleButton_actionPerformed
         simulationToggleButton.setEnabled(false);
         listener.simulationEnabled(this, simulationToggleButton.isSelected());
     }//GEN-LAST:event_simulationToggleButton_actionPerformed
-
     
     private void valueTextField_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valueTextField_actionPerformed
         String text = valueTextField.getText();
@@ -138,26 +133,22 @@ public class MeasurementPanel extends javax.swing.JPanel {
             logger.log(Level.FINE, text, ex);
         }
     }//GEN-LAST:event_valueTextField_actionPerformed
-
     
     private void enableCorrectionToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enableCorrectionToggleButton_actionPerformed
         enableCorrectionToggleButton.setEnabled(false);
         listener.tableEnabled(this, enableCorrectionToggleButton.isSelected());
     }//GEN-LAST:event_enableCorrectionToggleButton_actionPerformed
 
-    
     private void showCorrectionEnabled(boolean enabled) {
-        enableCorrectionToggleButton.setBackground(enabled ? LIME_GREEN : UIManager.getColor("Button.background"));
+        enableCorrectionToggleButton.setBackground(UIManager.getColor((enabled) ? "selectedBackground" : "Button.background"));
         enableCorrectionToggleButton.setSelected(enabled);
     }
-    
-    
+        
     private void enableSimulationControls(boolean enabled) {
         logger.log(Level.FINE, "enableSimulation {0}", enabled);
         simulationToggleButton.setSelected(enabled);
         valueTextField.setEnabled(enabled);      
     }
-
 
     private void updateValueText() {
         Float value = measurement.getValue();
@@ -214,7 +205,6 @@ public class MeasurementPanel extends javax.swing.JPanel {
     
     private final Listener listener;
     private Measurement measurement;
-
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton enableCorrectionToggleButton;
@@ -224,12 +214,9 @@ public class MeasurementPanel extends javax.swing.JPanel {
     private javax.swing.JTextField valueTextField;
     // End of variables declaration//GEN-END:variables
 
-
     private final MeasurementListener measurementListener = new MeasurementListener();
     private final TableListener tableListener = new TableListener();
     
     private final Logger logger;
-    
-    private static final Color LIME_GREEN = new java.awt.Color(50, 205, 50);
-    
+       
 }

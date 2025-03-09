@@ -49,6 +49,7 @@ public class TablePanel extends JPanel {
         horizontalInterpolationButton.setVisible(false);
         verticalInterpolationButton.setVisible(false);
         programmerToggleButton.setVisible(false);
+        programmerApplyButton.setVisible(false);
     }
     
     private static Set<Table.Property> initalizationProperties(Table table) {
@@ -196,15 +197,21 @@ public class TablePanel extends JPanel {
 
     private void programmerToggleButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerToggleButton_actionPerformed
         tablePanelListener.setProgrammerActivated(table, programmerToggleButton.isSelected());
+        setProgrammingButtonsActivated(programmerToggleButton.isSelected());
     }//GEN-LAST:event_programmerToggleButton_actionPerformed
 
     private void programmerApplyButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerApplyButton_actionPerformed
-        // TODO add your handling code here:
+        tablePanelListener.applyProgrammerValue(table);
     }//GEN-LAST:event_programmerApplyButton_actionPerformed
 
     private void setInterpolationEnabled() {
         horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() >= 1);
         verticalInterpolationButton.setEnabled(grid.getSelectedRowCount() > 2 && grid.getSelectedColumnCount() >= 1);
+    }
+    
+    private void setProgrammingButtonsActivated(boolean activated) {
+        programmerApplyButton.setEnabled(activated);
+        programmerToggleButton.setBackground(UIManager.getColor((activated) ? "selectedBackground" : "Button.background"));
     }
     
     private boolean isMeasurementTable() {
@@ -355,7 +362,7 @@ public class TablePanel extends JPanel {
                 activeRenderer.setText(valueString);
                 return activeRenderer;
             }
-            else if (! model.isCellEditable(row, column)) {
+            else if (!model.isCellEditable(row, column)) {
                 JLabel renderer = new JLabel();
                 renderer.setOpaque(true);
                 renderer.setBackground(Color.GRAY);
@@ -515,6 +522,11 @@ public class TablePanel extends JPanel {
                         break;
                     case PROGRAMMABLE:
                         programmerToggleButton.setVisible((boolean) attributes[0]);
+                        programmerApplyButton.setVisible((boolean) attributes[0]);
+                        break;
+                    case PROGRAMMER_ACTIVATED:
+                        programmerToggleButton.setSelected(table.isProgrammerActivated());
+                        setProgrammingButtonsActivated(table.isProgrammerActivated());
                         break;
                     case VALUE:
                         valueChanged((int) attributes[1], (int) attributes[0]);

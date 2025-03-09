@@ -20,7 +20,8 @@ public class Table {
         INDEX,
         VALUE,
         ENABLED,
-        PROGRAMMABLE
+        PROGRAMMABLE,
+        PROGRAMMER_ACTIVATED
     }
 
 
@@ -195,6 +196,18 @@ public class Table {
             notifyPropertyChanged(Property.PROGRAMMABLE, newValue);
         }
     }
+    
+    public boolean isProgrammerActivated() {
+        return programmerActivated;
+    }
+        
+    public void setProgrammerActivated(boolean programmerActivated) {
+        Boolean newValue = programmerActivated;
+        if (!newValue.equals(this.programmerActivated)) {
+            this.programmerActivated = newValue;
+            notifyPropertyChanged(Property.PROGRAMMER_ACTIVATED, newValue);
+        }
+    }
         
     public void addListener(Listener listener) {
         synchronized (listeners) {
@@ -235,6 +248,7 @@ public class Table {
     
     private Boolean enabled;
     private Boolean programmable;
+    private Boolean programmerActivated;
     
     private float[][] fields = null;
     

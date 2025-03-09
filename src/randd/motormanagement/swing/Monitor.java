@@ -25,6 +25,8 @@ public class Monitor extends bka.swing.FrameApplication {
     public static final int RANDD_CONTROL_PORT = RANDD_MM_PORT - 1;
     
     public static void main(final String arguments[]) {
+        UIManager.put("selectedBackground", new java.awt.Color(50, 205, 50));
+        UIManager.put("measurementValueColor", new java.awt.Color(1, 176, 43));
         setLookAndFeel("Nimbus");
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(() -> {
@@ -252,7 +254,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
         Optional<Table> correctionTable = remoteSystem.getCorrectionTable(measurement);
-        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable.get(), measurementPanelListener, developerMode);
+        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
         measurements.put(measurementName, panel);
         valuesPanel.add(panel);
         try {

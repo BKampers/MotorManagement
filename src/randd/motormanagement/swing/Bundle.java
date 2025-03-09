@@ -6,6 +6,7 @@ package randd.motormanagement.swing;
 
 
 import java.util.*;
+import java.util.logging.*;
 
 
 class Bundle {
@@ -24,7 +25,7 @@ class Bundle {
             return BUNDLE.getString(key);
         }
         catch (MissingResourceException ex) {
-            java.util.logging.Logger.getLogger(Bundle.class.getName()).log(java.util.logging.Level.WARNING, ex.toString());
+            Logger.getLogger(Bundle.class.getName()).log(Level.WARNING, ex.toString());
             return key;
         }
     }

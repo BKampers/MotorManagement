@@ -64,7 +64,7 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="valueTextField_actionPerformed"/>
       </Events>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="valueTextField.setDisabledTextColor(LIME_GREEN);"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="valueTextField.setDisabledTextColor(UIManager.getColor(&quot;measurementValueColor&quot;));"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="unitLabel">
