@@ -356,7 +356,7 @@ public class TablePanel extends JPanel {
         @Override
         public Component getTableCellRendererComponent(JTable grid, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             String valueString = numberFormat.format(value);
-            if (Objects.equals(true, table.isEnabled()) && Objects.equals(column, table.getColumnIndex()) && Objects.equals(row, table.getRowIndex())) {
+            if (equals(true, table.isEnabled()) && equals(column, table.getColumnIndex()) && equals(row, table.getRowIndex())) {
                 activeColumn = column;
                 activeRow = row;
                 activeRenderer.setText(valueString);
@@ -374,6 +374,10 @@ public class TablePanel extends JPanel {
             else {
                 return super.getTableCellRendererComponent(grid, valueString, isSelected, hasFocus, row, column);
             }
+        }
+        
+        private <T> boolean equals(T value, Optional<T> optional) {
+            return optional.isPresent() && value.equals(optional.get());
         }
         
         private final JLabel activeRenderer = new JLabel();
@@ -514,11 +518,14 @@ public class TablePanel extends JPanel {
         public void propertyChanged(Table table, Table.Property property, Object... attributes) {
             if (table.equals(TablePanel.this.table)) {
                 switch (property) {
-                    case INDEX:
+                    case COLUMN_INDEX:
+                    case ROW_INDEX:
                         indexChanged();
                         break;
                     case ENABLED:
-                        model.fireTableCellUpdated(activeRow, activeColumn);
+                        if (activeRow != NONE && activeColumn != NONE) {
+                            model.fireTableCellUpdated(activeRow, activeColumn);
+                        }
                         break;
                     case PROGRAMMABLE:
                         programmerToggleButton.setVisible((boolean) attributes[0]);
@@ -539,8 +546,8 @@ public class TablePanel extends JPanel {
         }
 
         private void indexChanged() {
-            int rowIndex = indexValueOf(table.getRowIndex());
-            int columnIndex = indexValueOf(table.getColumnIndex());
+            int rowIndex = indexValueOf(table.getRowIndex().get());
+            int columnIndex = indexValueOf(table.getColumnIndex().get());
             if (rowIndex != activeRow || columnIndex != activeColumn) {
                 valueChanged(activeRow, activeColumn);
                 valueChanged(rowIndex, columnIndex);

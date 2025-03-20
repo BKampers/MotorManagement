@@ -11,17 +11,18 @@ public class Table {
     
     
     public enum Property {
-        FIELDS,
-        DECIMALS,
-        MINIMUM,
-        MAXIMUM,
+        COLUMN_INDEX,
         COLUMN_MEASUREMENT,
-        ROW_MEASUREMENT,
-        INDEX,
-        VALUE,
+        DECIMALS,
         ENABLED,
+        FIELDS,
+        MAXIMUM,
+        MINIMUM,
         PROGRAMMABLE,
-        PROGRAMMER_ACTIVATED
+        PROGRAMMER_ACTIVATED,
+        ROW_INDEX,
+        ROW_MEASUREMENT,
+        VALUE
     }
 
 
@@ -149,66 +150,61 @@ public class Table {
         return rowCount;
     }
     
-    public Integer getColumnIndex() {
-        return columnIndex;
+    public Optional<Integer> getColumnIndex() {
+        return getOptionalProperty(Property.COLUMN_INDEX);
     }
     
     public void setColumnIndex(int columnIndex) {
-        Integer newIndex = columnIndex;
-        if (! newIndex.equals(this.columnIndex)) {
-            this.columnIndex = newIndex;
-            notifyPropertyChanged(Property.INDEX);
-        }
+        setProperty(Property.COLUMN_INDEX, columnIndex);
     }
 
-    public Integer getRowIndex() {
-        return rowIndex;
+    public Optional<Integer> getRowIndex() {
+        return getOptionalProperty(Property.ROW_INDEX);
     }
     
     public void setRowIndex(int rowIndex) {
-        Integer newIndex = rowIndex;
-        if (! newIndex.equals(this.rowIndex)) {
-            this.rowIndex = newIndex;
-            notifyPropertyChanged(Property.INDEX);
-        }
+        setProperty(Property.ROW_INDEX, rowIndex);
     }
     
-    public Boolean isEnabled() {
-        return enabled;
+    public Optional<Boolean> isEnabled() {
+        return getOptionalProperty(Property.ENABLED);
     }
 
     public void setEnabled(boolean enabled) {
-        Boolean newValue = enabled;
-        if (!newValue.equals(this.enabled)) {
-            this.enabled = newValue;
-            notifyPropertyChanged(Property.ENABLED);
-        }
+        setProperty(Property.ENABLED, enabled);
     }
     
     public boolean isProgrammable() {
-        return programmable;
+        return getProperty(Property.PROGRAMMABLE);
     }
         
     public void setProgrammable(boolean programmable) {
-        Boolean newValue = programmable;
-        if (!newValue.equals(this.programmable)) {
-            this.programmable = newValue;
-            notifyPropertyChanged(Property.PROGRAMMABLE, newValue);
-        }
+        setProperty(Property.PROGRAMMABLE, programmable);
     }
     
     public boolean isProgrammerActivated() {
-        return programmerActivated;
+        return getProperty(Property.PROGRAMMER_ACTIVATED);
     }
         
     public void setProgrammerActivated(boolean programmerActivated) {
-        Boolean newValue = programmerActivated;
-        if (!newValue.equals(this.programmerActivated)) {
-            this.programmerActivated = newValue;
-            notifyPropertyChanged(Property.PROGRAMMER_ACTIVATED, newValue);
-        }
+        setProperty(Property.PROGRAMMER_ACTIVATED, programmerActivated);
     }
         
+    private void setProperty(Property property, Object value) {
+        if (!value.equals(properties.get(property))) {
+            properties.put(property, value);
+            notifyPropertyChanged(property, value);
+        }
+    }
+    
+    private <T> T getProperty(Property property) {
+        return (T) Objects.requireNonNull(properties.get(property), () -> "Property '" + property.name() +  "' not set");
+    }
+    
+    private <T> Optional<T> getOptionalProperty(Property property) {
+        return Optional.ofNullable((T) properties.get(property));
+    }
+    
     public void addListener(Listener listener) {
         synchronized (listeners) {
             if (!listeners.contains(listener)) {
@@ -236,9 +232,6 @@ public class Table {
     private int columnCount = 0;
     private int rowCount = 0;
     
-    private Integer columnIndex;
-    private Integer rowIndex;
-    
     private Measurement columnMeasurement;
     private Measurement rowMeasurement;
 
@@ -246,11 +239,8 @@ public class Table {
     private float maximum = 100.0f;
     private int decimals = 0;
     
-    private Boolean enabled;
-    private Boolean programmable;
-    private Boolean programmerActivated;
-    
     private float[][] fields = null;
     
+    private final Map<Property, Object> properties = new HashMap<>();
     private final Collection<Listener> listeners = new ArrayList<>();
 }

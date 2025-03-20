@@ -372,11 +372,11 @@ public class Monitor extends bka.swing.FrameApplication {
                     if (! table.hasFields()) {
                         remoteSystem.requestTableFields(table);
                     }
-                    Boolean enabled = table.isEnabled();
-                    if (enabled == null) {
+                    Optional<Boolean> enabled = table.isEnabled();
+                    if (!enabled.isPresent()) {
                         remoteSystem.requestTableProperties(table);
                     }
-                    else if (enabled) {
+                    else if (enabled.get()) {
                         remoteSystem.startIndexPoll(table);
                     }
                 }
@@ -623,10 +623,9 @@ public class Monitor extends bka.swing.FrameApplication {
         @Override
         public void propertyChanged(Table table, Table.Property property, Object... attributes) {
             if (property == Table.Property.ENABLED) {
-                java.awt.Component component;
-                component = tabsPanel.getSelectedComponent();
-                if (component instanceof TablePanel && ((TablePanel) component).getTable() == table) {
-                    if (table.isEnabled()) {
+                java.awt.Component component = tabsPanel.getSelectedComponent();
+                if (component instanceof TablePanel && table.equals(((TablePanel) component).getTable())) {
+                    if (table.isEnabled().get()) {
                         remoteSystem.startIndexPoll(table);
                     }
                     else {

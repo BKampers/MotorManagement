@@ -191,10 +191,10 @@ public class MeasurementPanel extends javax.swing.JPanel {
     private class TableListener implements Table.Listener {
 
         @Override
-        public void propertyChanged(Table table, Table.Property property, Object ... attributes) {
+        public void propertyChanged(Table table, Table.Property property, Object... attributes) {
             switch (property) {
                 case ENABLED:
-                    showCorrectionEnabled(table.isEnabled());
+                    showCorrectionEnabled(table.isEnabled().get());
                     enableCorrectionToggleButton.setEnabled(true);
                     break;
             }
