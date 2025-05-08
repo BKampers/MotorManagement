@@ -69,6 +69,14 @@ public class TablePanel extends JPanel {
         return table;
     }
     
+    boolean isProgrammerActivated() {
+        return programmerToggleButton.isSelected();
+    }
+    
+    DecimalFormat getNumberFormat() {
+        return this.numberFormat;
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -93,6 +101,11 @@ public class TablePanel extends JPanel {
         grid.setCellSelectionEnabled(true);
         grid.setRowHeight(30);
         grid.getTableHeader().setReorderingAllowed(false);
+        grid.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                gridMouseDragged(evt);
+            }
+        });
         grid.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 grid_mouseClicked(evt);
@@ -203,6 +216,10 @@ public class TablePanel extends JPanel {
     private void programmerApplyButton_actionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_programmerApplyButton_actionPerformed
         tablePanelListener.applyProgrammerValue(table);
     }//GEN-LAST:event_programmerApplyButton_actionPerformed
+
+    private void gridMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_gridMouseDragged
+        setInterpolationEnabled();
+    }//GEN-LAST:event_gridMouseDragged
 
     private void setInterpolationEnabled() {
         horizontalInterpolationButton.setEnabled(grid.getSelectedColumnCount() > 2 && grid.getSelectedRowCount() >= 1);

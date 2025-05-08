@@ -11,6 +11,7 @@ package randd.motormanagement.swing;
 import bka.communication.*;
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -254,7 +255,7 @@ public class Monitor extends bka.swing.FrameApplication {
     private void addMeasurementPanel(String measurementName, boolean developerMode) {
         Measurement measurement = Measurement.getInstance(measurementName);
         Optional<Table> correctionTable = remoteSystem.getCorrectionTable(measurement);
-        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode);
+        MeasurementPanel panel = new MeasurementPanel(measurement, correctionTable, measurementPanelListener, developerMode, getAdapter());
         measurements.put(measurementName, panel);
         valuesPanel.add(panel);
         try {
@@ -263,6 +264,51 @@ public class Monitor extends bka.swing.FrameApplication {
         catch (InterruptedException ex) {
             handle(ex);
         }
+    }
+    
+    private Function<Measurement, String> getAdapter() {
+        return measurement -> {
+            if ("Programmer".equals(measurement.getName())) {
+                return programmerValue(measurement);
+            }  
+            return getMeasurementValue(measurement);
+        };
+    }
+
+    private String getMeasurementValue(Measurement measurement) {
+        Float value = measurement.getValue();
+        if (value != null) {
+            try {
+                java.util.Formatter formatter = new java.util.Formatter();
+                formatter.format(measurement.getFormat(), value);
+                return formatter.toString();
+            }
+            catch (IllegalFormatException | FormatterClosedException ex) {
+                LOGGER.log(Level.WARNING, "Could not format measurement value", ex);
+                return Integer.toString(value.intValue());
+            }
+        }
+        return "";
+    }
+
+    private String programmerValue(Measurement measurement) {
+        if (selectedTab instanceof TablePanel && ((TablePanel) selectedTab).isProgrammerActivated()) {
+            TablePanel tablePanel = (TablePanel) selectedTab;
+            return tablePanel.getNumberFormat().format(measurement.getValue() * tablePanel.getTable().getMaximum());
+        }
+        return "";
+    }
+    
+    private Function<Float, Float> getMeasurementAdapter(String measurementName) {
+        if ("Programmer".equals(measurementName)) {
+            return value -> {
+                if (selectedTab instanceof TablePanel && ((TablePanel) selectedTab).isProgrammerActivated()) {
+                    return value * 50;
+                }
+                return null;
+            };
+        }
+        return Function.identity();
     }
     
     private void addTableTabPanel(String name) {
@@ -672,7 +718,7 @@ public class Monitor extends bka.swing.FrameApplication {
 
     private static final int DEFAULT_POLL_INTERVAL = 100;
 
-    private static final List<String> MEASUREMENT_ORDER = Arrays.asList("RPM", "Load", "Water", "Air", "Battery", "Map", "Lambda", "Spare", "Aux1", "Aux2");
+    private static final List<String> MEASUREMENT_ORDER = Arrays.asList("RPM", "Load", "Water", "Air", "Battery", "Map", "Lambda", "Spare", "Aux1", "Aux2", "Programmer");
 
     private static final Logger LOGGER = Logger.getLogger(Monitor.class.getName());
     

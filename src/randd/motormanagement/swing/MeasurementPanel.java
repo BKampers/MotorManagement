@@ -6,7 +6,9 @@ package randd.motormanagement.swing;
 
 
 import java.awt.Color;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.UIManager;
@@ -24,9 +26,10 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
     
     
-    public MeasurementPanel(Measurement measurement, Optional<Table> correctionTable, Listener listener, boolean simulationEnabled) {
+    public MeasurementPanel(Measurement measurement, Optional<Table> correctionTable, Listener listener, boolean simulationEnabled, Function<Measurement, String> adapter) {
         logger = Logger.getLogger(MeasurementPanel.class.getName() + "." + measurement.getName().replace('.', '-'));
-        this.listener = listener;
+        this.listener = Objects.requireNonNull(listener);
+        this.adapter = Objects.requireNonNull(adapter);
         initComponents();
         enableCorrectionToggleButton.setVisible(correctionTable.isPresent());
         enableCorrectionToggleButton.setEnabled(correctionTable.isPresent());
@@ -151,20 +154,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     }
 
     private void updateValueText() {
-        Float value = measurement.getValue();
-        if (value != null) {
-            try {
-                java.util.Formatter formatter = new java.util.Formatter();
-                formatter.format(measurement.getFormat(), value);
-                valueTextField.setText(formatter.toString());
-            }
-            catch (Exception ex) {
-                valueTextField.setText(Long.toString(value.longValue()));
-            }
-        }
-        else {
-            valueTextField.setText("");
-        }
+        valueTextField.setText(adapter.apply(measurement));
     }
 
 
@@ -214,6 +204,7 @@ public class MeasurementPanel extends javax.swing.JPanel {
     private javax.swing.JTextField valueTextField;
     // End of variables declaration//GEN-END:variables
 
+    private final Function<Measurement, String> adapter; 
     private final MeasurementListener measurementListener = new MeasurementListener();
     private final TableListener tableListener = new TableListener();
     
